@@ -1,0 +1,1441 @@
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import {
+  Box,
+  Typography,
+  Paper,
+  Grid,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  TableContainer,
+  Button,
+  Card,
+  CardContent,
+  Chip,
+  Divider,
+  IconButton,
+  Tooltip,
+} from "@mui/material";
+import { useEffect, useState } from "react";
+import { Question } from "@/types/questionType";
+import Loading from "@/app/loading";
+import PageContainer from "../../components/container/PageContainer";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import DownloadIcon from '@mui/icons-material/Download';
+import PrintIcon from '@mui/icons-material/Print';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import HelpIcon from '@mui/icons-material/Help';
+import TimerIcon from '@mui/icons-material/Timer';
+import SchoolIcon from '@mui/icons-material/School';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import MenuBookIcon from '@mui/icons-material/MenuBook';
+import {
+   LooksOne as QuestionIcon, 
+  Score as ScoreIcon, 
+  Percent as PercentIcon 
+} from '@mui/icons-material';
+import QuizIcon from '@mui/icons-material/Quiz';
+import { TrophyIcon } from "lucide-react";
+
+import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+
+// @ts-ignore
+import html2pdf from "html2pdf.js";
+import React from "react";
+
+export default function ResultPage() {
+  const searchParams = useSearchParams();
+
+  const [loading, setLoading] = useState(true);
+  const [questions, setQuestions] = useState<Question[]>([]);
+  const [submittedAnswers, setSubmittedAnswers] = useState<Record<string, number>>({});
+  const [test, setTest] = useState<{
+    course: string;
+    chapter: string;
+    subject: string;
+    questionIds: string[];
+    date: string;
+    duration: number;
+    totalMarks: number;
+    testType: string;
+  }>({
+    course: "-",
+    chapter: "-",
+    subject: "-",
+    questionIds: [],
+    date: "-",
+    duration: 0,
+    totalMarks: 0,
+    testType: "-"
+  });
+const [generatingPdf, setGeneratingPdf] = useState(false);
+  const [answers, setAnswers] = useState<{ id: string; ans: string; selected: string; }[]>([]);
+
+  const [score, setScore] = useState(0);
+  const [correctCount, setCorrectCount] = useState(0);
+  const [incorrectCount, setIncorrectCount] = useState(0);
+  const [unansweredCount, setUnansweredCount] = useState(0);
+  const [percentage, setPercentage] = useState("0");
+
+  useEffect(() => {
+    const stored = sessionStorage.getItem("testResult");
+
+    if (!stored) {
+      // If no stored data, try to redirect back to test selection
+      window.location.href = '/dashboard/student/select-your_test';
+      return;
+    }
+
+    try {
+      const parsed = JSON.parse(stored);
+      const { result, questions, submittedAnswers, testDetails } = parsed;
+
+      setQuestions(questions || []);
+      setTest(testDetails);
+        setSubmittedAnswers(submittedAnswers || {});
+        // If result.Answers present use it, otherwise construct from submittedAnswers + questions
+        if (result?.Answers && result.Answers.length > 0) {
+          setAnswers(result.Answers);
+        } else {
+          const fallback: { id: string; ans: string; selected: string; }[] = [];
+          (questions || []).forEach((q: any) => {
+            const sel = (submittedAnswers || {})[q._id];
+            fallback.push({ id: q._id, ans: q.answer || "", selected: sel || "Skipped" });
+          });
+          setAnswers(fallback);
+        }
+
+      setCorrectCount(result?.correct || 0);
+      setIncorrectCount(result?.incorrect || 0);
+      setUnansweredCount(result?.unanswered?.length || 0);
+      setScore(result?.score || 0);
+      setPercentage(result?.percentage?.toFixed?.(2) || "0.00");
+
+      setLoading(false);
+      
+      // Keep data for 5 minutes
+      // setTimeout(() => sessionStorage.removeItem("testResult"), 300000);
+    } catch (err) {
+      console.error("Session parse error:", err);
+      setLoading(false);
+    }
+  }, []);
+
+// const handleDownload = (e: { preventDefault: () => void; }) => {
+//   e.preventDefault();
+//   const element = document.getElementById("result-pdf");
+//   if (!element) return;
+// setGeneratingPdf(true);
+//   // Show element for PDF rendering
+//   element.style.display = "block";
+
+//     const parts = [`${test.course}`];
+//   if (test.subject && test.subject !== "-") parts.push(test.subject);
+//   if (test.chapter && test.chapter !== "-") parts.push(test.chapter);
+//   if (test.date) parts.push(new Date(test.date).toISOString().slice(0, 10));
+//   const filename = `test-result-${parts.join('-')}.pdf`;
+
+//   const opt = {
+//     margin:       0.2, // mm
+//     filename:     filename,
+//     image:        { type: "jpeg", quality: 1 },
+//     html2canvas:  { dpi: 300, useCORS: true, scrollY: 0, scale: 2 },
+//     jsPDF:        { unit: "mm", format: "a4", orientation: "portrait" },
+//     pagebreak:    { mode: ["avoid-all", "css", "legacy"] },
+//   };
+
+//   html2pdf().set(opt).from(element).save().then(() => {
+//     element.style.display = "none"; // hide after PDF
+//     setGeneratingPdf(false);
+//   });
+// };
+
+const handleDownload = async (e: { preventDefault: () => void }) => {
+  e.preventDefault();
+  const element = document.getElementById("result-pdf");
+  if (!element) return;
+
+  setGeneratingPdf(true);
+  element.style.display = "block";
+
+  const parts = [`${test.course}`];
+  if (test.subject && test.subject !== "-") parts.push(test.subject);
+  if (test.chapter && test.chapter !== "-") parts.push(test.chapter);
+  if (test.date) parts.push(new Date(test.date).toISOString().slice(0, 10));
+  const filename = `test-result-${parts.join('-')}.pdf`;
+
+  const opt = {
+    margin:       0.2,
+    filename:     filename,
+    image:        { type: "jpeg", quality: 1 },
+    html2canvas:  { dpi: 300, useCORS: true, scrollY: 0, scale: 2 },
+    jsPDF:        { unit: "mm", format: "a4", orientation: "portrait" },
+    pagebreak:    { mode: ["avoid-all", "css", "legacy"] },
+  };
+
+  const html2pdf = (await import("html2pdf.js")).default;
+  
+  html2pdf().set(opt).from(element).save().then(() => {
+    element.style.display = "none";
+    setGeneratingPdf(false);
+  });
+};
+
+
+// const handlePrint = () => {
+//     window.print();
+//   };
+
+  if (loading) {
+    return <Loading />;
+  }
+
+  const getGradeColor = (percentage: number) => {
+    if (percentage >= 90) return "#4caf50";
+    if (percentage >= 80) return "#8bc34a";
+    if (percentage >= 70) return "#ff9800";
+    if (percentage >= 60) return "#ff5722";
+    return "#f44336";
+  };
+
+  const getGrade = (percentage: number) => {
+    if (percentage >= 90) return "A+";
+    if (percentage >= 80) return "A";
+    if (percentage >= 70) return "B+";
+    if (percentage >= 60) return "B";
+    if (percentage >= 50) return "C";
+    return "F";
+  };
+
+const formatDuration = (totalSeconds: number) => {
+  // Ensure integer seconds
+
+  const seconds = Math.floor(totalSeconds);
+
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = seconds % 60;
+
+  let parts = [];
+
+  if (h > 0) parts.push(`${h} ${h === 1 ? 'hr' : 'hrs'}`);
+  if (m > 0) parts.push(`${m} ${m === 1 ? 'min' : 'mins'}`);
+  if (s > 0 || parts.length === 0) parts.push(`${s} ${s === 1 ? 'sec' : 'secs'}`);
+
+  return parts.join(' ');
+};
+
+
+const subjectsGroupedBySubject = Array.from(
+  questions.reduce((acc, q, i) => {
+    const group = acc.get(q.subject) || [];
+    group.push({ ...q, index: i });
+    acc.set(q.subject, group);
+    return acc;
+  }, new Map<string, (Question & { index: number })[]>())
+);
+
+  return (
+    <>
+      {/* Print-specific CSS */}
+      <style jsx global>{`
+        @media print {
+          body {
+            margin: 0;
+            padding: 0;
+            background: white !important;
+          }
+          
+          .MuiBox-root {
+            break-inside: avoid;
+          }
+          
+          .MuiCard-root {
+            break-inside: avoid;
+            box-shadow: none !important;
+            border: 1px solid #ddd !important;
+          }
+          
+          .MuiTableContainer-root {
+            break-inside: avoid;
+          }
+          
+          .MuiTableRow-root {
+            break-inside: avoid;
+          }
+          
+          .MuiTableCell-root {
+            border: 1px solid #ddd !important;
+          }
+          
+          .MuiButton-root {
+            display: none !important;
+          }
+          
+          .MuiChip-root {
+            border: 1px solid #ddd !important;
+          }
+          
+          .MuiIcon-root {
+            display: none !important;
+          }
+          
+          .MuiGrid-container {
+            break-inside: avoid;
+          }
+          
+          .MuiGrid-item {
+            break-inside: avoid;
+          }
+          
+          /* Ensure proper page breaks */
+          .MuiCard-root:first-child {
+            page-break-after: auto;
+          }
+          
+          .MuiCard-root:last-child {
+            page-break-before: auto;
+          }
+          
+          /* Hide action buttons when printing */
+          .print-hide {
+            display: none !important;
+          }
+        }
+      `}</style>
+      
+      <Box sx={{
+        maxWidth: "100vw",
+        "@media (min-width: 1200px)": {
+          maxWidth: "calc(100vw - 335px)",
+        },
+        overflowX: "hidden",
+        margin:'0 auto',
+      }}>
+        <PageContainer title="Test Result" description="View your test results">
+          <Box p={3}>
+            {/* Header with Actions */}
+            <Box sx={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center', 
+              mb: 3,
+              flexWrap: 'wrap',
+              gap: 2
+            }} className="print-hide">
+              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                Test Results
+              </Typography>
+              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                <Button
+                  id="download-btn"
+                  variant="contained"
+                  startIcon={<DownloadIcon />}
+                  onClick={handleDownload}
+                  sx={{ 
+                    backgroundColor: '#4caf50',
+                    '&:hover': { backgroundColor: '#45a049' }
+                  }}
+                  disabled={generatingPdf}
+                >
+                  {generatingPdf ? "Generating PDF" : "Download PDF"}
+                </Button>
+                {/* <Button
+                  variant="outlined"
+                  startIcon={<PrintIcon />}
+                  onClick={handlePrint}
+                  sx={{ borderColor: '#1976d2', color: '#1976d2' }}
+                >
+                  Print
+                </Button> */}
+              </Box>
+            </Box>
+
+
+{/* Show Result Card */}
+            <Card sx={{ mb: 4, boxShadow: 3, borderRadius: 3 }} className="web-only">
+              <CardContent sx={{ p: 2 }}>
+                {/* Academy Header */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  mb: 3,
+                  p: 2,
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: 2
+                }}>
+                  <Box>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                      Innovative Education
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Excellence in Education
+                    </Typography>
+                  </Box>
+                  <span 
+  className="chip" 
+  style={{ backgroundColor: "#1976d2", color: "white", fontWeight: 700, padding: "4px 22px 4px 22px", fontSize: "1rem", verticalAlign: "middle" }}
+>
+  {test.course.toUpperCase()}
+</span>
+                
+                </Box>
+
+                {/* Test Details Grid */}
+                <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12} sm={6} md={2.5} lg={2}>
+                    <Box sx={{ textAlign: 'center', p: 1 }}>
+                      <SchoolIcon sx={{ fontSize: 25, color: '#1976d2', mb: 0.5 }} />
+                      <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
+                        {test.course}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Course
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  {test.subject && test.subject !== "-" && (
+                    <Grid item xs={12} sm={6} md={2.5} lg={2}>
+                      <Box sx={{ textAlign: 'center', p: 1 }}>
+                        <AssignmentIcon sx={{ fontSize: 25, color: '#ff9800', mb: 0.5 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
+                          {test.subject}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Subject
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  )}
+                  {test.chapter && test.chapter !== "-" && (
+                    <Grid item xs={12} sm={6} md={2.5} lg={2}>
+                      <Box sx={{ textAlign: 'center', p: 1 }}>
+                        <MenuBookIcon sx={{ fontSize: 25, color: '#9c27b0', mb: 0.5 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
+                          {test.chapter}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Chapter
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  )}
+                  <Grid item xs={12} sm={6} md={2.5} lg={2}>
+                    <Box sx={{ textAlign: 'center', p: 1 }}>
+                      <TimerIcon sx={{ fontSize: 25, color: '#4caf50', mb: 0.5 }} />
+                      <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
+                        {/* test.duration is in seconds; show hrs:mins when appropriate */}
+                                                                     {/* {test.duration >= 3600
+                                                                            ? `${test.duration / 3600}h ${test.duration % 3600 / 60}m`
+                                                                        : test.duration >= 60
+                                                                                           ? `${test.duration / 60}m`
+                                                                          : `${test.duration}s`} */}
+                                                                          {formatDuration(test.duration)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Duration
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.5} lg={2}>
+                    <Box sx={{ textAlign: 'center', p: 1 }}>
+                       <EmojiEventsIcon  sx={{ fontSize: 25, color: '#0f5d7eff', mb: 0.5 }} />
+                      <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
+                        {test.questionIds.length}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Questions
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+
+                {/* Score Summary Cards */}
+                <Grid container spacing={3} sx={{ mb: 4 }}>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <Card sx={{ 
+                      backgroundColor: '#e8f5e8', 
+                      border: '2px solid #4caf50',
+                      textAlign: 'center',
+                      p: 1
+                    }}>
+                      <CheckCircleIcon sx={{ fontSize: 25, color: '#4caf50', mb: 0.5 }} />
+                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#2e7d32' }}>
+                        {correctCount}
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#2e7d32' }}>
+                        Correct
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <Card sx={{ 
+                      backgroundColor: '#ffebee', 
+                      border: '2px solid #f44336',
+                      textAlign: 'center',
+                      p: 1
+                    }}>
+                      <CancelIcon sx={{ fontSize: 25, color: '#f44336', mb: 0.5 }} />
+                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#c62828' }}>
+                        {incorrectCount}
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#c62828' }}>
+                        Incorrect
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <Card sx={{ 
+                      backgroundColor: '#f5f5f5', 
+                      border: '2px solid #9e9e9e',
+                      textAlign: 'center',
+                      p: 1
+                    }}>
+                      <HelpIcon sx={{ fontSize: 25, color: '#9e9e9e', mb: 0.5 }} />
+                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#616161' }}>
+                        {unansweredCount}
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#616161' }}>
+                        Skipped
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <Card sx={{ 
+                      backgroundColor: '#e3f2fd', 
+                      border: '2px solid #2196f3',
+                      textAlign: 'center',
+                      p: 1
+                    }}>
+                      <EmojiEventsIcon sx={{ fontSize: 25, color: '#2196f3', mb: 0.5, textAlign: "center", margin: "auto" }} />
+                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
+                        {score}
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
+                        Score
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <Card sx={{ 
+                      backgroundColor: '#fff3e0', 
+                      border: '2px solid #ff9800',
+                      textAlign: 'center',
+                      p: 1
+                    }}>
+                       <PercentIcon sx={{ fontSize: 25, color: '#ff9800', mb: 0.5 }}  /> 
+
+                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#f57c00' }}>
+                        {percentage}%
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#f57c00' }}>
+                        Percentage
+                      </Typography>
+                    </Card>
+                  </Grid>
+                </Grid>
+
+                {/* Grade Display */}
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 2, 
+                  backgroundColor: getGradeColor(parseFloat(percentage)),
+                  borderRadius: 2,
+                  mb: 1
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 'semibold', 
+                    color: 'white',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    Grade: {getGrade(parseFloat(percentage))}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'white', mt: 1 }}>
+                    {parseFloat(percentage) >= 60 ? 'Congratulations! You passed!' : 'Keep practicing to improve!'}
+                  </Typography>
+                </Box>
+
+                {/* Test Date */}
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 2, 
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: 2,
+                  mb: 3,
+                  border: '1px solid #e0e0e0'
+                }}>
+                  <Typography variant="body1" sx={{ fontWeight: 'semibold' }}>
+                    Test Date: {new Date(test.date).toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </Typography>
+                </Box>
+
+                {/* Question-wise Analysis */}
+                <Box sx={{ mt: 4 }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'semibold', mb: 3, color: '#1976d2' }}>
+                    Question-wise Analysis
+                  </Typography>
+                  
+                  <TableContainer component={Paper} elevation={1} sx={{ border: "1px solid #e0e0e0" }}>
+                    <Table>
+                      <TableHead>
+                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                          <TableCell sx={{ 
+                            border: "1px solid #e0e0e0",
+                            textAlign: "center",
+                            fontSize: "12px",
+                            py: 2,
+                            px: 1,
+                            maxWidth: "60px",
+                            fontWeight: 'semibold'
+                          }}>
+                            No.
+                          </TableCell>
+                          <TableCell sx={{ 
+                            border: "1px solid #e0e0e0",
+                            textAlign: "center",
+                            fontSize: "12px",
+                            py: 2,
+                            px: 1,
+                            fontWeight: 'semibold'
+                          }}>
+                            Question & Options
+                          </TableCell>
+                          <TableCell sx={{ 
+                            border: "1px solid #e0e0e0",
+                            textAlign: "center",
+                            fontSize: "12px",
+                            py: 2,
+                            px: 1,
+                            maxWidth: "250px",
+                            fontWeight: 'semibold'
+                          }}>
+                            Hint
+                          </TableCell>
+                          <TableCell sx={{ 
+                            border: "1px solid #e0e0e0",
+                            textAlign: "center",
+                            fontSize: "12px",
+                            py: 2,
+                            px: 1,
+                            maxWidth: "220px",
+                            fontWeight: 'semibold'
+                          }}>
+                            Your Answer & Result
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                     
+                     <TableBody>
+  {test.testType === "mock"
+    ?
+    
+     Array.from(
+        questions.reduce((acc, q, i) => {
+          const group = acc.get(q.subject) || [];
+          group.push({ ...q, index: i });
+          acc.set(q.subject, group);
+          return acc;
+        }, new Map<string, (Question & { index: number })[]>())
+      ).map(([subject, subjectQuestions]) => (
+        <React.Fragment key={subject}>
+          {/* Subject Header Row */}
+          <TableRow>
+            <TableCell colSpan={4} align="center" sx={{
+              fontWeight: 'bold',
+              fontSize: "14px",
+              backgroundColor: "#e0e0e0",
+              textTransform: "uppercase",
+            }}>
+              {subject}
+            </TableCell>
+          </TableRow>
+
+          {/* Only show questions where q.subject === subject */}
+          {subjectQuestions.map((q, subjIdx) => {
+            console.log(subjectQuestions,subject)
+            console.log("Rendering question:", q._id, "under subject:", subject);
+            if (q.subject !== subject) return null;
+
+            const answerObj = answers.find(a => a.id === q._id);
+            const selected = answerObj;
+            const result =
+              selected?.selected.toLowerCase() === "skipped"
+                ? "⧗ Skipped"
+                : selected?.selected === q.answer
+                ? "✅ Correct"
+                : "❌ Incorrect";
+            const color =
+              result === "✅ Correct"
+                ? "#4caf50"
+                : result === "❌ Incorrect"
+                ? "#f44336"
+                : "#9e9e9e";
+console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer, "Result:", result, subjIdx);
+            return (
+              <TableRow key={q._id} sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}>
+                <TableCell sx={{
+                  border: "1px solid #e0e0e0",
+                  py: 2,
+                  px: 1,
+                  textAlign: "center",
+                  maxWidth: "60px"
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
+                    {subjIdx + 1}
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2 }}>
+                  <Box sx={{ mb: 2 }}>
+                    {q.questionType === "text" ? (
+                      <Typography variant="body1" sx={{ fontSize: "12px", fontWeight: 500, mb: 2 }}>
+                        {q.question.text}
+                      </Typography>
+                    ) : (
+                      <Box component="img"
+                        src={q.question.imgUrl}
+                        alt="question"
+                        crossOrigin="anonymous"
+                        sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', mb: 2 }}
+                      />
+                    )}
+                  </Box>
+
+                  <Box sx={{ pl: 2, borderTop: "1px solid #e0e0e0" }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'semibold', mb: 1, color: '#666' }}>
+                      Options:
+                    </Typography>
+                    {q.options.map((option, idx) => (
+                      <Box key={idx} sx={{
+                        mb: 1,
+                        pl: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                      }}>
+                        <span className="chip" style={{ backgroundColor: "#e3f2fd", color: "#2A3547", fontWeight:"300", padding: "6px 12px" }}>
+                          {String.fromCharCode(65 + idx)}
+                        </span>
+                        {q.optionType === "text" ? (
+                          <Typography variant="body2" sx={{ fontSize: "12px" }}>
+                            {option.text}
+                          </Typography>
+                        ) : (
+                          <Box component="img"
+                            src={option.imgUrl}
+                            alt="option"
+                            crossOrigin="anonymous"
+                            sx={{ maxWidth: '60px', objectFit: 'contain' }}
+                          />
+                        )}
+                      </Box>
+                    ))}
+                  </Box>
+                </TableCell>
+
+                <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2, maxWidth: "240px", minWidth:"180px" }}>
+                  {q.hintType === "text" ? (
+                    <Typography variant="body2" sx={{ fontSize: "12px", fontStyle: 'italic' }}>
+                      {q.hint.text || "—"}
+                    </Typography>
+                  ) : (
+                    <Box component="img"
+                      src={q.hint.imgUrl}
+                      alt="hint"
+                      crossOrigin="anonymous"
+                      sx={{ maxWidth: '100%', objectFit: 'contain' }}
+                    />
+                  )}
+                </TableCell>
+
+                <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 1.5, maxWidth: "220px", minWidth:"180px" }}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
+                      Your Answer: <b>{selected?.selected || "Skipped"}</b>
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
+                      Correct Answer: <b>{q.answer}</b>
+                    </Typography>
+                    <Divider sx={{ my: 1 }} />
+                    <span className="chip" style={{ backgroundColor: color, color: "white", padding: "6px 12px" }}>
+                      {result}
+                    </span>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </React.Fragment>
+      ))
+    : questions.map((q, i) => {
+        // Fallback for non-mock testType (unchanged)
+        const answerObj = answers.find(a => a.id === q._id);
+        const selected = answerObj;
+        const result =
+          selected?.selected.toLowerCase() === "skipped"
+            ? "⧗ Skipped"
+            : selected?.selected === q.answer
+            ? "✅ Correct"
+            : "❌ Incorrect";
+        const color =
+          result === "✅ Correct"
+            ? "#4caf50"
+            : result === "❌ Incorrect"
+            ? "#f44336"
+            : "#9e9e9e";
+
+        return (
+          <TableRow key={i}>
+            <TableCell sx={{
+              border: "1px solid #e0e0e0",
+              py: 2,
+              px: 1,
+              textAlign: "center",
+              maxWidth: "60px"
+            }}>
+              <Typography variant="h6" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
+                {i + 1}
+              </Typography>
+            </TableCell>
+
+            <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2 }}>
+              {/* Question and Options */}
+              <Box sx={{ mb: 2 }}>
+                {q.questionType === "text" ? (
+                  <Typography variant="body1" sx={{ fontSize: "12px", fontWeight: 500, mb: 2 }}>
+                    {q.question.text}
+                  </Typography>
+                ) : (
+                  <Box component="img"
+                    src={q.question.imgUrl}
+                    alt="question"
+                    crossOrigin="anonymous"
+                    sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', mb: 2 }}
+                  />
+                )}
+              </Box>
+
+              <Box sx={{ pl: 2, borderTop: "1px solid #e0e0e0" }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'semibold', mb: 1, color: '#666' }}>
+                  Options:
+                </Typography>
+                {q.options.map((option, idx) => (
+                  <Box key={idx} sx={{
+                    mb: 1,
+                    pl: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
+                    <span className="chip" style={{ backgroundColor: "#e3f2fd", color: "#2A3547", fontWeight:"300", padding: "6px 12px" }}>
+                      {String.fromCharCode(65 + idx)}
+                    </span>
+                    {q.optionType === "text" ? (
+                      <Typography variant="body2" sx={{ fontSize: "12px" }}>
+                        {option.text}
+                      </Typography>
+                    ) : (
+                      <Box component="img"
+                        src={option.imgUrl}
+                        alt="option"
+                        crossOrigin="anonymous"
+                        sx={{ maxWidth: '60px', objectFit: 'contain' }}
+                      />
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            </TableCell>
+
+            <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2, maxWidth: "240px", minWidth:"180px" }}>
+              {q.hintType === "text" ? (
+                <Typography variant="body2" sx={{ fontSize: "12px", fontStyle: 'italic' }}>
+                  {q.hint.text || "—"}
+                </Typography>
+              ) : (
+                <Box component="img"
+                  src={q.hint.imgUrl}
+                  alt="hint"
+                  crossOrigin="anonymous"
+                  sx={{ maxWidth: '100%', objectFit: 'contain' }}
+                />
+              )}
+            </TableCell>
+
+            <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 1.5, maxWidth: "220px", minWidth:"180px" }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
+                  Your Answer: <b>{selected?.selected || "Skipped"}</b>
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
+                  Correct Answer: <b>{q.answer}</b>
+                </Typography>
+                <Divider sx={{ my: 1 }} />
+                <span className="chip" style={{ backgroundColor: color, color: "white", padding: "6px 12px" }}>
+                  {result}
+                </span>
+              </Box>
+            </TableCell>
+          </TableRow>
+        );
+      })}
+</TableBody>
+
+                    </Table>
+                  </TableContainer>
+                </Box>
+              </CardContent>
+            </Card>
+
+
+            {/* For PDF */}
+             <Card id="result-pdf" sx={{ mb: 4, boxShadow: 3, borderRadius: 3,}} className="pdf-only">
+              <CardContent sx={{ p: 2 }}>
+                {/* Academy Header */}
+                <Box sx={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center', 
+                  mb: 3,
+                  p: 2,
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: 2
+                }}>
+                  <Box>
+                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
+                      Innovative Education
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Excellence in Education
+                    </Typography>
+                  </Box>
+                  <span 
+  className="chip" 
+  style={{ backgroundColor: "#1976d2", color: "white", fontWeight: 700, padding: "0px 22px 12px 22px", fontSize: "1rem", verticalAlign: "middle" }}
+>
+  {test.course.toUpperCase()}
+</span>
+                
+                </Box>
+
+                {/* Test Details Grid */}
+                <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12} sm={6} md={3}>
+                    <Box sx={{ textAlign: 'center', p: 1 }}>
+                      <SchoolIcon sx={{ fontSize: 25, color: '#1976d2', mb: 0.5 }} />
+                      <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
+                        {test.course}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Course
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  {test.subject && test.subject !== "-" && (
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Box sx={{ textAlign: 'center', p: 1 }}>
+                        <AssignmentIcon sx={{ fontSize: 25, color: '#ff9800', mb: 0.5 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
+                          {test.subject}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Subject
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  )}
+                  {test.chapter && test.chapter !== "-" && (
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Box sx={{ textAlign: 'center', p: 1 }}>
+                        <MenuBookIcon sx={{ fontSize: 25, color: '#9c27b0', mb: 0.5 }} />
+                        <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
+                          {test.chapter}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          Chapter
+                        </Typography>
+                      </Box>
+                    </Grid>
+                  )}
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Box sx={{ textAlign: 'center', p: 1 }}>
+                      <TimerIcon sx={{ fontSize: 25, color: '#4caf50', mb: 0.5 }} />
+                      <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
+                        {formatDuration(test.duration)}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Duration
+                      </Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Box sx={{ textAlign: 'center', p: 1 }}>
+                       <EmojiEventsIcon  sx={{ fontSize: 25, color: '#0f5d7eff', mb: 0.5 }} />
+                      <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
+                        {test.questionIds.length}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        Questions
+                      </Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+
+                {/* Score Summary Cards */}
+                <Grid container spacing={3} sx={{ mb: 4 }}>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <Card sx={{ 
+                      backgroundColor: '#e8f5e8', 
+                      border: '2px solid #4caf50',
+                      textAlign: 'center',
+                      p: 1
+                    }}>
+                      <CheckCircleIcon sx={{ fontSize: 25, color: '#4caf50', mb: 0.5 }} />
+                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#2e7d32' }}>
+                        {correctCount}
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#2e7d32' }}>
+                        Correct
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <Card sx={{ 
+                      backgroundColor: '#ffebee', 
+                      border: '2px solid #f44336',
+                      textAlign: 'center',
+                      p: 1
+                    }}>
+                      <CancelIcon sx={{ fontSize: 25, color: '#f44336', mb: 0.5 }} />
+                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#c62828' }}>
+                        {incorrectCount}
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#c62828' }}>
+                        Incorrect
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <Card sx={{ 
+                      backgroundColor: '#f5f5f5', 
+                      border: '2px solid #9e9e9e',
+                      textAlign: 'center',
+                      p: 1
+                    }}>
+                      <HelpIcon sx={{ fontSize: 25, color: '#9e9e9e', mb: 0.5 }} />
+                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#616161' }}>
+                        {unansweredCount}
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#616161' }}>
+                        Skipped
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <Card sx={{ 
+                      backgroundColor: '#e3f2fd', 
+                      border: '2px solid #2196f3',
+                      textAlign: 'center',
+                      p: 1
+                    }}>
+                      <EmojiEventsIcon sx={{ fontSize: 25, color: '#2196f3', mb: 0.5, textAlign: "center", margin: "auto" }} />
+                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
+                        {score}
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
+                        Score
+                      </Typography>
+                    </Card>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={2.4}>
+                    <Card sx={{ 
+                      backgroundColor: '#fff3e0', 
+                      border: '2px solid #ff9800',
+                      textAlign: 'center',
+                      p: 1
+                    }}>
+                       <PercentIcon sx={{ fontSize: 25, color: '#ff9800', mb: 0.5 }}  /> 
+
+                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#f57c00' }}>
+                        {percentage}%
+                      </Typography>
+                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#f57c00' }}>
+                        Percentage
+                      </Typography>
+                    </Card>
+                  </Grid>
+                </Grid>
+
+                {/* Grade Display */}
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 2, 
+                  backgroundColor: getGradeColor(parseFloat(percentage)),
+                  borderRadius: 2,
+                  mb: 1
+                }}>
+                  <Typography variant="h6" sx={{ 
+                    fontWeight: 'semibold', 
+                    color: 'white',
+                    textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
+                  }}>
+                    Grade: {getGrade(parseFloat(percentage))}
+                  </Typography>
+                  <Typography variant="body2" sx={{ color: 'white', mt: 1 }}>
+                    {parseFloat(percentage) >= 60 ? 'Congratulations! You passed!' : 'Keep practicing to improve!'}
+                  </Typography>
+                </Box>
+
+                {/* Test Date */}
+                <Box sx={{ 
+                  textAlign: 'center', 
+                  p: 2, 
+                  backgroundColor: '#f5f5f5',
+                  borderRadius: 2,
+                  mb: 3,
+                  border: '1px solid #e0e0e0'
+                }}>
+                  <Typography variant="body1" sx={{ fontWeight: 'semibold' }}>
+                    Test Date: {new Date(test.date).toLocaleDateString('en-US', { 
+                      weekday: 'long', 
+                      year: 'numeric', 
+                      month: 'long', 
+                      day: 'numeric' 
+                    })}
+                  </Typography>
+                </Box>
+
+                {/* Question-wise Analysis */}
+                <Box sx={{ mt: 4 }}>
+                  <Typography variant="h5" sx={{ fontWeight: 'semibold', mb: 3, color: '#1976d2' }}>
+                    Question-wise Analysis
+                  </Typography>
+                  
+                  <TableContainer component={Paper} elevation={1} sx={{ border: "1px solid #e0e0e0" }}>
+                    <Table>
+                      <TableHead>
+                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
+                          <TableCell sx={{ 
+                            border: "1px solid #e0e0e0",
+                            textAlign: "center",
+                            fontSize: "12px",
+                            py: 2,
+                            px: 1,
+                            maxWidth: "60px",
+                            fontWeight: 'semibold'
+                          }}>
+                            No.
+                          </TableCell>
+                          <TableCell sx={{ 
+                            border: "1px solid #e0e0e0",
+                            textAlign: "center",
+                            fontSize: "12px",
+                            py: 2,
+                            px: 1,
+                            fontWeight: 'semibold'
+                          }}>
+                            Question & Options
+                          </TableCell>
+                          <TableCell sx={{ 
+                            border: "1px solid #e0e0e0",
+                            textAlign: "center",
+                            fontSize: "12px",
+                            py: 2,
+                            px: 1,
+                            maxWidth: "250px",
+                            fontWeight: 'semibold'
+                          }}>
+                            Hint
+                          </TableCell>
+                          <TableCell sx={{ 
+                            border: "1px solid #e0e0e0",
+                            textAlign: "center",
+                            fontSize: "12px",
+                            py: 2,
+                            px: 1,
+                            maxWidth: "220px",
+                            fontWeight: 'semibold'
+                          }}>
+                            Your Answer & Result
+                          </TableCell>
+                        </TableRow>
+                      </TableHead>
+                                <TableBody>
+  {test.testType === "mock"
+    ?
+    
+     Array.from(
+        questions.reduce((acc, q, i) => {
+          const group = acc.get(q.subject) || [];
+          group.push({ ...q, index: i });
+          acc.set(q.subject, group);
+          return acc;
+        }, new Map<string, (Question & { index: number })[]>())
+      ).map(([subject, subjectQuestions]) => (
+        <React.Fragment key={subject}>
+          {/* Subject Header Row */}
+          <TableRow>
+            <TableCell colSpan={4} align="center" sx={{
+              fontWeight: 'bold',
+              fontSize: "14px",
+              backgroundColor: "#e0e0e0",
+              textTransform: "uppercase",
+            }}>
+              {subject}
+            </TableCell>
+          </TableRow>
+
+          {/* Only show questions where q.subject === subject */}
+          {subjectQuestions.map((q, subjIdx) => {
+            console.log(subjectQuestions,subject)
+            console.log("Rendering question:", q._id, "under subject:", subject);
+            if (q.subject !== subject) return null;
+
+            const answerObj = answers.find(a => a.id === q._id);
+            const selected = answerObj;
+            const result =
+              selected?.selected.toLowerCase() === "skipped"
+                ? "⧗ Skipped"
+                : selected?.selected === q.answer
+                ? "✅ Correct"
+                : "❌ Incorrect";
+            const color =
+              result === "✅ Correct"
+                ? "#4caf50"
+                : result === "❌ Incorrect"
+                ? "#f44336"
+                : "#9e9e9e";
+console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer, "Result:", result, subjIdx);
+            return (
+              <TableRow key={q._id} sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}>
+                <TableCell sx={{
+                  border: "1px solid #e0e0e0",
+                  py: 2,
+                  px: 1,
+                  textAlign: "center",
+                  maxWidth: "60px"
+                }}>
+                  <Typography variant="h6" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
+                    {subjIdx + 1}
+                  </Typography>
+                </TableCell>
+
+                <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2 }}>
+                  <Box sx={{ mb: 2 }}>
+                    {q.questionType === "text" ? (
+                      <Typography variant="body1" sx={{ fontSize: "12px", fontWeight: 500, mb: 2 }}>
+                        {q.question.text}
+                      </Typography>
+                    ) : (
+                      <Box component="img"
+                        src={q.question.imgUrl}
+                        alt="question"
+                        crossOrigin="anonymous"
+                        sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', mb: 2 }}
+                      />
+                    )}
+                  </Box>
+
+                  <Box sx={{ pl: 2, borderTop: "1px solid #e0e0e0" }}>
+                    <Typography variant="subtitle2" sx={{ fontWeight: 'semibold', mb: 1, color: '#666' }}>
+                      Options:
+                    </Typography>
+                    {q.options.map((option, idx) => (
+                      <Box key={idx} sx={{
+                        mb: 1,
+                        pl: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1
+                      }}>
+                        <span className="chip" style={{ backgroundColor: "#e3f2fd", color: "#2A3547", fontWeight:"300", padding: "6px 12px" }}>
+                          {String.fromCharCode(65 + idx)}
+                        </span>
+                        {q.optionType === "text" ? (
+                          <Typography variant="body2" sx={{ fontSize: "12px" }}>
+                            {option.text}
+                          </Typography>
+                        ) : (
+                          <Box component="img"
+                            src={option.imgUrl}
+                            alt="option"
+                            crossOrigin="anonymous"
+                            sx={{ maxWidth: '60px', objectFit: 'contain' }}
+                          />
+                        )}
+                      </Box>
+                    ))}
+                  </Box>
+                </TableCell>
+
+                <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2, maxWidth: "240px", minWidth:"180px" }}>
+                  {q.hintType === "text" ? (
+                    <Typography variant="body2" sx={{ fontSize: "12px", fontStyle: 'italic' }}>
+                      {q.hint.text || "—"}
+                    </Typography>
+                  ) : (
+                    <Box component="img"
+                      src={q.hint.imgUrl}
+                      alt="hint"
+                      crossOrigin="anonymous"
+                      sx={{ maxWidth: '100%', objectFit: 'contain' }}
+                    />
+                  )}
+                </TableCell>
+
+                <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 1.5, maxWidth: "220px", minWidth:"180px" }}>
+                  <Box sx={{ textAlign: 'center' }}>
+                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
+                      Your Answer: <b>{selected?.selected || "Skipped"}</b>
+                    </Typography>
+                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
+                      Correct Answer: <b>{q.answer}</b>
+                    </Typography>
+                    <Divider sx={{ my: 1 }} />
+                    <span className="chip" style={{ backgroundColor: color, color: "white", padding: "6px 12px" }}>
+                      {result}
+                    </span>
+                  </Box>
+                </TableCell>
+              </TableRow>
+            );
+          })}
+        </React.Fragment>
+      ))
+    : questions.map((q, i) => {
+        // Fallback for non-mock testType (unchanged)
+        const answerObj = answers.find(a => a.id === q._id);
+        const selected = answerObj;
+        const result =
+          selected?.selected.toLowerCase() === "skipped"
+            ? "⧗ Skipped"
+            : selected?.selected === q.answer
+            ? "✅ Correct"
+            : "❌ Incorrect";
+        const color =
+          result === "✅ Correct"
+            ? "#4caf50"
+            : result === "❌ Incorrect"
+            ? "#f44336"
+            : "#9e9e9e";
+
+        return (
+          <TableRow key={i}>
+            <TableCell sx={{
+              border: "1px solid #e0e0e0",
+              py: 2,
+              px: 1,
+              textAlign: "center",
+              maxWidth: "60px"
+            }}>
+              <Typography variant="h6" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
+                {i + 1}
+              </Typography>
+            </TableCell>
+
+            <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2 }}>
+              {/* Question and Options */}
+              <Box sx={{ mb: 2 }}>
+                {q.questionType === "text" ? (
+                  <Typography variant="body1" sx={{ fontSize: "12px", fontWeight: 500, mb: 2 }}>
+                    {q.question.text}
+                  </Typography>
+                ) : (
+                  <Box component="img"
+                    src={q.question.imgUrl}
+                    alt="question"
+                    crossOrigin="anonymous"
+                    sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', mb: 2 }}
+                  />
+                )}
+              </Box>
+
+              <Box sx={{ pl: 2, borderTop: "1px solid #e0e0e0" }}>
+                <Typography variant="subtitle2" sx={{ fontWeight: 'semibold', mb: 1, color: '#666' }}>
+                  Options:
+                </Typography>
+                {q.options.map((option, idx) => (
+                  <Box key={idx} sx={{
+                    mb: 1,
+                    pl: 2,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 1
+                  }}>
+                    <span className="chip" style={{ backgroundColor: "#e3f2fd", color: "#2A3547", fontWeight:"300", padding: "6px 12px" }}>
+                      {String.fromCharCode(65 + idx)}
+                    </span>
+                    {q.optionType === "text" ? (
+                      <Typography variant="body2" sx={{ fontSize: "12px" }}>
+                        {option.text}
+                      </Typography>
+                    ) : (
+                      <Box component="img"
+                        src={option.imgUrl}
+                        alt="option"
+                        crossOrigin="anonymous"
+                        sx={{ maxWidth: '60px', objectFit: 'contain' }}
+                      />
+                    )}
+                  </Box>
+                ))}
+              </Box>
+            </TableCell>
+
+            <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2, maxWidth: "240px", minWidth:"180px" }}>
+              {q.hintType === "text" ? (
+                <Typography variant="body2" sx={{ fontSize: "12px", fontStyle: 'italic' }}>
+                  {q.hint.text || "—"}
+                </Typography>
+              ) : (
+                <Box component="img"
+                  src={q.hint.imgUrl}
+                  alt="hint"
+                  crossOrigin="anonymous"
+                  sx={{ maxWidth: '100%', objectFit: 'contain' }}
+                />
+              )}
+            </TableCell>
+
+            <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 1.5, maxWidth: "220px", minWidth:"180px" }}>
+              <Box sx={{ textAlign: 'center' }}>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
+                  Your Answer: <b>{selected?.selected || "Skipped"}</b>
+                </Typography>
+                <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
+                  Correct Answer: <b>{q.answer}</b>
+                </Typography>
+                <Divider sx={{ my: 1 }} />
+                <span className="chip" style={{ backgroundColor: color, color: "white", padding: "6px 12px" }}>
+                  {result}
+                </span>
+              </Box>
+            </TableCell>
+          </TableRow>
+        );
+      })}
+</TableBody>
+                    </Table>
+                  </TableContainer>
+                </Box>
+              </CardContent>
+            </Card>
+            </Box>
+        </PageContainer>
+      </Box>
+    </>
+  );
+}
+

@@ -1,0 +1,105 @@
+import React, { useState } from 'react';
+import { Box, AppBar, Toolbar, styled, Stack, IconButton, Badge, Button } from '@mui/material';
+import PropTypes from 'prop-types';
+import Link from 'next/link';
+// components
+import Profile from './Profile';
+import { IconBellRinging, IconMenu } from '@tabler/icons-react';
+// import { SignedOut, SignInButton, SignUpButton, SignedIn, UserButton } from '@clerk/nextjs';
+
+
+interface ItemType {
+  toggleMobileSidebar:  (event: React.MouseEvent<HTMLElement>) => void;
+  hide: boolean;
+}
+
+const Header = ({toggleMobileSidebar, hide}: ItemType) => {
+
+  // const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
+  // const lgDown = useMediaQuery((theme) => theme.breakpoints.down('lg'));
+
+async function handleLogout() {
+  const res = await fetch("/api/auth/logout", {
+    method: "POST",
+  });
+  const data = await res.json();
+  
+  if (data.success) {
+    // Optionally redirect to login page
+    window.location.href = "/";
+  }
+}
+
+  const AppBarStyled = styled(AppBar)(({ theme }) => ({
+
+    background: theme.palette.background.paper,
+    justifyContent: 'center',
+    backdropFilter: 'blur(4px)',
+    [theme.breakpoints.up('lg')]: {
+      minHeight: '70px',
+    },
+
+
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.09)',
+   
+
+  }));
+  const ToolbarStyled = styled(Toolbar)(({ theme }) => ({
+    width: '100%',
+    color: theme.palette.text.secondary,
+  }));
+
+
+
+  return (
+    <AppBarStyled position="sticky" color="default">
+      <ToolbarStyled>
+        {hide ? null :
+        <IconButton
+          color="inherit"
+          aria-label="menu"
+          onClick={toggleMobileSidebar}
+          sx={{
+            display: {
+              lg: "none",
+              xs: "inline",
+            },
+          }}
+        >
+          <IconMenu width="20" height="20" />
+        </IconButton>
+}
+
+        <IconButton
+          size="large"
+          aria-label="show 11 new notifications"
+          color="inherit"
+          aria-controls="msgs-menu"
+          aria-haspopup="true"
+        >
+          <Badge variant="dot" color="primary">
+            <IconBellRinging size="21" stroke="1.5" />
+          </Badge>
+
+        </IconButton>
+        <Box flexGrow={1} />
+        <Stack spacing={1} direction="row" alignItems="center">
+          <Button variant="contained"   onClick={handleLogout} color="primary" >
+           Logout
+          </Button>
+          {/* <Profile /> */}
+          
+        {/* <SignedIn>
+          <UserButton />
+        </SignedIn> */}
+        </Stack>
+      </ToolbarStyled>
+    </AppBarStyled>
+  );
+};
+
+Header.propTypes = {
+  sx: PropTypes.object,
+};
+
+export default Header;
