@@ -94,7 +94,7 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: "", password: "" });
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-
+const [loginLoading,setLoginLoading]=useState<Boolean>(false)
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
@@ -110,7 +110,14 @@ export default function LoginPage() {
     const data = await res.json();
     setMessage(data.message);
     setLoading(false);
-    if (data.success) router.push("/dashboard");
+    
+    if (data.success) {
+      setLoginLoading(true)
+      router.push("/dashboard");
+    }
+    else{
+      setMessage(data.message||"Failed To Login")
+    }
   };
 
   return (
@@ -148,9 +155,9 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition"
+            className="bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition disabled:bg-gray-500"
           >
-            {loading ? "Logging in..." : "Login"}
+            {loading ? "Logging in..." : loginLoading ? "Redirecting to Dashboard": "Login"}
           </button>
         </form>
 
