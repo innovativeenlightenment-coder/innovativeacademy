@@ -513,8 +513,8 @@ const leftCount = totalQuestions - answeredQuesCount;
               transition: "top 0.5s",
             }}
           >
-            <Box>Time Left: {formatTime(timeLeft)}</Box>
-            <Box>Ques. Left: {leftCount}</Box>
+            <Box>Time Left: {formatTime(timeLeft)} </Box>
+            <Box>Ques. Left: {leftCount} </Box>
 
           </Box>
 
