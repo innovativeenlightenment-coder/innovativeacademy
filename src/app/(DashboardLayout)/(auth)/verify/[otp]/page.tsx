@@ -24,7 +24,10 @@ export default function VerifyPage() {
         const data = await res.json();
 
         if (data.success) {
-          setStatus("✅ Email verified successfully!");
+          setStatus(`
+            Email verified successfully! 
+                  Redirecting...
+            `);
           setTimeout(() => router.push("/login"), 2000);
         } else {
           setStatus("❌ " + data.message);
