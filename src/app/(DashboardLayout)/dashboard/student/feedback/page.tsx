@@ -60,7 +60,7 @@ export default function FeedbackPage() {
         </div>
 
         <textarea
-          placeholder="Your Feedback..................................."
+          placeholder="Your Feedback..."
           className="w-full p-2 border rounded"
           rows={4}
           value={message}
