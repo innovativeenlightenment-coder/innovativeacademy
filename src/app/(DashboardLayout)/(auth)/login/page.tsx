@@ -88,6 +88,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { BookOpen, Users, GraduationCap } from "lucide-react";
+import Link from "next/link"
 
 export default function LoginPage() {
   const router = useRouter();
@@ -170,12 +171,12 @@ const [loginLoading,setLoginLoading]=useState<Boolean>(false)
 
         <p className="text-sm mt-4 text-gray-600">
           Don’t have an account?{" "}
-          <span
-            className="text-blue-600 cursor-pointer"
-            onClick={() => router.push("/signup")}
+          <Link
+            className="text-blue-600 font-medium cursor-pointer p-0.5"
+            href={"/signup"}
           >
             Sign up
-          </span>
+          </Link>
         </p>
       </div>
 

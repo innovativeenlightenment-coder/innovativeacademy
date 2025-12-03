@@ -163,6 +163,7 @@
 
 import React, { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type FormState = {
   name: string;
@@ -379,9 +380,12 @@ export default function SignupPage() {
               </button>
             </form>
 
-            <div className="text-center mt-4 text-sm text-slate-600">
+            <div className="text-center mt-4 text-sm text-slate-600 relative z-50">
               Already have an account?{" "}
-              <button onClick={() => router.push("/login")} className="text-blue-600 font-medium hover:underline">Sign In</button>
+              <Link href="/login" className="text-blue-600 font-medium cursor-pointer">
+              <span>Sign In
+                </span>
+              </Link>
             </div>
           </div>
         </div>
@@ -389,7 +393,7 @@ export default function SignupPage() {
         {/* RIGHT: Info / Advertising (Bright & Energetic) */}
         <div className="relative bg-gradient-to-br from-indigo-500 via-purple-600 to-pink-500 p-8 md:p-10 flex flex-col justify-between text-white">
           {/* floating decorative shapes */}
-          <div className="absolute -right-20 -top-16 w-72 h-72 rounded-full bg-white/10 blur-3xl animate-blob"></div>
+          {/* <div className="absolute -right-20 -top-16 w-72 h-72 rounded-full bg-white/10 blur-3xl animate-blob"></div> */}
           <div className="absolute -left-12 bottom-8 w-56 h-56 rounded-full bg-white/5 blur-2xl animate-blob animation-delay-2000"></div>
 
           <div className="relative z-10">
