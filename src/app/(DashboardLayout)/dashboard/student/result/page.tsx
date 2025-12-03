@@ -379,12 +379,14 @@ const subjectsGroupedBySubject = Array.from(
                       Excellence in Education
                     </Typography>
                   </Box>
-                  <span 
+                  <Box>                  <span 
   className="chip" 
-  style={{ backgroundColor: "#1976d2", color: "white", fontWeight: 700, padding: "4px 22px 4px 22px", fontSize: "1rem", verticalAlign: "middle" }}
+  style={{ backgroundColor: "#1976d2", color: "white", fontWeight: 700, padding: "4px 22px 4px 22px", fontSize: "1rem", flexWrap:"wrap", gap:"10px" , verticalAlign: "middle" }}
 >
   {test.course.toUpperCase()}
 </span>
+</Box>
+
                 
                 </Box>
 

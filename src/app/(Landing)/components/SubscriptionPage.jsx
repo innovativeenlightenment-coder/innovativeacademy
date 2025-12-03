@@ -17,7 +17,7 @@ const plans = [
             "Instant score and detailed solutions for each test",
 
             "Smart Dashboard track your growth in detail",
-            "Notes in PDF format for your reference and study",
+            "Notes in PDF format for your reference and study material",
 
         ],
     },
@@ -33,7 +33,7 @@ const plans = [
             "Unlimited online tests on all subject",
             "Instant score of test & solution",
             "Smart Dashboard to track your growth",
-            "Notes in PDF for your referance and study",
+            "Notes in PDF for your referance and study material",
             "Detailed progress reports",
             "Doubt Session after every 3 Tests",
             "Final three Full syllabus mock tests",
@@ -52,7 +52,7 @@ const plans = [
             "Instant score of test & solution",
             "Adaptive difficulty levels to challenges that match your level",
             "Smart Dashboard  to track your growth",
-            "Notes in PDF for your referanceand study",
+            "Notes in PDF for your referance and study material",
             "12 months access to resources Doubt Session and mentorship",
         ]
     },

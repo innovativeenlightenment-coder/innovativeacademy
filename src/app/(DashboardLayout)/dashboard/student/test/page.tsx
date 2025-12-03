@@ -542,7 +542,7 @@ const leftCount = totalQuestions - answeredQuesCount;
         </Grid>
 
         {/* Right Side - Navigator */}
-        <Grid item xs={0} md={4} sx={{ px: 2 }}>
+        <Grid item xs={0} md={4} sx={{ px: 2, display: { xs: "none", md: "block" }, }}>
           <Paper
 
 //           sx={{
