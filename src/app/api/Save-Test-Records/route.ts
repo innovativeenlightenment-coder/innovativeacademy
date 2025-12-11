@@ -67,7 +67,7 @@ const date=new Date();
       unanswered,
       Answers,
       score,
-      percentage,
+      percentage:Number(percentage.toFixed(2)),
       username:user.username,
       email:user.email,
       name:user.name,
@@ -83,7 +83,7 @@ course,subject,chapter
       unanswered,
       Answers,
       score,
-      percentage,course,subject,chapter
+      percentage:Number(percentage.toFixed(2)),course,subject,chapter
     });
   } catch (error: any) {
     return NextResponse.json(

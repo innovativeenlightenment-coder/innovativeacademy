@@ -265,7 +265,7 @@ export default function SignupPage() {
       const data = await res.json();
       setMsg(data?.message || "Server returned no message");
       // keep original redirect logic commented
-      // if (data.success) router.push(data.redirect || "/verify?email=" + form.email);
+      if (data.success) router.push("/verify-your-email?email="+form.email);
     } catch (err) {
       console.error(err);
       setMsg("Something went wrong. Try again.");

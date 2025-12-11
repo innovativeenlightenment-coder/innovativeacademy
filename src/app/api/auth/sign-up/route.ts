@@ -90,15 +90,17 @@ const trialEnd = new Date(now.getTime() + 60 * 2000);
     await User.create(userData);
 
     // ✅ Send verification email
-    const verifyUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/verify/${otp}`;
+    // const verifyUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/verify/${otp}`;
+    
     try {
   await sendEmail(
     email,
     "Verify Your Account",
     `<p>Hello ${name},</p>
-    <h3>Click below to verify:</h3>
-    <a href="${verifyUrl}">${verifyUrl}</a>
-    <p>This link will expire in 10 minutes.</p>`
+    <h3>You have Registered on Innovative Academy with this Email</h3>
+    <h2>OPT: ${otp}</h2>
+    <p>This OPT will expire in 10 minutes... If you haven't registered please ignore this...</p>
+    <p>Thanking you from Innovative Academy</p>`
   );
 } catch (emailErr) {
   console.error("Failed to send email:", emailErr);
@@ -108,7 +110,8 @@ const trialEnd = new Date(now.getTime() + 60 * 2000);
 
     return NextResponse.json({
       success: true,
-      message: "Verify Link is sent to your email... Click to verify...",
+      message: "Verify OPT is sent to your email...",
+      otp
     });
   } catch (err) {
 
