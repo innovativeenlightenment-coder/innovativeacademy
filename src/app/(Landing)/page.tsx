@@ -104,7 +104,7 @@ export default function Home() {
         color: 'text.primary'
       }}
     >
-      {/* <Box
+      <Box
         className={`hidden sm:block w-full text-center p-1 font-medium transition-colors duration-500 ${"bg-slate-900 text-yellow-800 tracking-wide"
           }`}
       >
@@ -113,7 +113,7 @@ export default function Home() {
 
         </div>
 
-      </Box> */}
+      </Box>
 {/* <Box className="w-full bg-slate-900 p-2 sticky top-0 z-50">
   <div className="flex justify-center items-center gap-6 text-sm font-medium">
 

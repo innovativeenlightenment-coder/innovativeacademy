@@ -131,7 +131,7 @@ const router = useRouter();
     zIndex: 40       // 👈 lower than strip (strip is 50)
   }}
 >
-<Box className="w-full bg-slate-900 p-2 sticky top-0 z-50">
+{/* <Box className="w-full bg-slate-900 p-2 sticky top-0 z-50">
   <div className="flex justify-center items-center gap-6 text-sm font-medium">
 
     <h1 className="text-yellow-500 font-bold text-lg hidden sm:block">
@@ -154,7 +154,7 @@ const router = useRouter();
     </span>
 
   </div>
-</Box>
+</Box> */}
       <Container maxWidth="lg">
         <Toolbar disableGutters >
           {/* Logo */}
