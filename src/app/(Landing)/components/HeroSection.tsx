@@ -38,7 +38,7 @@ const router = useRouter()
       // secondaryButtonBorder: "border-[#1976D2]",
       // secondaryButtonHover: "hover:bg-blue-50",
       benefit: ["Strong conceptual understanding", "Build problem-solving skills", "Prepare for future competitive exams"],
-      imageUrl: "./images/Slider/Foundation.jpeg",
+      imageUrl: "./images/Slider/Foundation.jpg",
       imageAlt: "Students studying foundational concepts"
     },
     jee: {

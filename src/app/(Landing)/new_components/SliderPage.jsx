@@ -1071,7 +1071,7 @@ const slides = [
     ,
     btnText: "Join our Foundation Test Series today for a brighter tomorrow!",
     btnLink: "/cities",
-    img: "/images/Slider/Foundation.jpeg",
+    img: "/images/Slider/Foundation.jpg",
   },
   {
     id: 4,

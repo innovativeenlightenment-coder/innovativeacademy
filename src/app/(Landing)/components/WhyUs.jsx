@@ -10,7 +10,7 @@ export default function WhyUs() {
     {/* Left Side Image */}
     <div className="flex justify-center">
       <img
-        src="./images/why.jpg"
+        src="./images/Student.jpeg"
         alt="Online Test Series"
         className="w-full h-full object-cover rounded-lg shadow-md"
       />
