@@ -120,7 +120,41 @@ export default function Navbar() {
 const router = useRouter();
 
   return (
-    <AppBar position="sticky" color="default" elevation={1} sx={{ bgcolor: 'white' }}>
+    // <AppBar position="sticky" color="default" elevation={1} sx={{top:10, bgcolor: 'white' }}>
+      <AppBar
+  position="sticky"
+  color="default"
+  elevation={1}
+  sx={{
+    top: '0',     // 👈 SAME as strip height
+    bgcolor: 'white',
+    zIndex: 40       // 👈 lower than strip (strip is 50)
+  }}
+>
+<Box className="w-full bg-slate-900 p-2 sticky top-0 z-50">
+  <div className="flex justify-center items-center gap-6 text-sm font-medium">
+
+    <h1 className="text-yellow-500 font-bold text-lg hidden sm:block">
+      🎉 Start Learning Smarter
+    </h1>
+
+    <span className="text-amber-100  hidden md:block">
+      Practice • Test • Improve
+    </span>
+
+    <a
+      href="/signup"
+      className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 px-4 py-1.5 rounded-full font-bold transition-all duration-300"
+    >
+      Start Free Trial →
+    </a>
+
+    <span className="text-white font-semibold ml-6 ">
+      📞 Contact: <span className="text-amber-300">9421567466</span>
+    </span>
+
+  </div>
+</Box>
       <Container maxWidth="lg">
         <Toolbar disableGutters >
           {/* Logo */}

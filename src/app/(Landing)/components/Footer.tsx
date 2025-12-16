@@ -467,19 +467,19 @@ export default function Footer() {
   
 
 
-  <div className="fixed top-[55%] right-6 w-[200px] bg-white shadow-2xl rounded-xl p-3 flex flex-col items-center gap-2 border border-gray-200 backdrop-blur-sm transform -translate-y-1/2 transition-all duration-300 hover:shadow-3xl z-50 animate-slideIn">
+  {/* <div className="fixed top-[55%] right-6 w-[200px] bg-white shadow-2xl rounded-xl p-3 flex flex-col items-center gap-2 border border-gray-200 backdrop-blur-sm transform -translate-y-1/2 transition-all duration-300 hover:shadow-3xl z-50 animate-slideIn"> */}
 
   {/* Header */}
-  <div className="text-center">
+  {/* <div className="text-center">
     <p className="text-sm font-semibold text-gray-700">
        Start Your Free Trial
     </p>
-  </div>
+  </div> */}
 
-  <div className="w-full border-t border-gray-200"></div>
+  {/* <div className="w-full border-t border-gray-200"></div> */}
 
   {/* CTA Button with subtle pulse */}
-  <Button
+  {/* <Button
     variant="contained"
     fullWidth
     sx={{
@@ -503,8 +503,8 @@ export default function Footer() {
    <h3 className="text-base font-bold text-gray-800">
           Try it Today!
         </h3>
-  </Button>
-</div>
+  </Button> */}
+{/* </div> */}
 
 
 
