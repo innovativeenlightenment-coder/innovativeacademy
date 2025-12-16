@@ -38,7 +38,7 @@ const router = useRouter()
       // secondaryButtonBorder: "border-[#1976D2]",
       // secondaryButtonHover: "hover:bg-blue-50",
       benefit: ["Strong conceptual understanding", "Build problem-solving skills", "Prepare for future competitive exams"],
-      imageUrl: "./images/Slider/Fondation.jpg",
+      imageUrl: "./images/Slider/Foundation.jpeg",
       imageAlt: "Students studying foundational concepts"
     },
     jee: {
@@ -115,7 +115,7 @@ const router = useRouter()
                   initial={{ opacity: 0, x: 100 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -100 }}
-                  transition={{ duration: 0.5 }}
+                  transition={{ duration: 1 }}
                   className="absolute w-full"
                 >
                   <h1 className="text-lg md:text-2xl lg:text-3xl font-bold text-[#212121] mb-3 font-roboto">
@@ -204,7 +204,7 @@ const router = useRouter()
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
                       exit={{ opacity: 0 }}
-                      transition={{ duration: 0.5 }}
+                      transition={{ duration: 1 }}
                       className="absolute inset-0 w-full h-full object-cover rounded-lg shadow-lg"
                       
                     />
