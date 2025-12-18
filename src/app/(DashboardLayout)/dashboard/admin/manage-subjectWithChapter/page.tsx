@@ -56,12 +56,20 @@ export default function ManageSubjectWithChapters() {
 
 
   const fetchData = async () => {
-    const res = await fetch("/api/Fetch-All-SubjectWithChapter", { cache: "no-store" });
-    const json = await res.json();
-    if (json.success) setData(json.data);
+    // const res = await fetch("/api/Fetch-All-SubjectWithChapter", { cache: "no-store" });
+    // const json = await res.json();
+    // if (json.success) setData(json.data);
+     const res = await fetch(`/api/Get-availage-filter?type=all`);
+      if (!res.ok) return;
+      const json = await res.json();
+      if (json.success) {
+        setData(json.data);
+       
+      }
     setIsLoading(false);
+    
   };
-
+ 
   useEffect(() => {
     fetchData();
   }, []);
