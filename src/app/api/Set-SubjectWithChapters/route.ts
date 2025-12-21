@@ -1,5 +1,5 @@
 import { connectDB } from "@/lib/mongoose";
-import QuestionStructureSchema from "@/model/QuestionStructure";
+import QuestionStructure from "@/model/QuestionStructure";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
@@ -7,10 +7,10 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { course, subject, chapter } = body;
 
-  const existing=await QuestionStructureSchema.find({course,subject,chapter})
+  const existing=await QuestionStructure.find({course,subject,chapter})
   // console.log(existing,existing.length)
    if(existing.length<1){
-     const created = await QuestionStructureSchema.create({ course, subject, chapter,level:"Easy",level_old:"" });
+     const created = await QuestionStructure.create({ course, subject, chapter });
      return NextResponse.json({ success: true, created });
     
   }

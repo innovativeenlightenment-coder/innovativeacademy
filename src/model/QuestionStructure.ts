@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const QuestionStructureSchema = new mongoose.Schema({
+const QuestionStructure = new mongoose.Schema({
   course: String,
   level: String,
     level_olds:{type:String,require:false},
@@ -9,4 +9,4 @@ const QuestionStructureSchema = new mongoose.Schema({
 });
 
 export default mongoose.models.QuestionStructure ||
-  mongoose.model("QuestionStructure", QuestionStructureSchema);
+  mongoose.model("QuestionStructure", QuestionStructure);

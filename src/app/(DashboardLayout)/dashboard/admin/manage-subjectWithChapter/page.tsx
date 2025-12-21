@@ -56,16 +56,16 @@ export default function ManageSubjectWithChapters() {
 
 
   const fetchData = async () => {
-    // const res = await fetch("/api/Fetch-All-SubjectWithChapter", { cache: "no-store" });
-    // const json = await res.json();
-    // if (json.success) setData(json.data);
-     const res = await fetch(`/api/Get-availage-filter?type=all`);
-      if (!res.ok) return;
-      const json = await res.json();
-      if (json.success) {
-        setData(json.data);
+    const res = await fetch("/api/Fetch-All-SubjectWithChapter", { cache: "no-store" });
+    const json = await res.json();
+    if (json.success) setData(json.data);
+    //  const res = await fetch(`/api/Get-availage-filter?type=all`);
+    //   if (!res.ok) return;
+    //   const json = await res.json();
+    //   if (json.success) {
+    //     setData(json.data);
        
-      }
+    //   }
     setIsLoading(false);
     
   };
@@ -348,12 +348,12 @@ export default function ManageSubjectWithChapters() {
                   <TableCell>
                     <IconButton onClick={() => {
                       setForm({ course: item.course, subject: item.subject, chapter: item.chapter });
-                      setEditingId(item._id!);
+                      setEditingId(item._id||"id");
                       setOpen(true);
                     }} color="info">
                       <Edit />
                     </IconButton>
-                    <IconButton onClick={() => handleDelete(item._id!)} color="error">
+                    <IconButton onClick={() => handleDelete(item._id||"id")} color="error">
                       <Delete />
                     </IconButton>
                   </TableCell>

@@ -1,5 +1,5 @@
 import { connectDB } from "@/lib/mongoose";
-import QuestionStructureSchema from "@/model/QuestionStructure";
+import QuestionStructure from "@/model/QuestionStructure";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
@@ -7,7 +7,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const body = await req.json();
   const { course, subject, chapter } = body;
 
-  const updated = await QuestionStructureSchema.findByIdAndUpdate(
+  const updated = await QuestionStructure.findByIdAndUpdate(
     params.id,
     { course, subject, chapter },
     { new: true }
