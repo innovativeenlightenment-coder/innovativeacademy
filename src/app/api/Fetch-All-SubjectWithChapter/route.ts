@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   await connectDB();
-  const data = await QuestionStructure.find({}, "course subject chapter"); // excluding level & level_olds
+  
+        const data = await QuestionStructure.find({});
+
   return NextResponse.json({ success: true, data });
 }

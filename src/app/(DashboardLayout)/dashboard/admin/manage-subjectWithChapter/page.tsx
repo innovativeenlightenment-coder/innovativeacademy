@@ -53,7 +53,9 @@ export default function ManageSubjectWithChapters() {
   const [chapter, setChapter] = useState("");
   const [isSubmitted, setIsSubmitted] = useState(false);
 
-
+useEffect(()=>{
+  setSelected([])
+},[course,subject,chapter])
 
   const fetchData = async () => {
     const res = await fetch("/api/Fetch-All-SubjectWithChapter", { cache: "no-store" });
@@ -317,9 +319,9 @@ export default function ManageSubjectWithChapters() {
                 <TableCell padding="checkbox" sx={{ paddingLeft: 2 }}>
                   <input
                     type="checkbox"
-                    checked={selected.length === data.length}
+                    checked={selected.length === filteredData.length}
                     onChange={(e) => {
-                      setSelected(e.target.checked ? data.map((d) => d._id!) : []);
+                      setSelected(e.target.checked ? filteredData.map((d) => d._id!) : []);
                     }}
                   />
                 </TableCell>
