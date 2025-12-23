@@ -59,7 +59,8 @@ export async function GET(req: NextRequest) {
       //     courses,
       //     subjects: uniqueSubjects,
       //   },
-      // });
+      // }); 
+      
 
       const data = await QuestionStructure.find({}, "_id course level subject chapter");
 

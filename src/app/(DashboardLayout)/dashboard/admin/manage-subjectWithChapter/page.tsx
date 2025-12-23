@@ -75,6 +75,7 @@ useEffect(()=>{
   useEffect(() => {
     fetchData();
   }, []);
+  
 
   const handleSubmit = async () => {
     const url = editingId ? `/api/Edit-SubjectWithChapter/${editingId}` : "/api/Set-SubjectWithChapters";
