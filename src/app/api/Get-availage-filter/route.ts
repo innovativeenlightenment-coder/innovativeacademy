@@ -61,7 +61,7 @@ export async function GET(req: NextRequest) {
       //   },
       // });
 
-      const data = await QuestionStructure.find({});
+      const data = await QuestionStructure.find({}, "_id course level subject chapter");
 
       
       const course=Array.from(new Set(data.map((q) => q.course)));
