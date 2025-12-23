@@ -58,7 +58,7 @@ useEffect(()=>{
 },[course,subject,chapter])
 
   const fetchData = async () => {
-    const res = await fetch("/api/Fetch-All-SubjectWithChapter", { cache: "no-store" });
+    const res = await fetch("/api/Fetch-All-SubjectWithChapter");
     const json = await res.json();
     if (json.success) setData(json.data);
     //  const res = await fetch(`/api/Get-availage-filter?type=all`);
@@ -75,7 +75,7 @@ useEffect(()=>{
   useEffect(() => {
     fetchData();
   }, []);
-  
+
 
   const handleSubmit = async () => {
     const url = editingId ? `/api/Edit-SubjectWithChapter/${editingId}` : "/api/Set-SubjectWithChapters";
