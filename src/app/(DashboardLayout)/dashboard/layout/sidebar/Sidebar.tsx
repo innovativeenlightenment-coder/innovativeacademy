@@ -139,7 +139,7 @@
 
 // export default MSidebar;
 
-import { Box, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText, useMediaQuery } from "@mui/material";
+import { Box, Drawer, IconButton, List, ListItem, ListItemIcon, ListItemText, useMediaQuery, useTheme } from "@mui/material";
 import { ExpandLess, ExpandMore } from "@mui/icons-material";
 import SidebarItems from "./SidebarItems"; // Make sure you have this component (you can reuse it or create it based on your app)
 import Image from "next/image";
@@ -154,7 +154,8 @@ interface ItemType {
 const Sidebar = ({ isMobileSidebarOpen, onSidebarClose, isSidebarOpen }: ItemType) => {
   const lgUp = useMediaQuery((theme: any) => theme.breakpoints.up("lg"));
   const [isCollapsed, setIsCollapsed] = useState(false);
-
+ const theme = useTheme();
+ const isDark = theme.palette.mode === "dark";
   const sidebarWidth = 270; // Width of the sidebar
 
   const renderSidebarContent = () => (
@@ -162,7 +163,9 @@ const Sidebar = ({ isMobileSidebarOpen, onSidebarClose, isSidebarOpen }: ItemTyp
       {/* Logo */}
       <Box sx={{ py: 2, display: "flex", justifyContent: "center" }}>
         <Image
-          src="/images/logos/logo-innovative.png"
+          src={isDark
+      ? "/images/logos/logo-innovative-dark.png"
+      : "/images/logos/logo-innovative.png"}
           alt="Logo"
           width={200}
           height={100}

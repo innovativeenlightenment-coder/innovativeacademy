@@ -19,7 +19,7 @@ export default function LocationPage() {
         {/* Left - Company Info */}
         <div className="bg-white rounded-2xl shadow-xl p-8">
           <h2 className="text-3xl font-bold text-indigo-700 mb-6">
-            Contact Innovative Education
+            Contact Innovative Academy
           </h2>
           <p className="text-gray-600 mb-6">
             We’re here to help with your queries about our Online Test Series
@@ -30,7 +30,7 @@ export default function LocationPage() {
             <div className="flex items-center space-x-4">
               <FaMapMarkerAlt className="text-red-500 text-xl" />
               <span className="text-gray-700">
-                Innovative Education HQ, Pune, Maharashtra, India
+                Innovative Academy HQ, Pune, Maharashtra, India
               </span>
             </div>
             <div className="flex items-center space-x-2 font-bold">

@@ -80,7 +80,7 @@ export default function FeaturesSection() {
     <section id="features" className="py-16 bg-gray-800">
       <div className="container mx-auto px-12">
         <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-[#efefef] mb-4 font-roboto">Why Choose Innovative Education</h2>
+          <h2 className="text-3xl md:text-4xl font-bold text-[#efefef] mb-4 font-roboto">Why Choose Innovative Academy</h2>
           <p className="text-lg text-gray-200 max-w-3xl mx-auto">
             Our comprehensive approach to test preparation gives you the edge you need to succeed in competitive exams.
           </p>

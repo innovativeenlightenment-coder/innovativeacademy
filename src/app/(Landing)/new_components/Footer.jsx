@@ -179,7 +179,7 @@
 
 //       {/* Bottom Section */}
 //       <div className="bg-gray-900 text-gray-400 py-6 px-6 md:px-20 flex flex-col md:flex-row items-center justify-between">
-//         <p className="text-sm font-normal">© 2025 Innovative Education, Miraj Test Series App. All Rights Reserved.</p>
+//         <p className="text-sm font-normal">© 2025 Innovative Academy, Miraj Test Series App. All Rights Reserved.</p>
 //         <div className="flex space-x-4 mt-3 md:mt-0 text-lg">
 //           <FaFacebook className="cursor-pointer hover:text-blue-500" />
 //           <FaInstagram className="cursor-pointer hover:text-pink-500" />
@@ -323,7 +323,7 @@
 //       {/* Bottom Section */}
 //       <div className="bg-gray-900 text-gray-400 py-6 px-6 md:px-20 flex flex-col md:flex-row items-center justify-between">
 //         <p className="text-sm font-normal">
-//           © 2025 Innovative Education, Miraj Test Series App. All Rights Reserved.
+//           © 2025 Innovative Academy, Miraj Test Series App. All Rights Reserved.
 //         </p>
 //         <div className="flex space-x-4 mt-3 md:mt-0 text-lg">
 //           <FaFacebook className="cursor-pointer hover:text-blue-500" />
@@ -467,7 +467,7 @@ export default function Footer() {
       {/* Bottom Section */}
       <div className="bg-gray-900 text-gray-400 py-6 px-6 md:px-20 flex flex-col md:flex-row items-center justify-between">
         <p className="text-sm w-full text-center font-normal">
-          © 2025 Innovative Education, Miraj Test Series App. All Rights Reserved.
+          © 2025 Innovative Academy, Miraj Test Series App. All Rights Reserved.
         </p>
         {/* <div className="flex space-x-4 mt-3 md:mt-0 text-lg">
           <FaFacebook className="cursor-pointer hover:text-blue-500" />

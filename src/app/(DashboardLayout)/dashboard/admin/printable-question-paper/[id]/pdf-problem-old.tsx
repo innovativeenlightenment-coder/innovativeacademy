@@ -214,7 +214,7 @@
 //           <div className="w-full border-b border-black flex justify-between items-center mb-2">
 //             <div className="w-[85%]">
 //               <h1 className="text-xl font-semibold px-5 py-3 uppercase">
-//                 Innovative Education
+//                 Innovative Academy
 //               </h1>
 //             </div>
 //             <div className="w-[15%] bg-black text-white text-center px-4 py-3 font-bold text-xl">
@@ -351,7 +351,7 @@
 //               <div className="w-full border-b border-black flex justify-between items-center mb-2">
 //                 <div className="w-[85%]">
 //                   <h1 className="text-xl font-semibold px-5 py-4 uppercase">
-//                     Innovative Education
+//                     Innovative Academy
 //                   </h1>
 //                 </div>
 //                 <div className="w-[15%] bg-black text-white text-center p-4 font-bold text-xl">
@@ -522,7 +522,7 @@
 //         {/* TopBar inline */}
 //         <div className="w-full border-b border-black flex justify-between items-center mb-2">
 //           <div className="w-[85%]">
-//             <h1 className="text-xl font-semibold px-5 py-4 uppercase">Innovative Education</h1>
+//             <h1 className="text-xl font-semibold px-5 py-4 uppercase">Innovative Academy</h1>
 //           </div>
 //           <div className="w-[15%] bg-black text-white text-center p-4 font-bold text-xl">
 //             {test.course.toUpperCase()}
@@ -629,7 +629,7 @@
        
 //             <div className="w-full border-b border-black flex justify-between items-center mb-2">
 //               <div className="w-[85%]">
-//                 <h1 className="text-xl font-semibold px-5 py-4 uppercase">Innovative Education</h1>
+//                 <h1 className="text-xl font-semibold px-5 py-4 uppercase">Innovative Academy</h1>
 //               </div>
 //               <div className="w-[15%] bg-black text-white text-center p-4 font-bold text-xl">
 //                 {test.course.toUpperCase()}
@@ -725,7 +725,7 @@
 //     <div className="w-full border-b border-black flex justify-between items-center mb-2">
 //       <div className="w-[85%]">
 //         <h1 className="text-xl font-semibold px-5 py-4 uppercase">
-//           Innovative Education
+//           Innovative Academy
 //         </h1>
 //       </div>
 //       <div className="w-[15%] bg-black font-semibold text-white text-center p-4">
@@ -974,7 +974,7 @@
 //     <div className="w-full border-b border-black flex justify-between items-center mb-2">
 //       <div className="w-[85%]">
 //         <h1 className="text-xl font-semibold px-5 py-4 uppercase">
-//           Innovative Education
+//           Innovative Academy
 //         </h1>
 //       </div>
 //       <div className="w-[15%] bg-black font-semibold text-white text-center p-4">
@@ -1097,7 +1097,7 @@ export default function QuestionPaperPDF({ id }: { id: string }) {
           paddingBottom: "6px",
         }}
       >
-        <h1>Innovative Education</h1>
+        <h1>Innovative Academy</h1>
         <div>Course: {test.course}</div>
         <div>Date: {new Date(test.date).toLocaleDateString()}</div>
       </div>

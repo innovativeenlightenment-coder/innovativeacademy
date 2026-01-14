@@ -73,6 +73,7 @@ import { ArrowForward } from "@mui/icons-material";
 export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const theme = useTheme();
+ const isDark = theme.palette.mode === "dark";
 
   const [isLoggedIn,setIsLoggedIn]=useState(false)
   const toggleMobileMenu = () => {
@@ -170,10 +171,12 @@ const router = useRouter();
                   display: { xs: 'none', sm: 'block' }
                 }}
               >
-                Innovative Education
+                Innovative Academy
               </Typography> */}
                 <Box sx={{width:"100%",display:"flex",justifyContent:"center",alignItems:"center",}}>
-                  <Image src="/images/logos/logo-innovative.png" alt="Logo" width={200} height={100} style={{maxWidth:"250px",height:"auto"}}  />
+                  <Image src={isDark
+      ? "/images/logos/logo-innovative-dark.png"
+      : "/images/logos/logo-innovative.png"} alt="Logo" width={200} height={100} style={{maxWidth:"250px",height:"auto"}}  />
                   </Box> 
             </Box>
           </Link>

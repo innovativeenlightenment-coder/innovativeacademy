@@ -33,7 +33,7 @@ export default function WhyUs() {
       </h3>
 
       <p className="text-gray-600 mt-4 text-base">
-        Innovative Education Test Series helps Foundation, JEE, NEET & CET
+        Innovative Academy Test Series helps Foundation, JEE, NEET & CET
         aspirants prepare with expert-designed question banks, instant
         performance analysis, and AI-powered test recommendations.
       </p>

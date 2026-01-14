@@ -36,10 +36,10 @@ const AdminMenuitems = [
   },
   {
     id: uniqueId(),
-    title: "Take A New Test",
+    title: "Start Practice Test",
  
     icon: IconCopy,
-    href: "/dashboard/student/select-your_test",
+    href: "/dashboard/student/start-practice-test",
   },
   {
     navlabel: true,
@@ -127,10 +127,10 @@ const StudentMenuitems = [
   },
   {
     id: uniqueId(),
-    title: "Take A New Test",
+    title: "Start Practice Test",
  
     icon: IconCopy,
-    href: "/dashboard/student/select-your_test",
+    href: "/dashboard/student/start-practice-test",
   },
   
  
@@ -220,7 +220,7 @@ const CollegeMenuitems = [
   },
   {
     id: uniqueId(),
-    title: "Take A New Test",
+    title: "Start Practice Test",
  
     icon: IconCopy,
     href: "/dashboard/student/select-test",
@@ -268,7 +268,7 @@ export {CollegeMenuitems,TeacherMenuitems,AdminMenuitems,StudentMenuitems};
 //   // },
 //   {
 //     id: uniqueId(),
-//     title: "Take A New Test",
+//     title: "Start Practice Test",
  
 //     icon: IconCopy,
 //     href: "/dashboard/student/select-test",

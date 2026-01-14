@@ -17,6 +17,7 @@ type TestRecord = {
   date: string;
   score: number;
   percentage: number;
+  testType:string;
   correct: number;
   incorrect: number;
   unanswered: AnswerType[];
@@ -207,7 +208,7 @@ export default function TestRecordsPage() {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r) => (
+            {filtered.filter((record) => record.testType === "practice").map((r) => (
               <tr key={r._id} className="border-b">
                 <td className="p-2">{new Date(r.date).toLocaleDateString()}</td>
                 <td className="p-2">{r.course}</td>

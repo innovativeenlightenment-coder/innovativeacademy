@@ -33,7 +33,7 @@
 //             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
 //               <SchoolIcon sx={{ fontSize: 32, color: 'white', mr: 1 }} />
 //               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-//                 Innovative Education, Miraj
+//                 Innovative Academy, Miraj
 //               </Typography>
 //             </Box>
 //               <Typography variant="body2" sx={{ color: 'grey.400', mb: 3, letterSpacing:1, lineHeight:1.5 }}>
@@ -130,10 +130,10 @@
 //               Invest in Your <span className="text-4xl text-green-500">Future</span>
 //             </Typography>
 //             <Typography variant="body2" sx={{ color: 'orange.400', mb: 3,lineHeight:2 }}>
-//               Join our Innovative Education Test Series and get access to high-quality questions, instant results, and expert guidance.
+//               Join our Innovative Academy Test Series and get access to high-quality questions, instant results, and expert guidance.
 //               Prepare smart for JEE, NEET & CET and secure your success!
 // <br/>
-//               <span className="text-gray-400">– Team Innovative Education
+//               <span className="text-gray-400">– Team Innovative Academy
 
 //               Guiding Students to Excellence </span>
 //             </Typography>
@@ -196,7 +196,7 @@
 //           }}
 //         >
 //           <Typography variant="body2" sx={{ color: 'grey.500', mb: { xs: 2, md: 0 } }}>
-//             © {currentYear} Innovative Education. All rights reserved.
+//             © {currentYear} Innovative Academy. All rights reserved.
 //           </Typography>
 //           <Stack direction="row" spacing={3}>
 //             {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((text) => (
@@ -228,7 +228,8 @@ import {
   Divider,
   IconButton,
   InputAdornment,
-  Stack
+  Stack,
+  useTheme
 } from "@mui/material";
 import {
   Twitter as TwitterIcon,
@@ -244,6 +245,8 @@ import { useRouter } from "next/navigation";
 export default function Footer() {
   const currentYear = new Date().getFullYear();
 
+ const theme = useTheme();
+ const isDark = theme.palette.mode === "dark";
   const router = useRouter()
 
   return (
@@ -256,7 +259,7 @@ export default function Footer() {
             <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
               <SchoolIcon sx={{ fontSize: 32, color: 'white', mr: 1 }} />
               <Typography variant="h6" sx={{ fontWeight: 'bold' }}>
-                Innovative Education, Miraj
+                Innovative Academy, Miraj
               </Typography>
             </Box>
               <Typography variant="body2" sx={{ color: 'grey.400', mb: 3, letterSpacing:1, lineHeight:1.5 }}>
@@ -287,7 +290,9 @@ export default function Footer() {
                 <b><span>&nbsp;&nbsp;&nbsp;</span>  Powered By</b>
                 <br />
                 <Link href={"https://myonlinehubs.com"}  >
-                  <img src="./images/logos/logo-innovative-dark.png" style={{ maxWidth: "200px", marginTop: "10px" }} />
+                  <img src={isDark
+      ? "/images/logos/logo-innovative-dark.png"
+      : "/images/logos/logo-innovative.png"} style={{ maxWidth: "200px", marginTop: "10px" }} />
                 </Link>
               </Typography>
             </Box>
@@ -524,10 +529,10 @@ export default function Footer() {
               Invest in Your <span className="text-4xl text-lime-600">Future</span>
             </Typography>
             <Typography variant="body2" sx={{ color: 'orange.400', mb: 3,lineHeight:2 }}>
-              Join our Innovative Education Test Series and get access to high-quality questions, instant results, and expert guidance.
+              Join our Innovative Academy Test Series and get access to high-quality questions, instant results, and expert guidance.
               Prepare smart for JEE, NEET & CET and secure your success!
 <br/>
-              <span className="text-gray-400">– Team Innovative Education</span><br></br>
+              <span className="text-gray-400">– Team Innovative Academy</span><br></br>
 
              <span> Guiding Students to Excellence </span>
             </Typography>
@@ -590,7 +595,7 @@ export default function Footer() {
           }}
         >
           <Typography variant="body2" sx={{ color: 'grey.500', mb: { xs: 2, md: 0 } }}>
-            © {currentYear} Innovative Education. All rights reserved.
+            © {currentYear} Innovative Academy. All rights reserved.
           </Typography>
           <Stack direction="row" spacing={3}>
             {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((text) => (

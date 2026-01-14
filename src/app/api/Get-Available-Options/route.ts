@@ -1,91 +1,84 @@
-import { NextResponse } from 'next/server';
-import { connectDB } from '@/lib/mongoose';
-import QuestionBankSchema from '@/model/QuestionBankSchema';
-import { unstable_noStore as noStore } from 'next/cache';
+import { NextResponse } from "next/server";
+import { connectDB } from "@/lib/mongoose";
+import QuestionBankSchema from "@/model/QuestionBankSchema";
+import TestRecords from "@/model/TestRecordSchema";
+import { unstable_noStore as noStore } from "next/cache";
 
-export async function GET() {
-    noStore();
-    
-    try {
-        // Connect to the database
-        await connectDB();
+type Level = "easy" | "moderate" | "difficult" | "extreme";
 
-        // Get course-wise question counts
-        const courseCounts = await QuestionBankSchema.aggregate([
-            {
-                $group: {
-                    _id: '$course',
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { count: -1 } }
-        ]);
+const FROM_DB_LEVEL = (dbLevel?: string): Level => {
+  if (!dbLevel) return "easy";
+  const l = dbLevel.toLowerCase();
+  if (l.includes("easy")) return "easy";
+  if (l.includes("moderate")) return "moderate";
+  if (l.includes("difficult")) return "difficult";
+  if (l.includes("extreme")) return "extreme";
+  return "easy";
+};
 
-        // Get subject-wise question counts for each course
-        const subjectCounts = await QuestionBankSchema.aggregate([
-            {
-                $group: {
-                    _id: {
-                        course: '$course',
-                        subject: '$subject'
-                    },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { count: -1 } }
-        ]);
+export async function GET(req: Request) {
+  noStore();
 
-        // Get chapter-wise question counts for each subject
-        const chapterCounts = await QuestionBankSchema.aggregate([
-            {
-                $group: {
-                    _id: {
-                        course: '$course',
-                        subject: '$subject',
-                        chapter: '$chapter'
-                    },
-                    count: { $sum: 1 }
-                }
-            },
-            { $sort: { count: -1 } }
-        ]);
+  try {
+    await connectDB();
 
-        // Filter and format the data
-        const courses = courseCounts
-            .filter(item => item._id && item.count >= 120) // Only show courses with at least 180 questions
-            .map(item => ({
-                name: item._id,
-                count: item.count
-            }));
+    const { searchParams } = new URL(req.url);
+    const email = searchParams.get("email");
 
-        const subjects = subjectCounts
-            .filter(item => item._id.course && item._id.subject && item.count >= 60) // Only show subjects with at least 90 questions
-            .map(item => ({
-                course: item._id.course,
-                name: item._id.subject,
-                count: item.count
-            }));
-
-        const chapters = chapterCounts
-            .filter(item => item._id.course && item._id.subject && item._id.chapter && item.count >= 20) // Only show chapters with at least 30 questions
-            .map(item => ({
-                course: item._id.course,
-                subject: item._id.subject,
-                name: item._id.chapter,
-                count: item.count
-            }));
-
-        return NextResponse.json({ 
-            success: true, 
-            courses,
-            subjects,
-            chapters
-        });
-    } catch (error) {
-        console.error('Error fetching available options:', error);
-        return NextResponse.json(
-            { success: false, error: 'Internal Server Error' },
-            { status: 500 }
-        );
+    if (!email) {
+      return NextResponse.json(
+        { success: false, message: "Email required" },
+        { status: 400 }
+      );
     }
+
+    // 1️⃣ Chapter counts
+    const chapterCounts = await QuestionBankSchema.aggregate([
+      {
+        $group: {
+          _id: { course: "$course", subject: "$subject", chapter: "$chapter" },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    // 2️⃣ Get last test for each chapter in JS
+    const records = await TestRecords.find({ email, testType: "practice" })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Map: "course|subject|chapter" => last level
+    const lastLevelMap = new Map<string, Level>();
+
+    records.forEach(r => {
+      const key = `${r.course}|${r.subject}|${r.chapter}`;
+      if (!lastLevelMap.has(key) && r.level) {
+        lastLevelMap.set(key, FROM_DB_LEVEL(r.level));
+      }
+    });
+
+    // 3️⃣ Map chapters to levels
+    const chapters = chapterCounts
+      .filter(item => item._id.course && item._id.subject && item._id.chapter && item.count >= 20)
+      .map(item => {
+        const key = `${item._id.course}|${item._id.subject}|${item._id.chapter}`;
+        const lvl = lastLevelMap.get(key) || "easy";
+        return {
+          course: item._id.course,
+          subject: item._id.subject,
+          chapter: item._id.chapter,
+          count: item.count,
+          level: lvl,
+        };
+      });
+
+    return NextResponse.json({ success: true, chapters });
+  } catch (error) {
+    console.error("Error fetching chapter tests:", error);
+    return NextResponse.json(
+      { success: false, error: "Internal Server Error" },
+      { status: 500 }
+    );
+  }
 }

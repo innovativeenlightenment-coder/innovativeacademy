@@ -16,7 +16,7 @@ export default function TestSeriesCTA() {
           <p className="text-lg md:text-xl leading-relaxed mb-6 font-medium">
             Join our{" "}
             <span className="font-bold text-yellow-200">
-              Innovative Education Test Series
+              Innovative Academy Test Series
             </span>{" "}
             and get access to{" "}
             <span className="font-bold text-green-200">high-quality questions</span>,{" "}
@@ -30,7 +30,7 @@ export default function TestSeriesCTA() {
           </p>
 
           <p className="font-semibold text-sm md:text-base text-gray-200">
-            – Team Innovative Education
+            – Team Innovative Academy
           </p>
           <p className="text-xs opacity-80 text-gray-300">
             Guiding Students to Excellence

@@ -125,7 +125,7 @@ export default function Page({ params }: { params: { id: string } }) {
 //                 <div className="w-full border-b border-black flex justify-between items-center mb-2">
 //                   <div className="w-[85%]">
 //                     <h1 className="text-xl font-semibold px-5 py-4 uppercase">
-//                       Innovative Education
+//                       Innovative Academy
 //                     </h1>
 //                   </div>
 //                   <div className="w-[15%] bg-black font-semibold text-white text-center p-4">
@@ -187,7 +187,7 @@ export default function Page({ params }: { params: { id: string } }) {
 //               <div className="w-full border-b border-black flex justify-between items-center mb-4">
 //                 <div className="w-[85%]">
 //                   <h1 className="text-xl font-semibold px-5 py-4 uppercase">
-//                     Innovative Education
+//                     Innovative Academy
 //                   </h1>
 //                 </div>
 //                 <div className="w-[15%] bg-black font-semibold text-white text-center p-4">

@@ -44,7 +44,7 @@ export default function PrintableQuestionPaperPage() {
           {/* Top bar (repeated every page) */}
           <div className="border-b pb-2 mb-4">
             <div className="flex justify-between items-center text-sm">
-              <div>Innovative Education</div>
+              <div>Innovative Academy</div>
               <div>
                 Date: {test.date} | Time: {test.time}
               </div>

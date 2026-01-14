@@ -24,7 +24,7 @@ const testimonials = [
     role: "8th, Alphonsa School, Miraj",
     img: "/images/shayan.jpg",
     review:
-      "I had a wonderful learning experience with Innovative Education! The question bank provided is high quality, and the online platform is user-friendly. ",
+      "I had a wonderful learning experience with Innovative Academy! The question bank provided is high quality, and the online platform is user-friendly. ",
   },
   {
     id: 2,
@@ -32,7 +32,7 @@ const testimonials = [
     role: "8th, Alphonsa School, Miraj",
     img: "/images/shayan.jpg",
     review:
-      "I had a wonderful learning experience with Innovative Education! The question bank provided is high quality, and the online platform is user-friendly. ",
+      "I had a wonderful learning experience with Innovative Academy! The question bank provided is high quality, and the online platform is user-friendly. ",
   },
   {
     id: 3,
@@ -40,7 +40,7 @@ const testimonials = [
     role: "8th, Alphonsa School, Miraj",
     img: "/images/shayan.jpg",
     review:
-      "I had a wonderful learning experience with Innovative Education! The question bank provided is high quality, and the online platform is user-friendly. ",
+      "I had a wonderful learning experience with Innovative Academy! The question bank provided is high quality, and the online platform is user-friendly. ",
   },
 ];
 

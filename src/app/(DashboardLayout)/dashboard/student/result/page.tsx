@@ -88,7 +88,7 @@ const [generatingPdf, setGeneratingPdf] = useState(false);
 
     if (!stored) {
       // If no stored data, try to redirect back to test selection
-      window.location.href = '/dashboard/student/select-your_test';
+      window.location.href = '/dashboard/student/start-practice-test';
       return;
     }
 
@@ -373,7 +373,7 @@ const subjectsGroupedBySubject = Array.from(
                 }}>
                   <Box>
                     <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                      Innovative Education
+                      Innovative Academy
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Excellence in Education
@@ -917,7 +917,7 @@ console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer,
                 }}>
                   <Box>
                     <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                      Innovative Education
+                      Innovative Academy
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Excellence in Education

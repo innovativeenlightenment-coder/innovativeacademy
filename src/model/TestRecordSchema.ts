@@ -26,6 +26,9 @@ required:true,
 type: [AnswersSchema],
 required:true,
  },
+ level:{
+  type:String
+ },
   score: {
     type: Number,
     required: true,
@@ -41,6 +44,9 @@ required:true,
   email: {
     type: String,
     required: true,
+  },
+  testType:{
+type:String,
   },
     name: {
     type: String,

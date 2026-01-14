@@ -129,7 +129,7 @@ async function generatePDFWithProgress(test: TestType, questions: QuestionType[]
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.rect(marginX, yPos, leftW, 15, "S");
-    doc.text("Innovative Education", marginX + 6, yPos + 10);
+    doc.text("Innovative Academy", marginX + 6, yPos + 10);
 
     doc.setFillColor(0, 0, 0);
     doc.rect(marginX + leftW, yPos, rightW, 15, "F");
@@ -187,7 +187,7 @@ async function generatePDFWithProgress(test: TestType, questions: QuestionType[]
     doc.setFont("helvetica", "bold");
     doc.setFontSize(14);
     doc.rect(marginX, yPos, leftW, 15, "S");
-    doc.text("Innovative Education", marginX + 6, yPos + 10);
+    doc.text("Innovative Academy", marginX + 6, yPos + 10);
 
     doc.setFillColor(0, 0, 0);
     doc.rect(marginX + leftW, yPos, rightW, 15, "F");
@@ -429,7 +429,7 @@ async function generatePDF_viaDOM(test: any, questions: any[]) {
     doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(0,0,0);
-    doc.text("Innovative Education", marginX + 4, y0 + topbarH/2 + 1);
+    doc.text("Innovative Academy", marginX + 4, y0 + topbarH/2 + 1);
 
     // right black box
     doc.setFillColor(0,0,0);
@@ -462,7 +462,7 @@ async function generatePDF_viaDOM(test: any, questions: any[]) {
     const y0 = marginY;
     doc.setFontSize(12);
     doc.setFont("helvetica", "bold");
-    doc.text("Innovative Education", marginX + 4, y0 + topbarH/2 + 1);
+    doc.text("Innovative Academy", marginX + 4, y0 + topbarH/2 + 1);
     doc.setFillColor(0,0,0);
     const rightW = innerW * 0.15;
     doc.rect(pageW - marginX - (rightW - 2), y0, rightW - 2, topbarH, "F");
@@ -939,7 +939,7 @@ async function generatePDFStandalone(test: any, questions: any[]) {
 //       doc.setFontSize(pdfBodyPt + 2);
 //       doc.setTextColor(0, 0, 0);
 //       doc.rect(marginX, y, leftW, topBarH, "S");
-//       doc.text("Innovative Education", marginX + 6, y + (topBarH / 2) + 2);
+//       doc.text("Innovative Academy", marginX + 6, y + (topBarH / 2) + 2);
 
 //       doc.setFillColor(0, 0, 0);
 //       doc.rect(marginX + leftW, y, rightW, topBarH, "F");
@@ -1038,7 +1038,7 @@ async function generatePDFStandalone(test: any, questions: any[]) {
 //       doc.setFont("helvetica", "bold");
 //       doc.setFontSize(pdfBodyPt + 2);
 //       doc.rect(marginX, y, leftW, topBarH, "S");
-//       doc.text("Innovative Education", marginX + 6, y + (topBarH / 2) + 2);
+//       doc.text("Innovative Academy", marginX + 6, y + (topBarH / 2) + 2);
 
 //       doc.setFillColor(0, 0, 0);
 //       doc.rect(marginX + leftW, y, rightW, topBarH, "F");
@@ -1362,7 +1362,7 @@ async function preloadImage(url?: string): Promise<HTMLImageElement | null> {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(pdfBodyPt + 2);
     doc.rect(marginX, y, leftW, topBarH, "S");
-    doc.text("Innovative Education", marginX + 6, y + (topBarH / 2) + 2);
+    doc.text("Innovative Academy", marginX + 6, y + (topBarH / 2) + 2);
 
     doc.setFillColor(0, 0, 0);
     doc.rect(marginX + leftW, y, rightW, topBarH, "F");
@@ -1448,7 +1448,7 @@ async function preloadImage(url?: string): Promise<HTMLImageElement | null> {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(pdfBodyPt + 2);
     doc.rect(marginX, y, leftW, topBarH, "S");
-    doc.text("Innovative Education", marginX + 6, y + (topBarH / 2) + 2);
+    doc.text("Innovative Academy", marginX + 6, y + (topBarH / 2) + 2);
 
     doc.setFillColor(0, 0, 0);
     doc.rect(marginX + leftW, y, rightW, topBarH, "F");
@@ -1774,7 +1774,7 @@ async function generatePDFNew(test: any, questions: any[]) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(pdfBodyPt + 2);
     doc.rect(marginX, y, leftW, topBarH, "S");
-    doc.text("Innovative Education", marginX + 6, y + (topBarH / 2) + 2);
+    doc.text("Innovative Academy", marginX + 6, y + (topBarH / 2) + 2);
 
     doc.setFillColor(0, 0, 0);
     doc.rect(marginX + leftW, y, rightW, topBarH, "F");
@@ -1860,7 +1860,7 @@ async function generatePDFNew(test: any, questions: any[]) {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(pdfBodyPt + 2);
     doc.rect(marginX, y, leftW, topBarH, "S");
-    doc.text("Innovative Education", marginX + 6, y + (topBarH / 2) + 2);
+    doc.text("Innovative Academy", marginX + 6, y + (topBarH / 2) + 2);
 
     doc.setFillColor(0, 0, 0);
     doc.rect(marginX + leftW, y, rightW, topBarH, "F");

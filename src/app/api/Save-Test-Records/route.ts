@@ -1,93 +1,102 @@
-import { NextRequest, NextResponse } from "next/server";
-import { Question } from "@/types/questionType";
-
-import { unstable_noStore as noStore } from 'next/cache';
+import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongoose";
-import { verifyTokenEdge } from "@/lib/verifyToken";
-import User from "@/model/UserSchema";
-import TestRecordSchema from "@/model/TestRecordSchema";
+import TestRecords from "@/model/TestRecordSchema";
+import { unstable_noStore as noStore } from "next/cache";
 
-type SubmittedAnswers = Record<string, string>;
+/* ================= TYPES ================= */
 
-export async function POST(req: NextRequest) {
+type AnswerPayload = {
+  id: string;
+  ans: string;
+  selected: string;
+};
+
+type SavePayload = {
+  correct: number;
+  incorrect: number;
+  unanswered: AnswerPayload[];
+  Answers: AnswerPayload[];
+  level: "easy" | "moderate" | "difficult" | "extreme";
+  score: number;
+  percentage: number;
+  username?: string;
+  name?: string;
+  testType:string;
+  email: string;
+  course: string;
+  subject: string;
+  chapter: string;
+};
+
+/* ================= API ================= */
+
+export async function POST(req: Request) {
   noStore();
-  
+  await connectDB();
+
   try {
-    await connectDB()
-      const token = req.cookies.get("token")?.value;
-      if (!token) {
-        return NextResponse.json({ success: false, message: "No token provided" }, { status: 401 });
-      }
-    
-      const decoded = await verifyTokenEdge(token);
-      if (!decoded || !decoded.id) {
-        return NextResponse.json({ success: false, message: "Invalid token" }, { status: 401 });
-      }
-    
-      const user = await User.findById(decoded.id);
-      if (!user) {
-        return NextResponse.json({ success: false, message: "User not found" }, { status: 404 });
-      }
-    const body = await req.json();
-    const {correct, incorrect, unanswered, score, percentage, Answers, course,subject,chapter}=body
-    // const { generatedQuestions, submittedAnswers }: {
-    //   generatedQuestions: Question[];
-    //   submittedAnswers: SubmittedAnswers;
-    // } = body;
+    const body: SavePayload = await req.json();
 
-    // let correct = 0;
-    // let incorrect = 0;
-    
-    // const Answers: { id: string; ans: string;selected:string; }[]= [];
-    
-    // const unanswered: string[] = [];
-
-    // const totalMarks = generatedQuestions.length*4;
-
-    // generatedQuestions.forEach((question, index) => {
-    //   const selected = submittedAnswers[question._id];
-
-    //   if (!selected) {
-    //     unanswered.push(question._id);
-    //   } else if (selected === question.answer) {
-    //     correct++;
-    //     Answers.push({id:question._id,ans:"correct",selected})
-    //   } else {
-    //     incorrect++;
-    //     Answers.push({id:question._id,ans:"incorrect",selected})
-    //   }
-    // });
-
-    // const score = correct * 4 - incorrect * 1;
-    // const percentage = Math.round((score / totalMarks) * 100);
-const date=new Date();
-    const newTestRecord={
+    const {
       correct,
       incorrect,
       unanswered,
       Answers,
+      level,
       score,
-      percentage:Number(percentage.toFixed(2)),
-      username:user.username,
-      email:user.email,
-      name:user.name,
-date,
-course,subject,chapter
+      percentage,
+      email,
+      course,
+      subject,
+      testType,
+      chapter,
+      username = "student",
+      name = "student",
+    } = body;
+
+    /* ================= VALIDATION ================= */
+
+    if (
+      !email ||
+      !course ||
+      !subject ||
+      !chapter ||
+      !Array.isArray(Answers)
+    ) {
+      return NextResponse.json(
+        { success: false, error: "Missing required fields" },
+        { status: 400 }
+      );
     }
 
-    await TestRecordSchema.create(newTestRecord);
+    /* ================= SAVE RECORD ================= */
 
-    return NextResponse.json({
+    const record = await TestRecords.create({
       correct,
       incorrect,
       unanswered,
       Answers,
+      level, 
+      testType,             // ⭐ IMPORTANT for level upgrade logic
       score,
-      percentage:Number(percentage.toFixed(2)),course,subject,chapter
+      percentage,
+      username,
+      name,
+      email,
+      course,
+      subject,
+      chapter,
     });
-  } catch (error: any) {
+
+    return NextResponse.json({
+      success: true,
+      recordId: record._id,
+    });
+
+  } catch (err) {
+    console.error("Save TestRecord error:", err);
     return NextResponse.json(
-      { success: false, message: error.message },
+      { success: false, error: "Internal Server Error" },
       { status: 500 }
     );
   }
