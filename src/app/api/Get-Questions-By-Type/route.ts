@@ -225,10 +225,10 @@ const DIFFICULTY_WEIGHT: Record<Level, number> = {
 
 /* Practice adaptive mix */
 const DIFFICULTY_MIX: Record<Level, Record<Level, number>> = {
-  easy: { easy: 0.8, moderate: 0.2, difficult: 0, extreme: 0 },
-  moderate: { easy: 0.3, moderate: 0.6, difficult: 0.1, extreme: 0 },
-  difficult: { easy: 0, moderate: 0.35, difficult: 0.5, extreme: 0.15 },
-  extreme: { easy: 0, moderate: 0.2, difficult: 0.4, extreme: 0.4 },
+  easy: { easy: 0.65, moderate: 0.2, difficult: 0.1, extreme: 0.05 },
+  moderate: { easy: 0.15, moderate: 0.6, difficult: 0.15, extreme: 0.1 },
+  difficult: { easy: 0.1, moderate: 0.35, difficult: 0.4, extreme: 0.15 },
+  extreme: { easy: 0.1, moderate: 0.2, difficult: 0.4, extreme: 0.3 },
 };
 
 /* Monthly / Quarterly fixed mix */
@@ -320,7 +320,7 @@ export async function POST(req: Request) {
 
         const attemptRatio = answered / total;
         console.log(attemptRatio)
-        if (attemptRatio < 0.6) {
+        if (attemptRatio < 0.65) {
           eligibleForLevelUp = false;
           break;
         }
@@ -336,7 +336,7 @@ console.log(scores)
           : 0;
 console.log(eligibleForLevelUp, avgScore)
       // level up
-      if (eligibleForLevelUp && avgScore >= 0.8) {
+      if (eligibleForLevelUp && avgScore >= 0.85) {
         const idx = LEVELS.indexOf(finalLevel);
         if (idx < LEVELS.length - 1) {
           finalLevel = LEVELS[idx + 1];
@@ -347,7 +347,7 @@ console.log(eligibleForLevelUp, avgScore)
     /* ================= QUESTION COUNT ================= */
 
     const TOTAL_QUESTIONS =
-      testType === "practice" ? 25 : testType === "monthly" ? 60 : 90;
+      testType === "practice" ? 30 : testType === "monthly" ? 120 : 240;
 
     /* ================= SELECT MIX ================= */
 

@@ -606,7 +606,7 @@ function formatTime(sec: number) {
 // }
 
 
-export function generateMainInsight(params: {
+function generateMainInsight(params: {
   totalTests: number;
   avgScore: number;
   bestScore: number;

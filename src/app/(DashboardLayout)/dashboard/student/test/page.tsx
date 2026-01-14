@@ -454,12 +454,14 @@ console.log('get', saved)
     setSubjectTab(test.subject || "");
 
 
-    const duration =
-      test.testType === "practice"
-        ? 3000
-        : test.testType === "monthly"
-        ? 6000
-        : 9000;
+    // const duration =
+    //   test.testType === "practice"
+    //     ? 3000
+    //     : test.testType === "monthly"
+    //     ? 6000
+    //     : 9000;
+// setDurationTest(duration)
+const duration=test.questions.length*20
 setDurationTest(duration)
     let endTime = Number(sessionStorage.getItem("testEndTime"));
     if (!endTime) {

@@ -60,7 +60,7 @@ export async function GET(req: Request) {
 
     // 3️⃣ Map chapters to levels
     const chapters = chapterCounts
-      .filter(item => item._id.course && item._id.subject && item._id.chapter && item.count >= 20)
+      .filter(item => item._id.course && item._id.subject && item._id.chapter && item.count >= 50)
       .map(item => {
         const key = `${item._id.course}|${item._id.subject}|${item._id.chapter}`;
         const lvl = lastLevelMap.get(key) || "easy";

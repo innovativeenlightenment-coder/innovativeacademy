@@ -155,24 +155,50 @@ console.log(data.questions)
         Practice Test Selection
       </Typography>
 
-      <Paper sx={{ p: 3 }}>
-        {['Physics', 'Chemistry', 'Biology', 'Maths'].map((subject) => (
-    <Button
-      key={subject}
-      variant={filterText.toLowerCase() === subject.toLowerCase() ? 'contained' : 'outlined'}
-      onClick={() => setFilterText(subject)}
-      sx={{ textTransform: 'none' }}
-    >
-      {subject}
-    </Button>
-  ))}
-  <Button
-    variant={filterText === '' ? 'contained' : 'outlined'}
+      <Paper sx={{ p: 3 ,display:"flex", justifyContent:"space-between"}}>
+        {['Physics', 'Chemistry', 'Biology', 'Maths'].map((subject) => {
+    const active = filterText.toLowerCase() === subject.toLowerCase();
+
+    return (
+      <Box
+        key={subject}
+        onClick={() => setFilterText(subject)}
+        sx={{
+          cursor: 'pointer',
+          py: 1.5,
+          px: 1,
+          borderBottom: active ? '3px solid #1976d2' : '1px solid #e0e0e0',
+          color: active ? '#1976d2' : '#444',
+          fontWeight: active ? 600 : 400,
+          transition: 'all 0.2s ease',
+          '&:hover': {
+            color: '#1976d2',
+          },
+        }}
+      >
+        {subject}
+      </Box>
+    );
+  })}
+
+  {/* Optional: All */}
+  <Box
     onClick={() => setFilterText('')}
-    sx={{ mt: 2, textTransform: 'none' }}
+    sx={{
+      cursor: 'pointer',
+      py: 1.5,
+      px: 1,
+      borderBottom: filterText === '' ? '3px solid #1976d2' : '1px solid #e0e0e0',
+      color: filterText === '' ? '#1976d2' : '#444',
+      fontWeight: filterText === '' ? 600 : 400,
+      transition: 'all 0.2s ease',
+      '&:hover': {
+        color: '#1976d2',
+      },
+    }}
   >
     All Subjects
-  </Button>
+  </Box>
         <input
           type="text"
           placeholder="Filter course / subject / chapter"
