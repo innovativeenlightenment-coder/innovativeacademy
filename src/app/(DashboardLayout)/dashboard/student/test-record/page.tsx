@@ -269,7 +269,7 @@ const barData = useMemo(() => {
       <h1 className="text-2xl font-bold">Test Performance Dashboard</h1>
 
       {/* Summary Boxes */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
   <SummaryBox
     label="Total Tests"
     value={totalTests}
@@ -282,23 +282,13 @@ const barData = useMemo(() => {
     color="from-green-50 to-white"
   />
 
-  <SummaryBox
+  {/* <SummaryBox
     label="Best Score"
     value={bestScore}
     color="from-yellow-50 to-white"
-  />
+  /> */}
 
-  <SummaryBox
-    label="Strong Subject"
-    value={subjectStats.strong}
-    color="from-purple-50 to-white"
-  />
-
-  <SummaryBox
-    label="Weak Subject"
-    value={subjectStats.weak}
-    color="from-red-50 to-white"
-  />
+ 
 
   <SummaryBox
     label="Avg Time / Test"
@@ -310,6 +300,18 @@ const barData = useMemo(() => {
     label="Avg Time / Question"
     value={formatTime(avgTimePerQuestion)}
     color="from-teal-50 to-white"
+  />
+
+   <SummaryBox
+    label="Strong Subject"
+    value={subjectStats.strong}
+    color="from-purple-50 to-white"
+  />
+
+  <SummaryBox
+    label="Weak Subject"
+    value={subjectStats.weak}
+    color="from-red-50 to-white"
   />
 </div>
 
