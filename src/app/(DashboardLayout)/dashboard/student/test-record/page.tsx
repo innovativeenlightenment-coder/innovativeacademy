@@ -29,6 +29,35 @@ type TestRecord = {
   Answers: AnswerType[];
 };
 
+type TestSummary = {
+  totalTests: number;
+  avgScore: number;
+  bestScore: number;
+  avgTimeTaken: number;
+  duration: number;
+
+  firstTestDate?: Date;
+  lastTestDate?: Date;
+  testsLast7Days: number;
+  testsLast30Days: number;
+
+  weakSubject?: string;
+  strongSubject?: string;
+
+  recentAvgScore?: number;   // last 3–5 tests
+  earlyAvgScore?: number;    // first 3–5 tests
+};
+
+type TestRecordInsights = {
+  createdAt?: string | Date;
+  score: number;
+  percentage: number;
+  subject?: string;
+  timeLeft?: number;
+  duration?: number;
+};
+
+
 export default function TestRecordsPage() {
   const [records, setRecords] = useState<TestRecord[]>([]);
   const [loading, setLoading] = useState(false);
@@ -96,25 +125,30 @@ const bestScore = totalTests
     : 0;
 
   // Strong / Weak Subject
-  const subjectStats = useMemo(() => {
-    const map: Record<string, { total: number; count: number }> = {};
-    records.forEach((r) => {
-      const s = r.subject || "Unknown";
-      if (!map[s]) map[s] = { total: 0, count: 0 };
-      map[s].total += r.score;
-      map[s].count += 1;
-    });
-    const arr = Object.entries(map).map(([subject, val]) => ({
-      subject,
-      avg: val.total / val.count,
-    }));
-    arr.sort((a, b) => b.avg - a.avg);
-    return {
-      strong: arr[0]?.subject || "-",
-      weak: arr[arr.length - 1]?.subject || "-",
+  // const subjectStats = useMemo(() => {
+  //   const map: Record<string, { total: number; count: number }> = {};
+  //   records.forEach((r) => {
+  //     const s = r.subject || "Unknown";
+  //     if (!map[s]) map[s] = { total: 0, count: 0 };
+  //     map[s].total += r.score;
+  //     map[s].count += 1;
+  //   });
+  //   const arr = Object.entries(map).map(([subject, val]) => ({
+  //     subject,
+  //     avg: val.total / val.count,
+  //   }));
+  //   arr.sort((a, b) => b.avg - a.avg);
+  //   return {
+  //     strong: arr[0]?.subject || "-",
+  //     weak: arr[arr.length - 1]?.subject || "-",
 
-    };
-  }, [records]);
+  //   };
+  // }, [records]);
+
+  const subjectStats = useMemo(() => {
+  return getRecentStrongWeakSubject(records);
+}, [records]);
+
 
   // -------------------- Table Filter/Search --------------------
   const [search, setSearch] = useState("");
@@ -261,6 +295,7 @@ const barData = useMemo(() => {
     avgTimeTaken,
     duration: records.length>0?records[0].duration:3000,
     weakSubject: subjectStats.weak,
+    record:records,
   });
   // -------------------- Render --------------------
 
@@ -271,7 +306,7 @@ const barData = useMemo(() => {
       {/* Summary Boxes */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
   <SummaryBox
-    label="Total Tests"
+    label="Total Tests Attempted"
     value={totalTests}
     color="from-blue-50 to-white"
   />
@@ -528,45 +563,129 @@ function formatTime(sec: number) {
 }
 
 
-function generateMainInsight(params: {
+// function generateMainInsight(params: {
+//   totalTests: number;
+//   avgScore: number;
+//   bestScore: number;
+//   avgTimeTaken: number;
+//   duration: number;
+//   weakSubject?: string;
+//   record
+// }) {
+//   const {
+//     totalTests,
+//     avgScore,
+//     bestScore,
+//     avgTimeTaken,
+//     duration,
+//     weakSubject,
+//   } = params;
+
+//   // 1️⃣ Consistency
+//   if (totalTests < 8) {
+//     return "Practice consistency is low. Increase test frequency to build confidence and long-term improvement.";
+//   }
+
+//   // 2️⃣ Time management
+//   if (avgTimeTaken > duration * 1.05) {
+//     return "Time pressure observed in tests. Focus on timed practice and quicker decision-making.";
+//   }
+
+//   // 3️⃣ Subject weakness
+//   if (weakSubject) {
+//     return `Most score loss is coming from ${weakSubject}. Targeted revision here will give the fastest improvement.`;
+//   }
+
+//   // 4️⃣ Performance gap
+//   if (bestScore - avgScore > 20) {
+//     return "Performance is inconsistent. Aim to match your best performance more frequently.";
+//   }
+
+//   // 5️⃣ Strong overall
+//   return "Overall performance is stable. Maintain consistency and start increasing difficulty gradually.";
+// }
+
+
+export function generateMainInsight(params: {
   totalTests: number;
   avgScore: number;
   bestScore: number;
   avgTimeTaken: number;
   duration: number;
   weakSubject?: string;
+  record: TestRecord[];
 }) {
-  const {
-    totalTests,
-    avgScore,
-    bestScore,
-    avgTimeTaken,
-    duration,
-    weakSubject,
-  } = params;
+  const { totalTests, avgScore, bestScore, avgTimeTaken, duration, weakSubject, record } = params;
 
-  // 1️⃣ Consistency
-  if (totalTests < 8) {
-    return "Practice consistency is low. Increase test frequency to build confidence and long-term improvement.";
+  if (!record || record.length === 0) return "No tests taken yet. Start attempting tests to generate insights.";
+
+  const insights: string[] = [];
+
+  // 1️⃣ New learner
+  if (totalTests <= 3) {
+    insights.push("You are just starting. Focus on understanding concepts clearly — scores will improve naturally with regular practice.");
   }
 
-  // 2️⃣ Time management
-  if (avgTimeTaken > duration * 1.05) {
-    return "Time pressure observed in tests. Focus on timed practice and quicker decision-making.";
+  // 2️⃣ Consistency / Gaps
+  const sortedRecords = [...record].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  for (let i = 1; i < sortedRecords.length; i++) {
+    const prev = new Date(sortedRecords[i - 1].date).getTime();
+    const curr = new Date(sortedRecords[i].date).getTime();
+    const gapDays = (curr - prev) / (1000 * 60 * 60 * 24);
+    if (gapDays > 14) {
+      insights.push(`There was a gap of ${Math.round(gapDays)} days between tests. Try maintaining regular practice for better retention.`);
+      break;
+    }
   }
 
-  // 3️⃣ Subject weakness
+  // 3️⃣ Performance trend
+  const first3 = sortedRecords.slice(0, 3);
+  const last3 = sortedRecords.slice(-3);
+  const earlyAvg = first3.reduce((sum, r) => sum + r.score, 0) / first3.length;
+  const recentAvg = last3.reduce((sum, r) => sum + r.score, 0) / last3.length;
+
+  if (recentAvg > earlyAvg + 10) {
+    insights.push("Your recent tests show improvement. Keep up the strategy that’s working!");
+  } else if (recentAvg + 10 < earlyAvg) {
+    insights.push("Recent performance has dropped. Focus on revision and avoid rushing questions.");
+  }
+
+  // 4️⃣ Time management
+  if (avgTimeTaken > duration * 1.1) {
+    insights.push("You are taking longer than expected per test. Practice timed tests to improve efficiency.");
+  }
+  if (avgTimeTaken < duration * 0.6 && avgScore < 60) {
+    insights.push("Tests are being completed too quickly with low accuracy. Slow down and attempt questions carefully.");
+  }
+
+  // 5️⃣ Subject-level insights
   if (weakSubject) {
-    return `Most score loss is coming from ${weakSubject}. Targeted revision here will give the fastest improvement.`;
+    insights.push(`Most score loss is coming from ${weakSubject}. Focused practice here will yield faster improvement.`);
   }
 
-  // 4️⃣ Performance gap
-  if (bestScore - avgScore > 20) {
-    return "Performance is inconsistent. Aim to match your best performance more frequently.";
+  // 6️⃣ Best vs average
+  if (bestScore - avgScore > 25 && totalTests >= 6) {
+    insights.push("Your best score is significantly higher than your average. Analyze what worked in that test and try to replicate it.");
   }
 
-  // 5️⃣ Strong overall
-  return "Overall performance is stable. Maintain consistency and start increasing difficulty gradually.";
+  // 7️⃣ Stable high performance
+  if (avgScore >= 75 && totalTests >= 6) {
+    insights.push("Performance is strong and consistent. Gradually increase difficulty while maintaining accuracy.");
+  }
+
+  // 8️⃣ Skipped / unanswered questions trends
+  const totalUnanswered = record.reduce((sum, r) => sum + r.unanswered.length, 0);
+  if (totalUnanswered / totalTests > 5) {
+    insights.push("You are leaving multiple questions unanswered per test. Focus on attempting all questions for better scoring.");
+  }
+
+  // 9️⃣ Default / motivational
+  if (insights.length === 0) {
+    insights.push("Progress is steady. Keep testing regularly and focusing on weak areas to improve consistency and confidence.");
+  }
+
+  // Return a joined string of multiple insights
+  return insights.join(" ");
 }
 
 
@@ -585,4 +704,49 @@ function formatMonthLabel(key: string) {
     month: "long",
     year: "numeric",
   });
+}
+
+function getRecentStrongWeakSubject(records: TestRecord[]) {
+  if (records.length === 0) {
+    return { strong: "-", weak: "-" };
+  }
+
+  // take last 3 tests (by date)
+  const recent = [...records]
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, 3);
+
+  const subjectMap: Record<
+    string,
+    { totalIndex: number; count: number }
+  > = {};
+
+  recent.forEach((r) => {
+    const subject = r.subject || "Unknown";
+
+    const timeTaken = r.duration - r.timeLeft;
+    const timeRatio = timeTaken / r.duration; // 0–1
+    const timePenalty = timeRatio * 20; // max 20 marks penalty
+
+    const performanceIndex = r.percentage - timePenalty;
+
+    if (!subjectMap[subject]) {
+      subjectMap[subject] = { totalIndex: 0, count: 0 };
+    }
+
+    subjectMap[subject].totalIndex += performanceIndex;
+    subjectMap[subject].count += 1;
+  });
+
+  const ranked = Object.entries(subjectMap)
+    .map(([subject, v]) => ({
+      subject,
+      avgIndex: v.totalIndex / v.count,
+    }))
+    .sort((a, b) => b.avgIndex - a.avgIndex);
+
+  return {
+    strong: ranked[0]?.subject || "-",
+    weak: ranked[ranked.length - 1]?.subject || "-",
+  };
 }

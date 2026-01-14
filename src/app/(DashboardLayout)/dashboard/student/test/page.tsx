@@ -498,6 +498,8 @@ useEffect(() => {
   let warningCount = 0;
 
   const handleVisibilityChange = () => {
+    if (isSubmittingRef.current) return; // ✅ ignore during submit
+
     if (document.hidden) {
       warningCount++;
 
@@ -510,63 +512,32 @@ useEffect(() => {
     }
   };
 
-  document.addEventListener(
-    "visibilitychange",
-    handleVisibilityChange
-  );
-
+  document.addEventListener("visibilitychange", handleVisibilityChange);
   return () =>
-    document.removeEventListener(
-      "visibilitychange",
-      handleVisibilityChange
-    );
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
 }, []);
 
-// ---------------- TAB SWITCH DETECTION ----------------
-useEffect(() => {
-  let warningCount = 0;
 
-  const handleVisibilityChange = () => {
-    if (document.hidden) {
-      warningCount++;
-
-      if (warningCount === 1) {
-        alert("⚠️ Do not switch tabs. Next time test will auto-submit.");
-      } else {
-        alert("❌ Test auto-submitted due to tab switching.");
-        handleSubmit();
-      }
-    }
-  };
-
-  document.addEventListener(
-    "visibilitychange",
-    handleVisibilityChange
-  );
-
-  return () =>
-    document.removeEventListener(
-      "visibilitychange",
-      handleVisibilityChange
-    );
-}, []);
 
 // ---------------- BLOCK BACK BUTTON ----------------
 useEffect(() => {
-  history.pushState(null, "", location.href);
-
   const handlePopState = () => {
+    if (isSubmittingRef.current) return;
     history.pushState(null, "", location.href);
     alert("Back navigation is disabled during the test.");
   };
 
+  history.pushState(null, "", location.href);
   window.addEventListener("popstate", handlePopState);
+
   return () => window.removeEventListener("popstate", handlePopState);
 }, []);
+
 
 // ---------------- BLOCK REFRESH ----------------
 useEffect(() => {
   const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+    if (isSubmittingRef.current) return; // ✅ allow submit redirect
     e.preventDefault();
     e.returnValue = "Test in progress. Leaving will submit the test.";
   };
@@ -575,6 +546,7 @@ useEffect(() => {
   return () =>
     window.removeEventListener("beforeunload", handleBeforeUnload);
 }, []);
+
 
   const subjects = Array.from(new Set(questions.map(q => q.subject)));
   const filteredQuestions =
@@ -606,7 +578,17 @@ useEffect(() => {
 
   // ---------------- SUBMIT ----------------
   const handleSubmit = async () => {
-    if (!questions.length) return;
+    if (!questions.length || isSubmittingRef.current) return;
+
+  // 🔴 mark submitting FIRST
+  isSubmittingRef.current = true;
+
+  // Optional: confirmation (only manual submit)
+  const confirmSubmit = window.confirm("Are you sure you want to submit the test?");
+  if (!confirmSubmit) {
+    isSubmittingRef.current = false;
+    return;
+  }
 
     const answers = questions.map(q => {
       const selectedIdx = selectedOptions[q._id];

@@ -156,6 +156,23 @@ console.log(data.questions)
       </Typography>
 
       <Paper sx={{ p: 3 }}>
+        {['Physics', 'Chemistry', 'Biology', 'Maths'].map((subject) => (
+    <Button
+      key={subject}
+      variant={filterText.toLowerCase() === subject.toLowerCase() ? 'contained' : 'outlined'}
+      onClick={() => setFilterText(subject)}
+      sx={{ textTransform: 'none' }}
+    >
+      {subject}
+    </Button>
+  ))}
+  <Button
+    variant={filterText === '' ? 'contained' : 'outlined'}
+    onClick={() => setFilterText('')}
+    sx={{ mt: 2, textTransform: 'none' }}
+  >
+    All Subjects
+  </Button>
         <input
           type="text"
           placeholder="Filter course / subject / chapter"
@@ -205,9 +222,34 @@ console.log(data.questions)
                     <Chip label={`${row.count} questions`} color="success" size="small" />
                   </TableCell> */}
 <TableCell>
-                    <Chip label={`${getLevelLabel(row.level)||"Beginner"} level`}
-  className={row.level=="easy"?   "bg-green-100 text-green-700" : row.level=="moderate"?  "bg-yellow-100 text-yellow-700": row.level=="difficult"?"bg-orange-100 text-orange-700": row.level=="extreme"?"bg-red-100 text-red-700":"bg-green-100 text-green-700"} color="success" size="small" />
-                  </TableCell>
+                  <Chip
+  label={`${getLevelLabel(row.level) || "Beginner"} level`}
+  size="small"
+  sx={{
+    bgcolor:
+      row.level === "easy"
+        ? "#DCFCE7"
+        : row.level === "moderate"
+        ? "#FEF9C3"
+        : row.level === "difficult"
+        ? "#FFEDD5"
+        : row.level === "extreme"
+        ? "#FEE2E2"
+        : "#DCFCE7",
+    color:
+      row.level === "easy"
+        ? "#166534"
+        : row.level === "moderate"
+        ? "#854D0E"
+        : row.level === "difficult"
+        ? "#9A3412"
+        : row.level === "extreme"
+        ? "#991B1B"
+        : "#166534",
+    fontWeight: 600,
+  }}
+/>
+</TableCell>
                   <TableCell>
                     <Button
                       variant="contained"
