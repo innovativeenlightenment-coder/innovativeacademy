@@ -155,7 +155,7 @@ console.log(data.questions)
         Practice Test Selection
       </Typography>
 
-      <Paper sx={{ p: 3 ,}}>
+      <Paper sx={{ p: 3 , display:"flex", flexDirection:"row"}}>
         <Box sx={{display:"flex", justifyContent:"space-between",p:2}}>
           <div>
         {['Physics', 'Chemistry', 'Biology', 'Maths'].map((subject) => {
@@ -218,6 +218,7 @@ console.log(data.questions)
         />
         </div>
 </Box>
+<div>
         <TableContainer>
           <Table>
             <TableHead>
@@ -305,6 +306,7 @@ console.log(data.questions)
             </TableBody>
           </Table>
         </TableContainer>
+        </div>
       </Paper>
     </Box>
   );
