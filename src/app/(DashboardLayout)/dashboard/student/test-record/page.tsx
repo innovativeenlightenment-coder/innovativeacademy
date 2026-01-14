@@ -484,8 +484,8 @@ const barData = useMemo(() => {
                 <td className="p-2 border border-gray-300">{r.chapter}</td>
                 <td className="p-2 border border-gray-300">{r.score}</td>
                 <td className="p-2 border border-gray-300">{r.percentage}%</td>
-                <td className="p-2 border border-gray-300">{(r.duration&&r.timeLeft)?r.duration-r.timeLeft:"-"}</td>
-                <td className="p-2 border border-gray-300">{(r.duration&&r.timeLeft)?r.duration:"-"}</td>
+                <td className="p-2 border border-gray-300">{(r.duration&&r.timeLeft)?formatTime(r.duration-r.timeLeft):"-"}</td>
+                <td className="p-2 border border-gray-300">{(r.duration&&r.timeLeft)?formatTime(r.duration):"-"}</td>
                 <td className="p-2 border border-gray-300">{r.correct}</td>
                 <td className="p-2 border border-gray-300">{r.incorrect}</td>
                 <td className="p-2 border border-gray-300">{r.unanswered.length}</td>
