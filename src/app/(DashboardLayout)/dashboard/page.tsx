@@ -1,185 +1,195 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import PageContainer from "@/app/(DashboardLayout)/dashboard/components/container/PageContainer";
+import Loading from "./loading";
 import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  BarChart,
-  Bar,
+  LineChart,
+  Line,
   XAxis,
   YAxis,
   Tooltip,
-  LineChart,
-  Line,
+  ResponsiveContainer,
 } from "recharts";
-
-type AnswerType = { id: string; ans: string; selected: string };
 
 type TestRecord = {
   _id: string;
-  email: string;
-  date: string;
-  correct: number;
-  incorrect: number;
-  unanswered: AnswerType[];
-  subject: string;
+  score: number;
   percentage: number;
+  date: string;
 };
 
-export default function StudentDashboard() {
+export default function Dashboard() {
+  const router = useRouter();
   const [records, setRecords] = useState<TestRecord[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch("/api/test-records")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.success) setRecords(data.records || []);
-      })
-      .finally(() => setLoading(false));
+    async function load() {
+      try {
+        const res = await fetch("/api/test-records");
+        const data = await res.json();
+        if (data.success) {
+          setRecords(data.records || []);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
   }, []);
 
-  if (loading) return <div className="p-6">Loading dashboard...</div>;
+  if (loading) return <Loading />;
 
-  if (records.length === 0) {
-    return (
-      <div className="p-6 text-center">
-        <h2 className="text-xl font-semibold">No Tests Yet</h2>
-        <p className="text-gray-500">Attempt your first test to see progress.</p>
-      </div>
-    );
-  }
-
-  /* ================= QUICK STATS ================= */
-
+  /* ===== QUICK STATS ===== */
   const totalTests = records.length;
+  const avgPercent = totalTests
+    ? (records.reduce((a, b) => a + b.percentage, 0) / totalTests).toFixed(1)
+    : "0";
+  const bestPercent = totalTests
+    ? Math.max(...records.map((r) => r.percentage))
+    : 0;
 
-  const totalCorrect = records.reduce((a, b) => a + b.correct, 0);
-  const totalIncorrect = records.reduce((a, b) => a + b.incorrect, 0);
-  const totalUnanswered = records.reduce(
-    (a, b) => a + (b.unanswered?.length || 0),
-    0
-  );
-
-  const accuracy = (
-    (totalCorrect / (totalCorrect + totalIncorrect)) *
-    100
-  ).toFixed(1);
-
-  /* ================= SUBJECT WISE ================= */
-
-  const subjectMap = new Map<string, number>();
-  records.forEach((r) => {
-    const s = r.subject || "Mixed";
-    subjectMap.set(s, (subjectMap.get(s) || 0) + 1);
-  });
-
-  const subjectData = Array.from(subjectMap.entries()).map(
-    ([subject, count]) => ({ subject, tests: count })
-  );
-
-  /* ================= PIE ================= */
-
-  const pieData = [
-    { name: "Correct", value: totalCorrect },
-    { name: "Incorrect", value: totalIncorrect },
-    { name: "Unanswered", value: totalUnanswered },
-  ];
-
-  const pieColors = ["#16a34a", "#ef4444", "#9ca3af"];
-
-  /* ================= LAST 5 TESTS ================= */
-
-  const recentTrend = [...records]
-    .sort(
-      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-    )
-    .slice(-5)
+  /* ===== SIMPLE TREND ===== */
+  const trendData = records
+    .slice(-6)
     .map((r, i) => ({
       test: `T${i + 1}`,
       percentage: r.percentage,
     }));
 
   return (
-    <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">My Dashboard</h1>
+    <PageContainer title="Dashboard" description="Student Dashboard">
+      <div className="p-6 space-y-8">
 
-      {/* ================= STATS ================= */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Total Tests" value={totalTests} />
-        <StatCard label="Accuracy" value={`${accuracy}%`} />
-        <StatCard label="Correct Answers" value={totalCorrect} />
-        <StatCard label="Unanswered" value={totalUnanswered} />
-      </div>
-
-      {/* ================= CHARTS ================= */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Accuracy Pie */}
-        <div className="bg-white p-4 rounded shadow">
-          <h3 className="font-semibold mb-2">Overall Accuracy</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <PieChart>
-              <Pie data={pieData} dataKey="value" label>
-                {pieData.map((_, i) => (
-                  <Cell key={i} fill={pieColors[i]} />
-                ))}
-              </Pie>
-              <Tooltip />
-            </PieChart>
-          </ResponsiveContainer>
+        {/* 🔥 EARLY BIRD OFFER */}
+        <div className="bg-gradient-to-r from-pink-500 to-yellow-400 text-white rounded-xl p-6 shadow-lg">
+          <h2 className="text-2xl font-bold">🎉 Early Bird Offer</h2>
+          <p className="mt-2 text-lg">
+            First <b>100 Students</b> get <b>FREE ACCESS</b> 🎁  
+            <br />After that: <span className="font-bold">₹1000 / year</span>
+          </p>
+          <p className="mt-1 text-sm opacity-90">
+            Limited time • Lifetime foundation advantage
+          </p>
         </div>
 
-        {/* Subject Tests */}
-        <div className="bg-white p-4 rounded shadow">
-          <h3 className="font-semibold mb-2">Tests per Subject</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <BarChart data={subjectData}>
-              <XAxis dataKey="subject" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="tests" fill="#3b82f6" />
-            </BarChart>
-          </ResponsiveContainer>
+        {/* 📊 QUICK STATS */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <StatCard title="Tests Taken" value={totalTests} color="blue" />
+          <StatCard title="Avg %" value={`${avgPercent}%`} color="green" />
+          <StatCard title="Best %" value={`${bestPercent}%`} color="purple" />
         </div>
 
-        {/* Recent Performance */}
-        <div className="bg-white p-4 rounded shadow">
-          <h3 className="font-semibold mb-2">Recent Performance</h3>
-          <ResponsiveContainer width="100%" height={220}>
-            <LineChart data={recentTrend}>
-              <XAxis dataKey="test" />
-              <YAxis />
-              <Tooltip />
-              <Line
-                dataKey="percentage"
-                stroke="#2563eb"
-                strokeWidth={3}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
+        {/* 📈 PERFORMANCE TREND (LIGHT) */}
+        {records.length > 0 && (
+          <div className="bg-white p-4 rounded-xl shadow">
+            <h3 className="font-semibold mb-3">📈 Recent Performance</h3>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart data={trendData}>
+                <XAxis dataKey="test" />
+                <YAxis />
+                <Tooltip />
+                <Line
+                  type="monotone"
+                  dataKey="percentage"
+                  stroke="#2563eb"
+                  strokeWidth={3}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+        )}
 
-      {/* ================= QUICK MESSAGE ================= */}
-      <div className="bg-blue-50 border border-blue-200 p-4 rounded">
-        <p className="font-medium text-blue-800">
-          📌 Tip: Improve accuracy by reducing unanswered questions.
-        </p>
-        <p className="text-sm text-blue-700">
-          Detailed analysis is available inside Test Records.
-        </p>
+        {/* 🌟 FEATURES */}
+        <div>
+          <h3 className="text-xl font-bold mb-4">Why Innovative Academy?</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <FeatureCard
+              title="🤖 AI Doubt Solving"
+              desc="Instant concept-based answers powered by AI"
+            />
+            <FeatureCard
+              title="👨‍🏫 1-to-1 Expert Doubts"
+              desc="Personal doubt support from experienced faculties"
+            />
+            <FeatureCard
+              title="📚 Smart Notes"
+              desc="Short, exam-focused notes with clarity"
+            />
+            <FeatureCard
+              title="🔴 Live Doubt Sessions"
+              desc="Real-time doubt solving with teachers"
+            />
+            <FeatureCard
+              title="📝 Monthly / Quarterly Tests"
+              desc="Exam-pattern tests to track real progress"
+            />
+            <FeatureCard
+              title="🚀 More Coming Soon"
+              desc="Advanced analytics, rank prediction & more"
+            />
+          </div>
+        </div>
+
+        {/* 🚀 COMING SOON */}
+        <div className="bg-gray-900 text-white rounded-xl p-6">
+          <h3 className="text-xl font-bold">🚀 Coming Soon</h3>
+          <ul className="mt-3 space-y-1 text-sm text-gray-300">
+            <li>• Personalized learning path</li>
+            <li>• AI performance advisor</li>
+            <li>• National-level rankings</li>
+            <li>• Mentor-based guidance</li>
+          </ul>
+        </div>
+
       </div>
+    </PageContainer>
+  );
+}
+
+/* ===== COMPONENTS ===== */
+
+function StatCard({
+  title,
+  value,
+  color,
+}: {
+  title: string;
+  value: string | number;
+  color: "blue" | "green" | "purple";
+}) {
+  const colors = {
+    blue: "bg-blue-50 text-blue-700",
+    green: "bg-green-50 text-green-700",
+    purple: "bg-purple-50 text-purple-700",
+  };
+
+  return (
+    <div className={`p-4 rounded-xl shadow ${colors[color]}`}>
+      <div className="text-sm">{title}</div>
+      <div className="text-2xl font-bold">{value}</div>
     </div>
   );
 }
 
-function StatCard({ label, value }: { label: string; value: string | number }) {
+function FeatureCard({ title, desc }: { title: string; desc: string }) {
   return (
-    <div className="bg-white p-4 rounded shadow">
-      <div className="text-sm text-gray-500">{label}</div>
-      <div className="text-2xl font-semibold">{value}</div>
+    <div
+      className="
+        rounded-xl p-4 shadow
+        bg-gradient-to-br from-green-200 to-white
+        border border-gray-100
+        hover:shadow-md hover:-translate-y-[2px]
+        transition-all
+      "
+    >
+      <h4 className="font-semibold text-gray-800">{title}</h4>
+      <p className="text-sm text-gray-600 mt-1">{desc}</p>
     </div>
   );
 }

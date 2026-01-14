@@ -1,10 +1,11 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
   PieChart, Pie, Cell, Legend,
   BarChart, Bar,
+  CartesianGrid,
 } from "recharts";
 
 type AnswerType = { id: string; ans: string; selected: string };
@@ -17,7 +18,6 @@ type TestRecord = {
   date: string;
   score: number;
   percentage: number;
-  testType:string;
   correct: number;
   incorrect: number;
   unanswered: AnswerType[];
@@ -29,14 +29,9 @@ type TestRecord = {
 
 export default function TestRecordsPage() {
   const [records, setRecords] = useState<TestRecord[]>([]);
-  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const lineRef = useRef<HTMLDivElement | null>(null);
-  const pieRef = useRef<HTMLDivElement | null>(null);
-  const barRef = useRef<HTMLDivElement | null>(null);
-  const subjectRef = useRef<HTMLDivElement | null>(null);
-
+  // -------------------- Load Records --------------------
   useEffect(() => {
     loadRecords();
   }, []);
@@ -46,11 +41,8 @@ export default function TestRecordsPage() {
       setLoading(true);
       const res = await fetch("/api/test-records");
       const data = await res.json();
-      if (data.success) {
-        setRecords(data.records || []);
-      } else {
-        setRecords([]);
-      }
+      if (data.success) setRecords(data.records || []);
+      else setRecords([]);
     } catch (err) {
       console.error(err);
     } finally {
@@ -58,69 +50,162 @@ export default function TestRecordsPage() {
     }
   }
 
-  const filtered = records.filter((r) => {
-    if (!search) return true;
-    const key = `${r.name} ${r.username} ${r.email} ${r.course} ${r.subject} ${r.chapter}`;
-    return key.toLowerCase().includes(search.toLowerCase());
-  });
-
-  // Stats
+  // -------------------- Summary --------------------
   const totalTests = records.length;
   const avgScore = totalTests
     ? records.reduce((a, b) => a + b.score, 0) / totalTests
-    : 0;
-  const avgPercent = totalTests
-    ? records.reduce((a, b) => a + b.percentage, 0) / totalTests
     : 0;
   const bestScore = totalTests
     ? Math.max(...records.map((r) => r.score))
     : 0;
 
-  // Trend
-  const trendData = [...records]
-    .sort(
-      (a, b) =>
-        new Date(a.date).getTime() - new Date(b.date).getTime()
-    )
-    .map((r, i) => ({
-      test: `T${i + 1}`,
-      percentage: r.percentage,
-      score: r.score,
+  // Strong / Weak Subject
+  const subjectStats = useMemo(() => {
+    const map: Record<string, { total: number; count: number }> = {};
+    records.forEach((r) => {
+      const s = r.subject || "Unknown";
+      if (!map[s]) map[s] = { total: 0, count: 0 };
+      map[s].total += r.score;
+      map[s].count += 1;
+    });
+    const arr = Object.entries(map).map(([subject, val]) => ({
+      subject,
+      avg: val.total / val.count,
     }));
+    arr.sort((a, b) => b.avg - a.avg);
+    return {
+      strong: arr[0]?.subject || "-",
+      weak: arr[arr.length - 1]?.subject || "-",
+    };
+  }, [records]);
 
-  // Pie
-  const pieData = [
-    { name: "Correct", value: records.reduce((a, b) => a + b.correct, 0) },
-    { name: "Incorrect", value: records.reduce((a, b) => a + b.incorrect, 0) },
-    { name: "Unanswered", value: records.reduce((a, b) => a + (b.unanswered?.length || 0), 0) },
-  ];
-  const pieColors = ["#16a34a", "#ef4444", "#6b7280"];
+  // -------------------- Table Filter/Search --------------------
+  const [search, setSearch] = useState("");
+  const filteredRecords = useMemo(() => {
+    if (!search) return records;
+    return records.filter((r) =>
+      `${r.name} ${r.username} ${r.email} ${r.course} ${r.subject} ${r.chapter}`
+        .toLowerCase()
+        .includes(search.toLowerCase())
+    );
+  }, [records, search]);
 
-  // Score Distribution
-  const rangeData = [
-    { range: "0-20", count: records.filter((r) => r.percentage <= 20).length },
-    { range: "21-40", count: records.filter((r) => r.percentage > 20 && r.percentage <= 40).length },
-    { range: "41-60", count: records.filter((r) => r.percentage > 40 && r.percentage <= 60).length },
-    { range: "61-80", count: records.filter((r) => r.percentage > 60 && r.percentage <= 80).length },
-    { range: "81-100", count: records.filter((r) => r.percentage > 80).length },
-  ];
+  // -------------------- Colors --------------------
+  const pieColors1 = ["#3b82f6", "#f97316", "#ef4444", "#16a34a", "#8b5cf6"];
+  const pieColors2 = ["#f43f5e", "#fbbf24", "#14b8a6", "#6366f1", "#e879f9"];
+  const lineColors = ["#2563eb", "#f59e0b", "#16a34a", "#8b5cf6", "#f43f5e"];
+  const barColors = ["#3b82f6", "#f97316", "#10b981", "#e11d48"];
 
-  // Subject-wise average
-  const subjectMap = new Map<string, { total: number; count: number }>();
+  // -------------------- Group by Month / Subject --------------------
+  const monthMap = useMemo(() => {
+    const map: Record<string, TestRecord[]> = {};
+    records.forEach((r) => {
+      const d = new Date(r.date);
+      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+        2,
+        "0"
+      )}`;
+      if (!map[key]) map[key] = [];
+      map[key].push(r);
+    });
+    return map;
+  }, [records]);
+
+  const months = useMemo(() => Object.keys(monthMap).sort(), [monthMap]);
+
+  // -------------------- Chart Pagination States --------------------
+  const [monthIndex1, setMonthIndex1] = useState(0); // Line
+  const [monthIndex2, setMonthIndex2] = useState(0); // Monthly Analysis Bar
+  const [subjectIndex1, setSubjectIndex1] = useState(0); // Correct/Incorrect
+  const [subjectIndex2, setSubjectIndex2] = useState(0); // Answered/Unanswered
+
+  // Update monthIndex when months change
+  useEffect(() => {
+    if (months.length > 0) {
+      setMonthIndex1(months.length - 1);
+      setMonthIndex2(months.length - 1);
+    }
+  }, [months]);
+
+  // -------------------- Line Chart (Performance) --------------------
+  const lineData = useMemo(() => {
+    const key = months[monthIndex1];
+    if (!key) return [];
+    return [...(monthMap[key] || [])]
+      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+      .map((r, i) => ({
+        test: `T${i + 1}`,
+        score: r.score,
+        percentage: r.percentage,
+        date: new Date(r.date).toLocaleDateString(),
+      }));
+  }, [monthMap, months, monthIndex1]);
+
+  // -------------------- Monthly Analysis Bar --------------------
+const barData = useMemo(() => {
+  const key = months[monthIndex2];
+  if (!key || !monthMap[key]) return [];
+
+  const records = monthMap[key];
+
+  const subjectScoreMap: Record<
+    string,
+    { total: number; count: number }
+  > = {};
+
   records.forEach((r) => {
-    const s = r.subject || "Unknown";
-    if (!subjectMap.has(s)) subjectMap.set(s, { total: 0, count: 0 });
-    const v = subjectMap.get(s)!;
-    v.total += r.score;
-    v.count += 1;
+    if (!subjectScoreMap[r.subject]) {
+      subjectScoreMap[r.subject] = { total: 0, count: 0 };
+    }
+    subjectScoreMap[r.subject].total += r.score;
+    subjectScoreMap[r.subject].count += 1;
   });
 
-  const subjectData = Array.from(subjectMap.entries()).map(
-    ([subject, val]) => ({
-      subject,
-      avgScore: Number((val.total / val.count).toFixed(1)),
-    })
-  );
+  return Object.entries(subjectScoreMap).map(([subject, v]) => ({
+    subject,
+    avgScore: Number((v.total / v.count).toFixed(1)),
+  }));
+}, [monthMap, months, monthIndex2]);
+
+
+  // -------------------- Pie Charts --------------------
+  const subjects = useMemo(() => {
+    const map: Record<string, TestRecord[]> = {};
+    records.forEach((r) => {
+      const s = r.subject || "Unknown";
+      if (!map[s]) map[s] = [];
+      map[s].push(r);
+    });
+    return Object.keys(map).sort();
+  }, [records]);
+
+  const currentSubject1 = subjects[subjectIndex1];
+  const currentSubject2 = subjects[subjectIndex2];
+
+  const pieDataCorrectIncorrect = useMemo(() => {
+    if (!currentSubject1) return [];
+    const subRecords = records.filter((r) => r.subject === currentSubject1);
+    const correct = subRecords.reduce((a, b) => a + b.correct, 0);
+    const incorrect = subRecords.reduce((a, b) => a + b.incorrect, 0);
+    return [
+      { name: "Correct", value: correct },
+      { name: "Incorrect", value: incorrect },
+    ];
+  }, [records, currentSubject1]);
+
+  const pieDataAnsweredUnanswered = useMemo(() => {
+    if (!currentSubject2) return [];
+    const subRecords = records.filter((r) => r.subject === currentSubject2);
+    const answered = subRecords.reduce(
+      (a, b) => a + b.correct + b.incorrect,
+      0
+    );
+    const unanswered = subRecords.reduce((a, b) => a + b.unanswered.length, 0);
+    return [
+      { name: "Answered", value: answered },
+      { name: "Unanswered", value: unanswered },
+    ];
+  }, [records, currentSubject2]);
 
   if (records.length === 0 && !loading) {
     return (
@@ -131,91 +216,182 @@ export default function TestRecordsPage() {
     );
   }
 
+  // -------------------- Render --------------------
   return (
-    <div className="p-6 space-y-6">
+    <div className="p-6 space-y-6 bg-slate-50 min-h-screen">
       <h1 className="text-2xl font-bold">Test Performance Dashboard</h1>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card label="Total Tests" value={totalTests} />
-        <Card label="Average Score" value={avgScore.toFixed(1)} />
-        <Card label="Average %" value={`${avgPercent.toFixed(1)}%`} />
-        <Card label="Best Score" value={bestScore} />
+      {/* Summary Boxes */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <SummaryBox label="Total Tests" value={totalTests} color="from-blue-50 to-white" />
+        <SummaryBox label="Average Score" value={avgScore.toFixed(1)} color="from-green-50 to-white" />
+        <SummaryBox label="Best Score" value={bestScore} color="from-yellow-50 to-white" />
+        <SummaryBox label="Strong Subject" value={subjectStats.strong} color="from-purple-50 to-white" />
+        <SummaryBox label="Weak Subject" value={subjectStats.weak} color="from-red-50 to-white" />
       </div>
 
-      {/* Charts */}
-      <div className="bg-white p-4 rounded shadow" ref={lineRef}>
-        <ResponsiveContainer width="100%" height={260}>
-          <LineChart data={trendData}>
-            <XAxis dataKey="test" />
-            <YAxis />
-            <Tooltip />
-            <Line dataKey="percentage" stroke="#2563eb" strokeWidth={3} />
-            <Line dataKey="score" stroke="#f59e0b" strokeWidth={3} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div ref={pieRef} className="bg-white p-4 rounded shadow">
+      {/* Charts Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Correct vs Incorrect Pie */}
+        <ChartCard title={`Correct vs Incorrect - ${currentSubject1 || "-"}`}>
+          <div className="flex justify-between mb-2">
+            <button
+              disabled={subjectIndex1 === 0}
+              onClick={() => setSubjectIndex1((i) => i - 1)}
+              className="px-2 py-1 rounded bg-gray-200 disabled:opacity-40"
+            >
+              ◀
+            </button>
+            <div className="font-semibold">{currentSubject1}</div>
+            <button
+              disabled={subjectIndex1 === subjects.length - 1}
+              onClick={() => setSubjectIndex1((i) => i + 1)}
+              className="px-2 py-1 rounded bg-gray-200 disabled:opacity-40"
+            >
+              ▶
+            </button>
+          </div>
           <ResponsiveContainer width="100%" height={260}>
             <PieChart>
-              <Pie data={pieData} dataKey="value" label>
-                {pieData.map((_, i) => (
-                  <Cell key={i} fill={pieColors[i]} />
+              <Pie data={pieDataCorrectIncorrect} dataKey="value" nameKey="name" label>
+                {pieDataCorrectIncorrect.map((_, i) => (
+                  <Cell key={i} fill={pieColors1[i % pieColors1.length]} />
                 ))}
               </Pie>
               <Tooltip />
               <Legend />
             </PieChart>
           </ResponsiveContainer>
-        </div>
+        </ChartCard>
 
-        <div ref={barRef} className="bg-white p-4 rounded shadow">
+        {/* Answered vs Unanswered Pie */}
+        <ChartCard title={`Answered vs Unanswered - ${currentSubject2 || "-"}`}>
+          <div className="flex justify-between mb-2">
+            <button
+              disabled={subjectIndex2 === 0}
+              onClick={() => setSubjectIndex2((i) => i - 1)}
+              className="px-2 py-1 rounded bg-gray-200 disabled:opacity-40"
+            >
+              ◀
+            </button>
+            <div className="font-semibold">{currentSubject2}</div>
+            <button
+              disabled={subjectIndex2 === subjects.length - 1}
+              onClick={() => setSubjectIndex2((i) => i + 1)}
+              className="px-2 py-1 rounded bg-gray-200 disabled:opacity-40"
+            >
+              ▶
+            </button>
+          </div>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={rangeData}>
-              <XAxis dataKey="range" />
+            <PieChart>
+              <Pie data={pieDataAnsweredUnanswered} dataKey="value" nameKey="name" label>
+                {pieDataAnsweredUnanswered.map((_, i) => (
+                  <Cell key={i} fill={pieColors2[i % pieColors2.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </ChartCard>
+
+        {/* Performance Line Chart */}
+        <ChartCard title="Performance Over Tests">
+          <div className="flex justify-between mb-2">
+            <button
+              disabled={monthIndex1 === 0}
+              onClick={() => setMonthIndex1((i) => i - 1)}
+              className="px-2 py-1 rounded bg-gray-200 disabled:opacity-40"
+            >
+              ◀
+            </button>
+            <div className="font-semibold">{formatMonthLabel(months[monthIndex1])}</div>
+            <button
+              disabled={monthIndex1 === months.length - 1}
+              onClick={() => setMonthIndex1((i) => i + 1)}
+              className="px-2 py-1 rounded bg-gray-200 disabled:opacity-40"
+            >
+              ▶
+            </button>
+          </div>
+          <ResponsiveContainer width="100%" height={260}>
+            <LineChart data={lineData}>
+              <XAxis dataKey="test" />
               <YAxis />
               <Tooltip />
-              <Bar dataKey="count" fill="#7c3aed" />
-            </BarChart>
+              <Line dataKey="score" stroke={lineColors[0]} strokeWidth={3} name="Score" />
+              <Line dataKey="percentage" stroke={lineColors[1]} strokeWidth={3} name="Percentage" />
+            </LineChart>
           </ResponsiveContainer>
-        </div>
+        </ChartCard>
 
-        <div ref={subjectRef} className="bg-white p-4 rounded shadow">
+        {/* Monthly Analysis Bar Chart */}
+        <ChartCard title="Monthly Analysis">
+          <div className="flex justify-between mb-2">
+            <button
+              disabled={monthIndex2 === 0}
+              onClick={() => setMonthIndex2((i) => i - 1)}
+              className="px-2 py-1 rounded bg-gray-200 disabled:opacity-40"
+            >
+              ◀
+            </button>
+            <div className="font-semibold">{formatMonthLabel(months[monthIndex2])}</div>
+            <button
+              disabled={monthIndex2 === months.length - 1}
+              onClick={() => setMonthIndex2((i) => i + 1)}
+              className="px-2 py-1 rounded bg-gray-200 disabled:opacity-40"
+            >
+              ▶
+            </button>
+          </div>
           <ResponsiveContainer width="100%" height={260}>
-            <BarChart data={subjectData}>
-              <XAxis dataKey="subject" />
-              <YAxis />
-              <Tooltip />
-              <Bar dataKey="avgScore" fill="#3b82f6" />
-            </BarChart>
+           <BarChart data={barData}>
+  <CartesianGrid strokeDasharray="3 3" />
+  <XAxis dataKey="subject" />
+  <YAxis />
+  <Tooltip />
+  <Bar dataKey="avgScore" fill="#4f46e5" radius={[6, 6, 0, 0]} />
+</BarChart>
+
           </ResponsiveContainer>
-        </div>
+        </ChartCard>
       </div>
 
-      {/* Table */}
-      <div className="bg-white p-4 rounded shadow overflow-x-auto">
-        <table className="min-w-full text-sm">
-          <thead className="bg-gray-100">
+      {/* Modern Table */}
+      <div className="bg-white p-4 rounded-xl shadow-sm overflow-x-auto">
+          <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Search..."
+          className="mb-2 p-2 border rounded w-full max-w-sm"
+        />
+        <table className="min-w-full border-collapse table-auto border border-gray-200">
+          <thead className="bg-blue-950 text-white sticky top-0 z-10">
             <tr>
-              <th className="p-3 text-left">Date</th>
-              <th className="p-3 text-left">Course</th>
-              <th className="p-3 text-left">Subject</th>
-              <th className="p-3 text-left">Chapter</th>
-              <th className="p-3 text-left">Score</th>
-              <th className="p-3 text-left">%</th>
+              <th className="p-3 border border-gray-400 text-left">Date</th>
+              <th className="p-3 border border-gray-400 text-left">Course</th>
+              <th className="p-3 border border-gray-400 text-left">Subject</th>
+              <th className="p-3 border border-gray-400 text-left">Chapter</th>
+              <th className="p-3 border border-gray-400 text-left">Score</th>
+              <th className="p-3 border border-gray-400 text-left">%</th>
+              <th className="p-3 border border-gray-400 text-left">Correct</th>
+              <th className="p-3 border border-gray-400 text-left">Incorrect</th>
+              <th className="p-3 border border-gray-400 text-left">Unanswered</th>
             </tr>
           </thead>
           <tbody>
-            {filtered.filter((record) => record.testType === "practice").map((r) => (
-              <tr key={r._id} className="border-b">
-                <td className="p-2">{new Date(r.date).toLocaleDateString()}</td>
-                <td className="p-2">{r.course}</td>
-                <td className="p-2">{r.subject === "-" ? "All Subjects" : r.subject}</td>
-                <td className="p-2">{r.chapter === "-" ? "All Chapters" : r.chapter}</td>
-                <td className="p-2">{r.score}</td>
-                <td className="p-2">{r.percentage}%</td>
+            {filteredRecords.map((r, i) => (
+              <tr key={r._id} className={`${i % 2 === 0 ? "bg-blue-50" : ""} hover:bg-gray-100 transition`}>
+                <td className="p-2 border border-gray-300">{new Date(r.date).toLocaleDateString()}</td>
+                <td className="p-2 border border-gray-300">{r.course}</td>
+                <td className="p-2 border border-gray-300">{r.subject}</td>
+                <td className="p-2 border border-gray-300">{r.chapter}</td>
+                <td className="p-2 border border-gray-300">{r.score}</td>
+                <td className="p-2 border border-gray-300">{r.percentage}%</td>
+                <td className="p-2 border border-gray-300">{r.correct}</td>
+                <td className="p-2 border border-gray-300">{r.incorrect}</td>
+                <td className="p-2 border border-gray-300">{r.unanswered.length}</td>
               </tr>
             ))}
           </tbody>
@@ -225,11 +401,41 @@ export default function TestRecordsPage() {
   );
 }
 
-function Card({ label, value }: { label: string; value: string | number }) {
+// -------------------- Helper Components --------------------
+function SummaryBox({ label, value, color }: { label: string; value: string | number; color: string }) {
   return (
-    <div className="bg-white p-4 rounded shadow">
-      <div className="text-sm text-gray-500">{label}</div>
-      <div className="text-2xl font-semibold">{value}</div>
+    <div
+      className={`bg-gradient-to-br ${color} p-4 rounded-xl shadow-sm hover:shadow-md transition-all`}
+    >
+      <div className="text-sm text-gray-700">{label}</div>
+      <div className="text-2xl font-semibold text-gray-900">{value}</div>
     </div>
   );
+}
+
+function ChartCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white p-4 rounded-xl border border-gray-200 shadow-sm">
+      <h2 className="text-lg font-semibold mb-2">{title}</h2>
+      {children}
+    </div>
+  );
+}
+
+
+function formatMonthLabel(key: string) {
+  if (!key) return "";
+
+  const parts = key.split("-");
+  if (parts.length !== 2) return key;
+
+  const year = Number(parts[0]);
+  const month = Number(parts[1]) - 1;
+
+  if (isNaN(year) || isNaN(month)) return key;
+
+  return new Date(year, month).toLocaleString("en-IN", {
+    month: "long",
+    year: "numeric",
+  });
 }
