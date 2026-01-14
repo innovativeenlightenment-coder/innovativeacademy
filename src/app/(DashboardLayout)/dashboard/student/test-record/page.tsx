@@ -563,48 +563,6 @@ function formatTime(sec: number) {
 }
 
 
-// function generateMainInsight(params: {
-//   totalTests: number;
-//   avgScore: number;
-//   bestScore: number;
-//   avgTimeTaken: number;
-//   duration: number;
-//   weakSubject?: string;
-//   record
-// }) {
-//   const {
-//     totalTests,
-//     avgScore,
-//     bestScore,
-//     avgTimeTaken,
-//     duration,
-//     weakSubject,
-//   } = params;
-
-//   // 1️⃣ Consistency
-//   if (totalTests < 8) {
-//     return "Practice consistency is low. Increase test frequency to build confidence and long-term improvement.";
-//   }
-
-//   // 2️⃣ Time management
-//   if (avgTimeTaken > duration * 1.05) {
-//     return "Time pressure observed in tests. Focus on timed practice and quicker decision-making.";
-//   }
-
-//   // 3️⃣ Subject weakness
-//   if (weakSubject) {
-//     return `Most score loss is coming from ${weakSubject}. Targeted revision here will give the fastest improvement.`;
-//   }
-
-//   // 4️⃣ Performance gap
-//   if (bestScore - avgScore > 20) {
-//     return "Performance is inconsistent. Aim to match your best performance more frequently.";
-//   }
-
-//   // 5️⃣ Strong overall
-//   return "Overall performance is stable. Maintain consistency and start increasing difficulty gradually.";
-// }
-
 
 function generateMainInsight(params: {
   totalTests: number;
