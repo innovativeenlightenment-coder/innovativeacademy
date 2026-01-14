@@ -16,15 +16,7 @@ import {
 } from '@mui/material';
 import { PlayArrow as PlayIcon } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
-
-interface PracticeSelectorProps {
-  onTestStart: (
-    testType: 'practice',
-    course: string,
-    subject?: string,
-    chapter?: string
-  ) => void;
-}
+import { getLevelLabel } from '@/lib/getLevelLable';
 
 interface PracticeRow {
   course: string;
@@ -35,24 +27,16 @@ interface PracticeRow {
 }
 
 
-export const levelLabelMap: Record<string, string> = {
-  easy: "Beginner",
-  moderate: "Intermediate",
-  difficult: "Advanced",
-  extreme: "Expert",
-};
 
-export const getLevelLabel = (level?: string) =>
-  levelLabelMap[level ?? "easy"] || "Beginner";
 
-export const levelColorMap: Record<string, string> = {
+const levelColorMap: Record<string, string> = {
   easy: "bg-green-100 text-green-700",
   moderate: "bg-yellow-100 text-yellow-700",
   difficult: "bg-orange-100 text-orange-700",
   extreme: "bg-red-100 text-red-700",
 };
 
-const PracticeSelector: React.FC<PracticeSelectorProps> = ({ onTestStart }) => {
+const PracticeSelector= () => {
   const [loading, setLoading] = useState(false);
   const [loadingOptions, setLoadingOptions] = useState(true);
   const [filterText, setFilterText] = useState('');

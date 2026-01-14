@@ -69,6 +69,12 @@ type:String,
    
     default: Date.now
   },
+  duration:{
+ type: Number,
+  },
+  timeLeft:{
+ type: Number,
+  }
 
 }, { timestamps: true });
 

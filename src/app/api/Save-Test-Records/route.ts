@@ -23,6 +23,8 @@ type SavePayload = {
   name?: string;
   testType:string;
   email: string;
+  duration:number;
+  timeLeft:number;
   course: string;
   subject: string;
   chapter: string;
@@ -45,6 +47,8 @@ export async function POST(req: Request) {
       level,
       score,
       percentage,
+      duration,
+      timeLeft,
       email,
       course,
       subject,
@@ -82,6 +86,8 @@ export async function POST(req: Request) {
       percentage,
       username,
       name,
+      timeLeft,
+      duration,
       email,
       course,
       subject,

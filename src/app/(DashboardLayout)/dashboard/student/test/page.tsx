@@ -650,7 +650,9 @@ useEffect(() => {
         level: test.chapterLevel,
         email: test.email,
         course: test.course,
+        timeLeft,
         subject: test.subject,
+           duration: durationTest, // in sec
         chapter: test.chapter,
       }),
     });
@@ -665,6 +667,7 @@ useEffect(() => {
           testDetails: {
             course:test.course,
             subject:test.subject,
+            timeLeft,
             chapter:test.chapter,
             questionIds: questions.map(q => q._id),
             date: new Date().toISOString(),

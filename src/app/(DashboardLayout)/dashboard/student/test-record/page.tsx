@@ -19,6 +19,8 @@ type TestRecord = {
   score: number;
   percentage: number;
   correct: number;
+  duration:number;
+  timeLeft:number;
   incorrect: number;
   unanswered: AnswerType[];
   course: string;
@@ -55,7 +57,41 @@ export default function TestRecordsPage() {
   const avgScore = totalTests
     ? records.reduce((a, b) => a + b.score, 0) / totalTests
     : 0;
-  const bestScore = totalTests
+const avgTimeTaken =
+  records.length > 0
+    ? records.reduce((sum, r) => sum + (r.duration - r.timeLeft), 0) / records.length
+    : 0;
+const avgTimePerQuestion =
+  records.length > 0
+    ? records.reduce((sum, r) => {
+        const timeTaken = r.duration - r.timeLeft;
+        const attempted = r.correct + r.incorrect;
+        return attempted > 0 ? sum + timeTaken / attempted : sum;
+      }, 0) / records.length
+    : 0;
+const subjectTimeMap: Record<string, { time: number; count: number }> = {};
+
+records.forEach((r) => {
+  const key = r.subject || "All";
+  const timeTaken = r.duration - r.timeLeft;
+
+  if (!subjectTimeMap[key]) {
+    subjectTimeMap[key] = { time: 0, count: 0 };
+  }
+
+  subjectTimeMap[key].time += timeTaken;
+  subjectTimeMap[key].count += 1;
+});
+
+const subjectAvgTime = Object.entries(subjectTimeMap).map(
+  ([subject, v]) => ({
+    subject,
+    avgTime: v.time / v.count,
+  })
+);
+
+
+const bestScore = totalTests
     ? Math.max(...records.map((r) => r.score))
     : 0;
 
@@ -76,6 +112,7 @@ export default function TestRecordsPage() {
     return {
       strong: arr[0]?.subject || "-",
       weak: arr[arr.length - 1]?.subject || "-",
+
     };
   }, [records]);
 
@@ -216,19 +253,75 @@ const barData = useMemo(() => {
     );
   }
 
+  
+  const mainInsight = generateMainInsight({
+    totalTests,
+    avgScore,
+    bestScore,
+    avgTimeTaken,
+    duration: records.length>0?records[0].duration:3000,
+    weakSubject: subjectStats.weak,
+  });
   // -------------------- Render --------------------
+
   return (
     <div className="p-6 space-y-6 bg-slate-50 min-h-screen">
       <h1 className="text-2xl font-bold">Test Performance Dashboard</h1>
 
       {/* Summary Boxes */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        <SummaryBox label="Total Tests" value={totalTests} color="from-blue-50 to-white" />
-        <SummaryBox label="Average Score" value={avgScore.toFixed(1)} color="from-green-50 to-white" />
-        <SummaryBox label="Best Score" value={bestScore} color="from-yellow-50 to-white" />
-        <SummaryBox label="Strong Subject" value={subjectStats.strong} color="from-purple-50 to-white" />
-        <SummaryBox label="Weak Subject" value={subjectStats.weak} color="from-red-50 to-white" />
-      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-4">
+  <SummaryBox
+    label="Total Tests"
+    value={totalTests}
+    color="from-blue-50 to-white"
+  />
+
+  <SummaryBox
+    label="Average Score"
+    value={avgScore.toFixed(1)}
+    color="from-green-50 to-white"
+  />
+
+  <SummaryBox
+    label="Best Score"
+    value={bestScore}
+    color="from-yellow-50 to-white"
+  />
+
+  <SummaryBox
+    label="Strong Subject"
+    value={subjectStats.strong}
+    color="from-purple-50 to-white"
+  />
+
+  <SummaryBox
+    label="Weak Subject"
+    value={subjectStats.weak}
+    color="from-red-50 to-white"
+  />
+
+  <SummaryBox
+    label="Avg Time / Test"
+    value={formatTime(avgTimeTaken)}
+    color="from-orange-50 to-white"
+  />
+
+  <SummaryBox
+    label="Avg Time / Question"
+    value={formatTime(avgTimePerQuestion)}
+    color="from-teal-50 to-white"
+  />
+</div>
+
+<div className="rounded-xl p-5 bg-gradient-to-br from-indigo-50 to-white border border-indigo-100">
+  <p className="text-sm font-semibold text-indigo-600">
+    Performance Insight
+  </p>
+
+  <p className="mt-2 text-base text-gray-700 leading-relaxed">
+    {mainInsight}
+  </p>
+</div>
 
       {/* Charts Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -375,6 +468,8 @@ const barData = useMemo(() => {
               <th className="p-3 border border-gray-400 text-left">Chapter</th>
               <th className="p-3 border border-gray-400 text-left">Score</th>
               <th className="p-3 border border-gray-400 text-left">%</th>
+              <th className="p-3 border border-gray-400 text-left">Time Taken</th>
+              <th className="p-3 border border-gray-400 text-left">Test Duration</th>
               <th className="p-3 border border-gray-400 text-left">Correct</th>
               <th className="p-3 border border-gray-400 text-left">Incorrect</th>
               <th className="p-3 border border-gray-400 text-left">Unanswered</th>
@@ -389,6 +484,8 @@ const barData = useMemo(() => {
                 <td className="p-2 border border-gray-300">{r.chapter}</td>
                 <td className="p-2 border border-gray-300">{r.score}</td>
                 <td className="p-2 border border-gray-300">{r.percentage}%</td>
+                <td className="p-2 border border-gray-300">{(r.duration&&r.timeLeft)?r.duration-r.timeLeft:"-"}</td>
+                <td className="p-2 border border-gray-300">{(r.duration&&r.timeLeft)?r.duration:"-"}</td>
                 <td className="p-2 border border-gray-300">{r.correct}</td>
                 <td className="p-2 border border-gray-300">{r.incorrect}</td>
                 <td className="p-2 border border-gray-300">{r.unanswered.length}</td>
@@ -420,6 +517,54 @@ function ChartCard({ title, children }: { title: string; children: React.ReactNo
       {children}
     </div>
   );
+}
+
+function formatTime(sec: number) {
+  const m = Math.floor(sec / 60);
+  const s = Math.floor(sec % 60);
+  return `${m}m ${s}s`;
+}
+
+
+function generateMainInsight(params: {
+  totalTests: number;
+  avgScore: number;
+  bestScore: number;
+  avgTimeTaken: number;
+  duration: number;
+  weakSubject?: string;
+}) {
+  const {
+    totalTests,
+    avgScore,
+    bestScore,
+    avgTimeTaken,
+    duration,
+    weakSubject,
+  } = params;
+
+  // 1️⃣ Consistency
+  if (totalTests < 8) {
+    return "Practice consistency is low. Increase test frequency to build confidence and long-term improvement.";
+  }
+
+  // 2️⃣ Time management
+  if (avgTimeTaken > duration * 1.05) {
+    return "Time pressure observed in tests. Focus on timed practice and quicker decision-making.";
+  }
+
+  // 3️⃣ Subject weakness
+  if (weakSubject) {
+    return `Most score loss is coming from ${weakSubject}. Targeted revision here will give the fastest improvement.`;
+  }
+
+  // 4️⃣ Performance gap
+  if (bestScore - avgScore > 20) {
+    return "Performance is inconsistent. Aim to match your best performance more frequently.";
+  }
+
+  // 5️⃣ Strong overall
+  return "Overall performance is stable. Maintain consistency and start increasing difficulty gradually.";
 }
 
 
