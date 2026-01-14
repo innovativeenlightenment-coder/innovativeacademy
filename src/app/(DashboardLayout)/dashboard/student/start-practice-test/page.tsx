@@ -155,7 +155,9 @@ console.log(data.questions)
         Practice Test Selection
       </Typography>
 
-      <Paper sx={{ p: 3 ,display:"flex", justifyContent:"space-between"}}>
+      <Paper sx={{ p: 3 ,}}>
+        <Box sx={{display:"flex", justifyContent:"space-between",p:2}}>
+          <div>
         {['Physics', 'Chemistry', 'Biology', 'Maths'].map((subject) => {
     const active = filterText.toLowerCase() === subject.toLowerCase();
 
@@ -199,6 +201,8 @@ console.log(data.questions)
   >
     All Subjects
   </Box>
+  </div>
+  <div>
         <input
           type="text"
           placeholder="Filter course / subject / chapter"
@@ -212,7 +216,8 @@ console.log(data.questions)
             minWidth: 280,
           }}
         />
-
+        </div>
+</Box>
         <TableContainer>
           <Table>
             <TableHead>
