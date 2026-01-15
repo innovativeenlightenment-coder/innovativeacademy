@@ -6,12 +6,13 @@ import {
   StudentMenuitems,
 } from "./MenuItems";
 import { usePathname } from "next/navigation";
-import { Box, List } from "@mui/material";
+import { Box, Button, List } from "@mui/material";
 import NavItem from "./NavItem";
 import NavGroup from "./NavGroup/NavGroup";
 import { UserData } from "@/types/UserType";
 // import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/router";
+import { getCurrentUser } from "@/lib/getCurrentUser";
 
 type MenuItemType = {
   id?: string;
@@ -37,9 +38,8 @@ const SidebarItems = ({ toggleMobileSidebar }: SidebarItemsProps) => {
     useEffect(() => {
       async function fetchUser() {
         try {
-          const res = await fetch("/api/auth/Get-Current-User", { method: "GET" });
-          const data = await res.json();
-  
+            const data = await getCurrentUser();
+          
           if (data?.success && data.user) {
      
             setUserData(data.user);
@@ -53,7 +53,17 @@ const SidebarItems = ({ toggleMobileSidebar }: SidebarItemsProps) => {
       fetchUser();
     }, []);
 
-    
+    async function handleLogout() {
+  const res = await fetch("/api/auth/logout", {
+    method: "POST",
+  });
+  const data = await res.json();
+  
+  if (data.success) {
+    // Optionally redirect to login page
+    window.location.href = "/";
+  }
+}
   const menuItems: MenuItemType[] =
     (userData?.role === "admin" && AdminMenuitems) ||
     (userData?.role === "college" && CollegeMenuitems) ||
@@ -77,6 +87,9 @@ const SidebarItems = ({ toggleMobileSidebar }: SidebarItemsProps) => {
             />
           )
         )}
+        <Button variant="outlined" style={{paddingTop:2, width:"100%",justifyContent:"start",marginTop:8}}  onClick={handleLogout} color="primary" >
+                   Logout
+                  </Button>
       </List>
     </Box>
   );

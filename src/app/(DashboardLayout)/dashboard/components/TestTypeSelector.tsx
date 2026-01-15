@@ -800,6 +800,7 @@ import {
   MenuBook as MenuBookIcon,
   PlayArrow as PlayIcon,
 } from '@mui/icons-material';
+import { getCurrentUser } from '@/lib/getCurrentUser';
 
 interface TestTypeSelectorProps {
   onTestStart: (
@@ -847,8 +848,8 @@ const TestTypeSelector: React.FC<TestTypeSelectorProps> = ({ onTestStart }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const userRes = await fetch('/api/auth/Get-Current-User');
-        const userData = await userRes.json();
+      const userData = await getCurrentUser();
+    
 
         const userCourses: string[] = userData?.user?.courses || [];
 

@@ -8,6 +8,51 @@
   --font-mono: var(--font-geist-mono);
 }
 
+.hex {
+  width: 52px;
+  height: 52px;
+  background: linear-gradient(135deg, #ffdb81, #ffae00);
+  clip-path: polygon(
+    25% 6%,
+    75% 6%,
+    100% 50%,
+    75% 94%,
+    25% 94%,
+    0% 50%
+  );
+  
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgb(192, 0, 0);
+  font-weight: 700;
+}
+
+.hex.muted {
+  background: #cbd5f5;
+  color: #475569;
+}
+
+/* .hexagon {
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(145deg, #6366f1, #3b82f6);
+  clip-path: polygon(
+    25% 0%,
+    75% 0%,
+    100% 50%,
+    75% 100%,
+    25% 100%,
+    0% 50%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
+} */
+
+
 
 @keyframes slideIn {
   0% {

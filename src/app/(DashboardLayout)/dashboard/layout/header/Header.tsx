@@ -5,6 +5,7 @@ import Link from 'next/link';
 // components
 import Profile from './Profile';
 import { IconBellRinging, IconMenu } from '@tabler/icons-react';
+import LevelProgressCard from './levelProgress';
 // import { SignedOut, SignInButton, SignUpButton, SignedIn, UserButton } from '@clerk/nextjs';
 
 
@@ -18,17 +19,17 @@ const Header = ({toggleMobileSidebar, hide}: ItemType) => {
   // const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
   // const lgDown = useMediaQuery((theme) => theme.breakpoints.down('lg'));
 
-async function handleLogout() {
-  const res = await fetch("/api/auth/logout", {
-    method: "POST",
-  });
-  const data = await res.json();
+// async function handleLogout() {
+//   const res = await fetch("/api/auth/logout", {
+//     method: "POST",
+//   });
+//   const data = await res.json();
   
-  if (data.success) {
-    // Optionally redirect to login page
-    window.location.href = "/";
-  }
-}
+//   if (data.success) {
+//     // Optionally redirect to login page
+//     window.location.href = "/";
+//   }
+// }
 
   const AppBarStyled = styled(AppBar)(({ theme }) => ({
 
@@ -84,9 +85,10 @@ async function handleLogout() {
         </IconButton>
         <Box flexGrow={1} />
         <Stack spacing={1} direction="row" alignItems="center">
-          <Button variant="contained"   onClick={handleLogout} color="primary" >
+          {/* <Button variant="contained"   onClick={handleLogout} color="primary" >
            Logout
-          </Button>
+          </Button> */}
+          <LevelProgressCard />
           {/* <Profile /> */}
           
         {/* <SignedIn>

@@ -17,6 +17,7 @@ import {
 import { PlayArrow as PlayIcon } from '@mui/icons-material';
 import { useRouter } from 'next/navigation';
 import { getLevelLabel } from '@/lib/getLevelLable';
+import { getCurrentUser } from '@/lib/getCurrentUser';
 
 interface PracticeRow {
   course: string;
@@ -46,8 +47,8 @@ const router=useRouter()
   useEffect(() => {
    const fetchData = async () => {
   try {
-    const userRes = await fetch('/api/auth/Get-Current-User');
-    const userData = await userRes.json();
+      const userData = await getCurrentUser();
+    
     const userCourses: string[] = userData?.user?.courses || [];
 
     const res = await fetch('/api/Get-Available-Options?email='+encodeURIComponent(userData?.user?.email) ||"email");
@@ -90,8 +91,8 @@ fetchData();
   setLoading(true);
   try {
     // 1️⃣ Get current user
-    const res_user = await fetch("/api/auth/Get-Current-User");
-    const data_user = await res_user.json();
+   const data_user = await getCurrentUser();
+ 
     const email = data_user.user.email;
 
     // 2️⃣ Fetch questions
@@ -155,9 +156,28 @@ console.log(data.questions)
         Practice Test Selection
       </Typography>
 
-      <Paper sx={{ p: 3 , display:"flex", flexDirection:"row"}}>
-        <Box sx={{display:"flex", justifyContent:"space-between",p:2}}>
-          <div>
+      <Paper sx={{ p: 3 , display:"block"}}>
+        <Box sx={{display:"flex", justifyContent:"space-between",pb:2,borderBottom:"1.5px dashed", borderColor:"#bdbdbd",flexWrap:"wrap",gap:2}}>
+          <div style={{display:"flex",gap:10}}>
+
+  <Box
+    onClick={() => setFilterText('')}
+    sx={{
+      cursor: 'pointer',
+      py: 1.5,
+      px: 1,
+      borderBottom: filterText === '' ? '3px solid #1976d2' : '1px solid #e0e0e0',
+      color: filterText === '' ? '#1976d2' : '#444',
+      fontWeight: filterText === '' ? 600 : 400,
+      transition: 'all 0.2s ease',
+      '&:hover': {
+        color: '#1976d2',
+      },
+    }}
+  >
+    All Subjects
+  </Box>
+
         {['Physics', 'Chemistry', 'Biology', 'Maths'].map((subject) => {
     const active = filterText.toLowerCase() === subject.toLowerCase();
 
@@ -182,25 +202,6 @@ console.log(data.questions)
       </Box>
     );
   })}
-
-  {/* Optional: All */}
-  <Box
-    onClick={() => setFilterText('')}
-    sx={{
-      cursor: 'pointer',
-      py: 1.5,
-      px: 1,
-      borderBottom: filterText === '' ? '3px solid #1976d2' : '1px solid #e0e0e0',
-      color: filterText === '' ? '#1976d2' : '#444',
-      fontWeight: filterText === '' ? 600 : 400,
-      transition: 'all 0.2s ease',
-      '&:hover': {
-        color: '#1976d2',
-      },
-    }}
-  >
-    All Subjects
-  </Box>
   </div>
   <div>
         <input

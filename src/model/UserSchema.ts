@@ -43,6 +43,18 @@ hasUsedTrial: { type: Boolean, default: false },
       enum: ["basic", "pro", "enterprise", null],
       default: null,
     },
+points: {
+  type: Number,
+  default: 0,
+},
+level: {
+  type: Number,
+  default: 1,
+},
+levelName: {
+  type: String,
+  default: "Steady Mind",
+},
 
 // --- Tokens for email verification & password reset ---
 emailVerificationToken: { type: String, default: null },

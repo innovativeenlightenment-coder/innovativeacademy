@@ -19,6 +19,8 @@ import {
   Divider,
   IconButton,
   Tooltip,
+  Dialog,
+  LinearProgress,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { Question } from "@/types/questionType";
@@ -48,6 +50,50 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 // @ts-ignore
 import html2pdf from "html2pdf.js";
 import React from "react";
+import { progress } from "framer-motion";
+import { getCurrentUser } from "@/lib/getCurrentUser";
+import { LEVELS } from "@/utils/level_config";
+import ResultModal from "./resultModal";
+
+
+function buildTestInsight(params: {
+  correct: number;
+  incorrect: number;
+  unanswered: number;
+  percentage: number;
+  duration: number;
+  timeLeft: number;
+  subject: string;
+  chapter: string;
+}) {
+  const insight = generateInsight(params);
+
+  const emotion =
+    params.percentage >= 80
+      ? { left: "🌟", right: "🔥", title: "Well Done" }
+      : params.percentage >= 50
+      ? { left: "🙂", right: "📈", title: "Moving Forward" }
+      : params.percentage >= 30
+      ? { left: "🌱", right: "🧠", title: "Learning Phase" }
+      : { left: "🤍", right: "🌤️", title: "Keep Going" };
+
+  const gainedPoints = Math.floor(6 + Math.random() * 10);
+
+  return {
+    insight,
+    emotion,
+    gainedPoints,
+  };
+}
+
+
+const XP_CONFIG = {
+  base: 20,
+  performance: 15,
+  discipline: 5,
+  time: 10,
+};
+
 
 export default function ResultPage() {
   const searchParams = useSearchParams();
@@ -62,6 +108,7 @@ export default function ResultPage() {
     questionIds: string[];
     date: string;
     duration: number;
+     timeLeft: number;
     totalMarks: number;
     testType: string;
   }>({
@@ -71,6 +118,7 @@ export default function ResultPage() {
     questionIds: [],
     date: "-",
     duration: 0,
+    timeLeft:0,
     totalMarks: 0,
     testType: "-"
   });
@@ -82,6 +130,397 @@ const [generatingPdf, setGeneratingPdf] = useState(false);
   const [incorrectCount, setIncorrectCount] = useState(0);
   const [unansweredCount, setUnansweredCount] = useState(0);
   const [percentage, setPercentage] = useState("0");
+
+
+
+  
+ const [openResultModal, setOpenResultModal] = useState(false);
+
+  useEffect(() => {
+    // open result modal once result is ready
+    setOpenResultModal(true);
+  }, []);
+// const [resultInsight, setResultInsight] = useState("");
+// const [emotionSet, setEmotionSet] = useState<{ left: string; right: string; title: string } | null>(null);
+// // const [gainedPoints, setGainedPoints] = useState(0);
+// // const [progress, setProgress] = useState(10);
+// // const [showPoints, setShowPoints] = useState(false);
+
+
+// // const [xpSteps, setXpSteps] = useState<
+// //   { label: string; value: number; visible: boolean }[]
+// // >([]);
+
+// // const [totalXP, setTotalXP] = useState(0);
+
+
+// // useEffect(() => {
+// //   if (!openResultModal) return;
+
+// //   // Reset everything
+// //   setProgress(0);
+// //   setShowPoints(false);
+// //   setTotalXP(0);
+
+// //   const steps = [
+// //     { label: "Base XP (Test Attempt)", value: XP_CONFIG.base },
+// //     { label: "Performance Bonus", value: XP_CONFIG.performance },
+// //     { label: "Discipline Bonus", value: XP_CONFIG.discipline },
+// //     { label: "Time Mastery Bonus", value: XP_CONFIG.time },
+// //   ];
+
+// //   setXpSteps(steps.map(s => ({ ...s, visible: false })));
+
+// //   let accumulated = 0;
+
+// //   steps.forEach((step, index) => {
+// //     setTimeout(() => {
+// //       accumulated += step.value;
+
+// //       setXpSteps(prev =>
+// //         prev.map((s, i) =>
+// //           i === index ? { ...s, visible: true } : s
+// //         )
+// //       );
+
+// //       setTotalXP(accumulated);
+// //     }, 600 * (index + 1));
+// //   });
+
+// //   // After all XP lines
+// //   setTimeout(() => {
+// //     setShowPoints(true);
+
+// //     // Smooth progress animation (single run)
+// //     const target = 60; // pretend user is now at 60%
+// //     let start = 0;
+// //     const duration = 1200;
+// //     const startTime = performance.now();
+
+// //     const animate = (time: number) => {
+// //       const elapsed = time - startTime;
+// //       const progressValue = Math.min(
+// //         start + (elapsed / duration) * target,
+// //         target
+// //       );
+// //       setProgress(progressValue);
+
+// //       if (elapsed < duration) {
+// //         requestAnimationFrame(animate);
+// //       }
+// //     };
+
+// //     requestAnimationFrame(animate);
+// //   }, 600 * (steps.length + 1));
+
+// // }, [openResultModal]);
+
+
+// // After your sessionStorage parsing and state setup
+// useEffect(() => {
+//   if (!loading) {
+//     const result = buildTestInsight({
+//       correct: correctCount,
+//       incorrect: incorrectCount,
+//       unanswered: unansweredCount,
+//       percentage: Number(percentage),
+//       duration: test.duration,
+//       timeLeft: test.timeLeft,
+//       subject: test.subject,
+//       chapter: test.chapter,
+//     });
+
+//     setResultInsight(result.insight);
+//     setEmotionSet(result.emotion);
+//     setGainedPoints(result.gainedPoints);
+//     setOpenResultModal(true);
+//   }
+// }, [loading, correctCount, incorrectCount, unansweredCount, percentage, test]);
+
+
+// // useEffect(() => {
+// //   if (!openResultModal) return;
+
+// //   setProgress(10);
+// //   setShowPoints(false);
+
+// //   const start = 10;
+// //   const end = 40;
+// //   const duration = 2000; // ms
+// //   const startTime = performance.now();
+
+// //   const animate = (time: number) => {
+// //     const elapsed = time - startTime;
+// //     const progressValue = Math.min(
+// //       start + (elapsed / duration) * (end - start),
+// //       end
+// //     );
+
+// //     setProgress(progressValue);
+
+// //     if (progressValue < end) {
+// //       requestAnimationFrame(animate);
+// //     } else {
+// //       setShowPoints(true);
+// //     }
+// //   };
+
+// //   requestAnimationFrame(animate);
+// // }, [openResultModal]);
+
+
+// // XP + Level
+// const [currentLevel, setCurrentLevel] = useState(1);
+// const [nextLevel, setNextLevel] = useState(2);
+// const [levelName, setLevelName] = useState("");
+// const [pointsBefore, setPointsBefore] = useState(0);
+// const [pointsAfter, setPointsAfter] = useState(0);
+
+// // Progress %
+// const [progress, setProgress] = useState(0);
+
+// // XP breakdown animation
+// const [xpSteps, setXpSteps] = useState<
+//   { label: string; value: number; visible: boolean }[]
+// >([
+//   { label: "Base XP", value: 0, visible: false },
+//   { label: "Score Bonus", value: 0, visible: false },
+//   { label: "Time Bonus", value: 0, visible: false },
+// ]);
+
+// const [totalXP, setTotalXP] = useState(0);
+// const [showPoints, setShowPoints] = useState(false);
+// const [gainedPoints, setGainedPoints] = useState(0);
+
+
+// // useEffect(() => {
+// //   if (!openResultModal) return;
+
+// //   const runXPFlow = async () => {
+// //     // reset UI
+// //     setProgress(0);
+// //     setShowPoints(false);
+// //     setTotalXP(0);
+// //     setXpSteps((s) => s.map(x => ({ ...x, visible: false, value: 0 })));
+// //     const userData=await getCurrentUser()
+// //     const res = await fetch("/api/Add-Points", {
+// //       method: "POST",
+// //       headers: { "Content-Type": "application/json" },
+// //       body: JSON.stringify({
+// //         userId: userData.user._id, // 🔴 make sure this exists
+// //         scorePercent: Number(percentage),
+// //         timeUsed: test.duration - test.timeLeft,
+// //         totalTime: test.duration,
+// //         attemptedQuestions: ((questions.length)+1)-(unansweredCount+1),
+// //     totalQuestions: (questions.length)+1,
+// //       }),
+// //     });
+
+// //     const data = await res.json();
+
+// //     if (!data.success) return;
+
+// //     // save backend truth
+// //     setCurrentLevel(data.level);
+// //     setLevelName(data.levelName);
+// //     setPointsBefore(data.previousPoints);
+// //     setPointsAfter(data.totalPoints);
+// //     setGainedPoints(data.gainedPoints);
+// //     setNextLevel(data.level + 1);
+
+// //     animateXP(data);
+// //   };
+
+// //   runXPFlow();
+// // }, [openResultModal]);
+
+// // const animateXP = async (data: any) => {
+// //   const steps = [
+// //     { label: "Base XP", value: 20 },
+// //     { label: "Score Bonus", value: data.gainedPoints >= 40 ? 20 : 0 },
+// //     {
+// //       label: "Time Bonus",
+// //       value: data.gainedPoints > 40 ? data.gainedPoints - 40 : 0,
+// //     },
+// //   ];
+
+// //   let runningTotal = 0;
+
+// //   for (let i = 0; i < steps.length; i++) {
+// //     await delay(500);
+
+// //     animateNumber(0, steps[i].value, (val) => {
+// //       setXpSteps((prev) => {
+// //         const copy = [...prev];
+// //         copy[i] = { ...copy[i], value: val, visible: true };
+// //         return copy;
+// //       });
+// //     });
+
+// //     runningTotal += steps[i].value;
+// //   }
+
+// //   // show total
+// //   await delay(400);
+// //   animateNumber(0, runningTotal, (val) => setTotalXP(val));
+
+// //   // fly XP to bar
+// //   await delay(600);
+// //   setShowPoints(true);
+
+// //   // progress bar move
+// //   await delay(300);
+// //   animateProgress();
+// // };
+
+// // const animateProgress = () => {
+// //   // get current & next level ranges
+// //   const currentLevelData = LEVELS.find(
+// //     (l) => l.level === currentLevel
+// //   );
+// //   const nextLevelData = LEVELS.find(
+// //     (l) => l.level === nextLevel
+// //   );
+
+// //   if (!currentLevelData || !nextLevelData) return;
+
+// //   const levelRange =
+// //     nextLevelData.minPoints - currentLevelData.minPoints;
+
+// //   const progressPercent =
+// //     ((pointsAfter - currentLevelData.minPoints) / levelRange) * 100;
+
+// //   animateNumber(0, progressPercent, (val) =>
+// //     setProgress(val)
+// //   );
+
+// //   // optional sound
+// //   new Audio("/sounds/xp.mp3").play().catch(() => {});
+// // };
+
+// useEffect(() => {
+//   if (!openResultModal) return;
+
+//   const runXPFlow = async () => {
+//     // reset UI
+//     setProgress(0);
+//     setShowPoints(false);
+//     setTotalXP(0);
+//     setXpSteps((s) => s.map((x) => ({ ...x, visible: false, value: 0 })));
+
+//     const userData = await getCurrentUser();
+
+//     const res = await fetch("/api/Add-Points", {
+//       method: "POST",
+//       headers: { "Content-Type": "application/json" },
+//       body: JSON.stringify({
+//         userId: userData.user._id,
+//         scorePercent: Number(percentage),
+//         timeUsed: test.duration - test.timeLeft,
+//         totalTime: test.duration,
+//         attemptedQuestions: questions.length - unansweredCount,
+//         totalQuestions: questions.length,
+//       }),
+//     });
+
+//     const data = await res.json();
+//     if (!data.success) return;
+
+//     // Save backend truth
+//     setCurrentLevel(data.level);
+//     setLevelName(data.levelName);
+//     setPointsBefore(data.previousPoints);
+//     setPointsAfter(data.totalPoints);
+//     setNextLevel(data.level + 1);
+
+//     // Use points breakdown from backend
+//     const steps = [
+//       { label: "Base XP", value: data.pointsBreakdown.basePoints },
+//       { label: "Score Bonus", value: data.pointsBreakdown.scorePoints },
+//       { label: "Time Bonus", value: data.pointsBreakdown.timePoints },
+//     ];
+
+//     // Animate XP step by step
+//     let runningTotal = 0;
+//     for (let i = 0; i < steps.length; i++) {
+//       await delay(500);
+
+//       animateNumber(0, steps[i].value, (val) => {
+//         setXpSteps((prev) => {
+//           const copy = [...prev];
+//           copy[i] = { ...copy[i], value: val, visible: true };
+//           return copy;
+//         });
+//       });
+
+//       runningTotal += steps[i].value;
+//     }
+
+//     // Animate total XP
+//     await delay(400);
+//     animateNumber(0, runningTotal, (val) => setTotalXP(val));
+
+//     // Fly points to progress bar
+//     await delay(600);
+//     setShowPoints(true);
+
+//     // Animate progress bar
+//     await delay(300);
+//     animateProgressBar(data);
+//   };
+
+//   runXPFlow();
+// }, [openResultModal]);
+
+// // -----------------------
+// // Progress Bar Animation
+// // -----------------------
+// const animateProgressBar = (data: any) => {
+//   const currentLevelData = LEVELS.find((l) => l.level === data.level);
+// const nextLevelData = LEVELS.find((l) => l.level === data.level + 1);
+
+// // If currentLevelData is missing, fallback to first level
+// if (!currentLevelData) return;
+
+// // If max level, hide progress bar
+// if (!nextLevelData || data.level === LEVELS[LEVELS.length - 1].level) {
+//   setProgress(100);
+//   return;
+// }
+
+// const levelRange = nextLevelData.minPoints - currentLevelData.minPoints;
+// const pointsIntoLevel = data.totalPoints - currentLevelData.minPoints;
+// const targetPercent = Math.min((pointsIntoLevel / levelRange) * 100, 100);
+
+// animateNumber(0, targetPercent, (val) => setProgress(val));
+
+
+//   // Play XP sound
+//   new Audio("/sounds/xp.mp3").play().catch(() => {});
+// };
+
+// // -----------------------
+// // Generic number animation helper
+// // -----------------------
+// function animateNumber(start: number, end: number, callback: (val: number) => void, duration = 800) {
+//   const startTime = performance.now();
+//   const step = (time: number) => {
+//     const elapsed = time - startTime;
+//     const progress = Math.min(elapsed / duration, 1);
+//     const value = Math.round(start + (end - start) * progress);
+//     callback(value);
+//     if (progress < 1) requestAnimationFrame(step);
+//   };
+//   requestAnimationFrame(step);
+// }
+
+// // -----------------------
+// // Simple delay
+// // -----------------------
+// function delay(ms: number) {
+//   return new Promise((resolve) => setTimeout(resolve, ms));
+// }
+
 
   useEffect(() => {
     const stored = sessionStorage.getItem("testResult");
@@ -120,7 +559,7 @@ const [generatingPdf, setGeneratingPdf] = useState(false);
       setLoading(false);
       
       // Keep data for 5 minutes
-      // setTimeout(() => sessionStorage.removeItem("testResult"), 300000);
+      setTimeout(() => sessionStorage.removeItem("testResult"), 30000000); //300000
     } catch (err) {
       console.error("Session parse error:", err);
       setLoading(false);
@@ -232,14 +671,8 @@ const formatDuration = (totalSeconds: number) => {
 };
 
 
-const subjectsGroupedBySubject = Array.from(
-  questions.reduce((acc, q, i) => {
-    const group = acc.get(q.subject) || [];
-    group.push({ ...q, index: i });
-    acc.set(q.subject, group);
-    return acc;
-  }, new Map<string, (Question & { index: number })[]>())
-);
+
+
 
   return (
     <>
@@ -308,6 +741,33 @@ const subjectsGroupedBySubject = Array.from(
             display: none !important;
           }
         }
+          @keyframes floatUp {
+  0% { transform: translateY(0); opacity: 0; }
+  30% { opacity: 1; }
+  100% { transform: translateY(-24px); opacity: 0; }
+}
+  @keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes floatUp {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-10px);
+  }
+}
+
       `}</style>
       
       <Box sx={{
@@ -1435,9 +1895,325 @@ console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer,
               </CardContent>
             </Card>
             </Box>
+
+                <ResultModal
+        openResultModal={openResultModal}
+        handleClose={() => setOpenResultModal(false)}
+        correctCount={correctCount}
+        incorrectCount={incorrectCount}
+        unansweredCount={unansweredCount}
+        percentage={Number(percentage)}
+        questions={questions}
+        test={test}
+      />
+           {/* <Dialog
+  open={openResultModal}
+  onClose={handleClose}
+  PaperProps={{
+    sx: {
+      borderRadius: 4,
+      boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
+      overflow: "visible",
+      p: 0,
+    },
+  }}
+>
+  <Box
+    sx={{
+      width: { xs: 320, sm: 480, md: 540 },
+      p: 4,
+      borderRadius: 4,
+      background: "linear-gradient(180deg, #ffffff, #f0f4f8)",
+      position: "relative",
+      textAlign: "center",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: 3,
+    }}
+  >
+    
+    <Box
+      sx={{
+        position: "absolute",
+        top: -28,
+        left: -28,
+        fontSize: 48,
+        transform: "rotate(-15deg)",
+      }}
+    >
+      🎓
+    </Box>
+    <Box
+      sx={{
+        position: "absolute",
+        top: -28,
+        right: -28,
+        fontSize: 48,
+        transform: "rotate(15deg)",
+      }}
+    >
+      🏆
+    </Box>
+
+    
+    <Typography
+      variant="h5"
+      sx={{ fontWeight: 700, color: "#0f172a", mt: 1 }}
+    >
+      {emotionSet?.title || "Result"}
+    </Typography>
+
+   
+    <Typography
+      sx={{
+        fontSize: 15,
+        color: "#334155",
+        lineHeight: 1.6,
+        px: 2,
+        textAlign: "center",
+      }}
+    >
+      {resultInsight}
+    </Typography>
+
+    <Box sx={{ width: "100%", mt: 2, position: "relative" }}>
+      <LinearProgress
+        variant="determinate"
+        value={progress}
+        sx={{
+          height: 12,
+          borderRadius: 6,
+          backgroundColor: "#e2e8f0",
+          "& .MuiLinearProgress-bar": {
+            borderRadius: 6,
+            background: "linear-gradient(90deg, #4ade80, #3b82f6)",
+            transition: "width 1s ease-in-out",
+          },
+        }}
+      />
+      <Box
+  sx={{
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    mb: 1,
+  }}
+>
+  
+  <Box className="hex">
+    <Typography>{currentLevel}</Typography>
+  </Box>
+
+  <Box className="hex muted">
+    <Typography>{nextLevel}</Typography>
+  </Box>
+</Box>
+
+<Box sx={{ width: "100%", mt: 2 }}>
+  {xpSteps.map((step, i) =>
+    step.visible ? (
+      <Box
+        key={i}
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          px: 2,
+          py: 0.5,
+          animation: "fadeSlideIn 0.4s ease",
+        }}
+      >
+        <Typography sx={{ color: "#475569", fontSize: 14 }}>
+          {step.label}
+        </Typography>
+        <Typography sx={{ fontWeight: 600, color: "#0f172a" }}>
+          +{step.value}
+        </Typography>
+      </Box>
+    ) : null
+  )}
+
+  {totalXP > 0 && (
+    <Box
+      sx={{
+        mt: 1.5,
+        pt: 1,
+        borderTop: "1px dashed #cbd5f5",
+        display: "flex",
+        justifyContent: "space-between",
+        px: 2,
+        fontWeight: 700,
+        animation: "fadeSlideIn 0.5s ease",
+      }}
+    >
+      <Typography>Total XP</Typography>
+      <Typography color="#2563eb">{totalXP}</Typography>
+    </Box>
+  )}
+</Box>
+
+    
+      {showPoints && (
+        <Typography
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: -28,
+            fontWeight: 700,
+            color: "#2563eb",
+            animation: "floatUp 1.2s ease forwards",
+          }}
+        >
+          +{gainedPoints} 🎯
+        </Typography>
+      )}
+    </Box>
+
+   
+    <Box sx={{ mt: 3, display: "flex", gap: 3 }}>
+      <Box
+        sx={{
+          width: 64,
+          height: 64,
+          bgcolor: "#e0f2fe",
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 28,
+        }}
+      >
+        📚
+      </Box>
+      <Box
+        sx={{
+          width: 64,
+          height: 64,
+          bgcolor: "#fef3c7",
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 28,
+        }}
+      >
+        ⭐
+      </Box>
+      <Box
+        sx={{
+          width: 64,
+          height: 64,
+          bgcolor: "#ede9fe",
+          borderRadius: "50%",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          fontSize: 28,
+        }}
+      >
+        🏅
+      </Box>
+    </Box>
+  </Box>
+</Dialog> */}
+
+
         </PageContainer>
       </Box>
     </>
   );
 }
 
+function generateInsight(params: {
+  correct: number;
+  incorrect: number;
+  unanswered: number;
+  percentage: number;
+  duration: number;
+  timeLeft?: number;
+  subject: string;
+  chapter: string;
+}) {
+  const {
+    correct,
+    incorrect,
+    unanswered,
+    percentage,
+    duration,
+    timeLeft = 0,
+    subject,
+    chapter,
+  } = params;
+
+  const attempted = correct + incorrect;
+  const total = attempted + unanswered;
+  const attemptRatio = total ? attempted / total : 0;
+  const timeUsedRatio = duration ? (duration - timeLeft) / duration : 0;
+
+  // 🌱 Low score but high courage
+  if (percentage < 40 && attemptRatio > 0.75) {
+    return "Even when results feel low, showing up fully is a powerful habit. This effort builds inner strength that marks can’t measure.";
+  }
+
+  // 🧠 Calm effort, no panic
+  if (timeUsedRatio < 0.8 && percentage >= 40) {
+    return "You stayed calm and controlled throughout the test. That emotional balance is a real-life skill, not just an exam skill.";
+  }
+
+  // 🔁 Learning phase
+  if (incorrect > correct) {
+    return "Mistakes today are feedback, not failure. Every strong performer has passed through this exact phase.";
+  }
+
+  // 🔥 High focus attempt
+  if (attemptRatio > 0.9) {
+    return "You faced almost every question without avoidance. That courage to try is what separates learners from quitters.";
+  }
+
+  // ⏳ Time struggle but persistence
+  if (timeUsedRatio > 0.95) {
+    return "You pushed till the very end. Persistence under pressure is a rare and valuable trait.";
+  }
+
+  // 🌟 Strong performance
+  if (percentage >= 80) {
+    return `This test reflects maturity in ${chapter}. Keep this rhythm — not for marks, but for mastery.`;
+  }
+
+  // 🌈 Neutral encouragement
+  return "Progress is not loud every day. Quiet effort like this compounds into confidence over time.";
+}
+
+function getEmotionSet(percentage: number) {
+  if (percentage >= 80)
+    return { left: "🌟", right: "🔥", title: "Well Done" };
+
+  if (percentage >= 50)
+    return { left: "🙂", right: "📈", title: "Moving Forward" };
+
+  if (percentage >= 30)
+    return { left: "🌱", right: "🧠", title: "Learning Phase" };
+
+  return { left: "🤍", right: "🌤️", title: "Keep Going" };
+}
+
+const delay = (ms: number) =>
+  new Promise((res) => setTimeout(res, ms));
+
+const animateNumber = (
+  from: number,
+  to: number,
+  cb: (v: number) => void
+) => {
+  const duration = 600;
+  const start = performance.now();
+
+  const tick = (now: number) => {
+    const progress = Math.min((now - start) / duration, 1);
+    const value = Math.floor(from + (to - from) * progress);
+    cb(value);
+    if (progress < 1) requestAnimationFrame(tick);
+  };
+
+  requestAnimationFrame(tick);
+};

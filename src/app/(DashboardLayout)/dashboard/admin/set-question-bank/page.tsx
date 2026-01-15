@@ -6,6 +6,7 @@ import QuestionTypeSelector from "../../components/questionTypeSelector";
 import Loading from "@/app/loading";
 import PageContainer from "../../components/container/PageContainer";
 import { unstable_noStore as noStore } from "next/cache";
+import { getCurrentUser } from "@/lib/getCurrentUser";
 
 export default function SetTest() {
 
@@ -20,8 +21,8 @@ export default function SetTest() {
     useEffect(() => {
       async function fetchUser() {
         try {
-          const res = await fetch("/api/auth/Get-Current-User", { method: "GET" });
-          const data = await res.json();
+          const data = await getCurrentUser();
+        
   
           if (data?.success && data.user) {
      

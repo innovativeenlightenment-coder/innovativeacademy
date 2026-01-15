@@ -28,6 +28,7 @@ import { unstable_noStore as noStore } from "next/cache";
 
 import * as XLSX from "xlsx";
 import Loading from "../../loading";
+import { getCurrentUser } from "@/lib/getCurrentUser";
 
 // Define the type for a question
 export interface QuestionData {
@@ -265,9 +266,8 @@ if(filteredQuestions){
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await fetch("/api/auth/Get-Current-User", { method: "GET" });
-        const data = await res.json();
-
+         const data = await getCurrentUser();
+       
         if (data?.success && data.user) {
    
           setUser(data.user);

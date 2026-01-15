@@ -347,6 +347,7 @@ import Sidebar from "./layout/sidebar/Sidebar";
 import { usePathname, useRouter } from "next/navigation";
 
 import Loading from "./loading";
+import { getCurrentUser } from "@/lib/getCurrentUser";
 
 const MainWrapper = styled("div")(() => ({
   display: "flex",
@@ -450,8 +451,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     async function fetchUser() {
       try {
-        const res = await fetch("/api/auth/Get-Current-User", { method: "GET" });
-        const data = await res.json();
+        const data = await getCurrentUser();
 
         if (data?.success && data.user) {
    
@@ -475,10 +475,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   
   useEffect(()=>{
   const fetchUser=async()=>{
-  
-    const res = await fetch("/api/auth/Get-Current-User", { method: "GET" });
-          const data = await res.json();
-  
+    const data = await getCurrentUser();
+
           if (data?.success && data.user) {
      const user=data.user
       if (!user) {
@@ -554,7 +552,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             overflowX: "hidden",
           }}
         >
-          <Box sx={{ minHeight: "calc(100vh - 170px)" }}>{children}</Box>
+          <Box sx={{ minHeight: "calc(100vh - 270px)" }}>{children}</Box>
         </Container>
       </PageWrapper>
     </MainWrapper>

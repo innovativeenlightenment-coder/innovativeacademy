@@ -374,7 +374,7 @@ console.log(eligibleForLevelUp, avgScore)
             level: TO_DB_LEVEL[level],
           },
         },
-        { $sample: { size: count } },
+        { $sample: { size: count-1 } },
       ]);
 
       questions.push(...qs);

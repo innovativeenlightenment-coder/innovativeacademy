@@ -18,7 +18,7 @@ export async function GET(req: Request) {
       },
       cache: "no-store",
     });
-
+    
     const userJson = await userRes.json();
 
     if (!userJson?.success || !userJson?.user?.email) {
