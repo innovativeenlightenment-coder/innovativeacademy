@@ -149,152 +149,218 @@ export default function LevelProgressCard() {
   if (!user || !meta) return null;
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", gap: 0.6, minWidth: { xs: 260, sm: 320 } }}>
-      {/* MAIN PILL */}
-      <Box
-        sx={{
-          height: 40,
-          borderRadius: 999,
-          overflow: "hidden",
-          display: "flex",
-          alignItems: "center",
+    // <Box sx={{ display: "flex", flexDirection: "column", gap: 0.6, minWidth: { xs: 260, sm: 320 } }}>
+    //   {/* MAIN PILL */}
+    //   <Box
+    //     sx={{
+    //       height: 40,
+    //       borderRadius: 999,
+    //       overflow: "hidden",
+    //       display: "flex",
+    //       alignItems: "center",
 
-          // premium glass
-          background: "linear-gradient(180deg, rgba(15,23,42,.72), rgba(15,23,42,.55))",
-          border: "1px solid rgba(148,163,184,.22)",
-          boxShadow: "0 10px 28px rgba(0,0,0,.28)",
-          backdropFilter: "blur(10px)",
-        }}
-      >
-        {/* XP BLOCK */}
-        <Box
-          sx={{
-            position: "relative",
-            height: "100%",
-            minWidth: 108,
-            px: 1.6,
-            display: "flex",
-            alignItems: "center",
-            gap: 0.8,
+    //       // premium glass
+    //       background: "linear-gradient(180deg, rgba(15,23,42,.72), rgba(15,23,42,.55))",
+    //       border: "1px solid rgba(148,163,184,.22)",
+    //       boxShadow: "0 10px 28px rgba(0,0,0,.28)",
+    //       backdropFilter: "blur(10px)",
+    //     }}
+    //   >
+    //     {/* XP BLOCK */}
+    //     <Box
+    //       sx={{
+    //         position: "relative",
+    //         height: "100%",
+    //         minWidth: 108,
+    //         px: 1.6,
+    //         display: "flex",
+    //         alignItems: "center",
+    //         gap: 0.8,
 
-            // mint/teal premium gradient
-            background: "linear-gradient(90deg, #34d399, #22c55e)",
-          }}
-        >
-          {/* subtle fill sheen based on percent */}
-          <Box
-            sx={{
-              position: "absolute",
-              inset: 0,
-              width: `${meta.percent}%`,
-              opacity: 0.18,
-              background: "linear-gradient(90deg, rgba(255,255,255,.9), rgba(255,255,255,0))",
-            }}
-          />
+    //         // mint/teal premium gradient
+    //         background: "linear-gradient(90deg, #34d399, #22c55e)",
+    //       }}
+    //     >
+    //       {/* subtle fill sheen based on percent */}
+    //       <Box
+    //         sx={{
+    //           position: "absolute",
+    //           inset: 0,
+    //           width: `${meta.percent}%`,
+    //           opacity: 0.18,
+    //           background: "linear-gradient(90deg, rgba(255,255,255,.9), rgba(255,255,255,0))",
+    //         }}
+    //       />
 
-          <Typography
-            sx={{
-              position: "relative",
-              zIndex: 1,
-              color: "#052e16",
-              fontWeight: 900,
-              fontSize: 11.5,
-              letterSpacing: 0.2,
-              whiteSpace: "nowrap",
-            }}
-          >
-            {user.points.toLocaleString()} XP
-          </Typography>
-        </Box>
+    //       <Typography
+    //         sx={{
+    //           position: "relative",
+    //           zIndex: 1,
+    //           color: "#052e16",
+    //           fontWeight: 900,
+    //           fontSize: 11.5,
+    //           letterSpacing: 0.2,
+    //           whiteSpace: "nowrap",
+    //         }}
+    //       >
+    //         {user.points.toLocaleString()} XP
+    //       </Typography>
+    //     </Box>
 
-        {/* HEX LEVEL */}
-        <Box
-          sx={{
-            width: 44,
-            height: 44,
-            marginLeft: "-10px",
-            marginRight: "-10px",
-            zIndex: 3,
+    //     {/* HEX LEVEL */}
+    //     <Box
+    //       sx={{
+    //         width: 44,
+    //         height: 44,
+    //         marginLeft: "-10px",
+    //         marginRight: "-10px",
+    //         zIndex: 3,
 
-            clipPath:
-              "polygon(25% 6.7%, 75% 6.7%, 100% 50%, 75% 93.3%, 25% 93.3%, 0% 50%)",
+    //         clipPath:
+    //           "polygon(25% 6.7%, 75% 6.7%, 100% 50%, 75% 93.3%, 25% 93.3%, 0% 50%)",
 
-            // sapphire premium
-            background: "linear-gradient(135deg, #60a5fa, #4f46e5)",
-            border: "1px solid rgba(255,255,255,.22)",
-            boxShadow: "0 10px 20px rgba(79,70,229,.35)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <Typography
-            sx={{
-              color: "white",
-              fontWeight: 950,
-              fontSize: 14,
-              textShadow: "0 2px 6px rgba(0,0,0,.45)",
-              lineHeight: 1,
-            }}
-          >
-            {user.level}
-          </Typography>
-        </Box>
+    //         // sapphire premium
+    //         background: "linear-gradient(135deg, #60a5fa, #4f46e5)",
+    //         border: "1px solid rgba(255,255,255,.22)",
+    //         boxShadow: "0 10px 20px rgba(79,70,229,.35)",
+    //         display: "flex",
+    //         alignItems: "center",
+    //         justifyContent: "center",
+    //       }}
+    //     >
+    //       <Typography
+    //         sx={{
+    //           color: "white",
+    //           fontWeight: 950,
+    //           fontSize: 14,
+    //           textShadow: "0 2px 6px rgba(0,0,0,.45)",
+    //           lineHeight: 1,
+    //         }}
+    //       >
+    //         {user.level}
+    //       </Typography>
+    //     </Box>
 
-        {/* LEVEL NAME */}
-        <Box
-          sx={{
-            height: "100%",
-            flex: 1,
-            px: 1.6,
-            display: "flex",
-            alignItems: "center",
+    //     {/* LEVEL NAME */}
+    //     <Box
+    //       sx={{
+    //         height: "100%",
+    //         flex: 1,
+    //         px: 1.6,
+    //         display: "flex",
+    //         alignItems: "center",
 
-            // warm premium gold
-            background: "linear-gradient(90deg, #fde68a, #f59e0b)",
-          }}
-          title={user.levelName}
-        >
-          <Typography
-            sx={{
-              color: "#111827",
-              fontWeight: 950,
-              fontSize: 11.5,
-              whiteSpace: "nowrap",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-            }}
-          >
-            {user.levelName}
-          </Typography>
-        </Box>
-      </Box>
+    //         // warm premium gold
+    //         background: "linear-gradient(90deg, #fde68a, #f59e0b)",
+    //       }}
+    //       title={user.levelName}
+    //     >
+    //       <Typography
+    //         sx={{
+    //           color: "#111827",
+    //           fontWeight: 950,
+    //           fontSize: 11.5,
+    //           whiteSpace: "nowrap",
+    //           overflow: "hidden",
+    //           textOverflow: "ellipsis",
+    //         }}
+    //       >
+    //         {user.levelName}
+    //       </Typography>
+    //     </Box>
+    //   </Box>
 
-      {/* FOOTER LINE */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          px: 1.2,
-          fontSize: 11,
-          fontWeight: 800,
-        }}
-      >
-        {meta.isMax ? (
-          <Typography sx={{ fontSize: 11, fontWeight: 900, color: "#22c55e" }}>
-            MAX LEVEL • Legend
-          </Typography>
-        ) : (
-          <>
-            <Typography sx={{ fontSize: 11, fontWeight: 900, color: "#cbd5e1" }}>
-              {meta.remaining.toLocaleString()} XP to next level
-            </Typography>
-            <Typography sx={{ fontSize: 11, fontWeight: 900, color: "#93c5fd" }}>
-              {meta.percent.toFixed(0)}%
-            </Typography>
-          </>
-        )}
-      </Box>
-    </Box>
+    //   {/* FOOTER LINE */}
+    //   <Box
+    //     sx={{
+    //       display: "flex",
+    //       justifyContent: "space-between",
+    //       px: 1.2,
+    //       fontSize: 11,
+    //       fontWeight: 800,
+    //     }}
+    //   >
+    //     {meta.isMax ? (
+    //       <Typography sx={{ fontSize: 11, fontWeight: 900, color: "#22c55e" }}>
+    //         MAX LEVEL • Legend
+    //       </Typography>
+    //     ) : (
+    //       <>
+    //         <Typography sx={{ fontSize: 11, fontWeight: 900, color: "#cbd5e1" }}>
+    //           {meta.remaining.toLocaleString()} XP to next level
+    //         </Typography>
+    //         <Typography sx={{ fontSize: 11, fontWeight: 900, color: "#93c5fd" }}>
+    //           {meta.percent.toFixed(0)}%
+    //         </Typography>
+    //       </>
+    //     )}
+    //   </Box>
+    // </Box>
+    // <Box sx={{pr:"20px"}}>
+    //    <span
+    //         style={{
+    //           position: "absolute",
+    //           zIndex: 1,
+    //           color: "#fff",
+    //           backgroundColor:"lightgreen",
+    //           fontWeight: 600,
+    //           fontSize: 10,
+    //           letterSpacing: 0.2,
+    //           padding:"0px 6px",
+             
+    //           borderRadius:"100px",
+    //           whiteSpace: "nowrap",
+    //         }}
+    //       >
+    //         {user.points.toLocaleString()} XP
+    //       </span>
+    //   <img src={`/images/badge/${user.level}.png`} style={{marginLeft:"20px"}} width={"80px"} height={"80px"} />
+    // </Box>
+    <Box
+  sx={{
+    position: "relative",
+    display: "inline-flex",
+    alignItems: "center",
+    pr: "20px",
+    // gap:20,
+  }}
+>
+  {/* Badge */}
+  <img
+    src={`/images/badge/${user.level}.png`}
+    alt={`Level ${user.level}`}
+    width={75}
+    height={75}
+    style={{
+      display: "block",
+      // marginLeft:"-25px"
+      marginRight:"10px",
+      textShadow:"0 2px 6px rgba(0,0,0,0.25)"
+    }}
+    />
+    <p style={{marginRight:"10px", fontSize:30, fontWeight:"lighter"}}>|</p>
+  {/* XP Badge */}
+  <Box
+    sx={{
+      // position: "absolute",
+      top: 5,
+      // right: 10,
+      zIndex: 2,
+      backgroundColor: "darkblue",
+      color: "#fff",
+      fontWeight: 600,
+      fontSize: 18,
+      padding: "4px 12px",
+      borderRadius: "999px",
+      whiteSpace: "nowrap",
+      boxShadow: "0 2px 6px rgba(0,0,0,0.25)",
+      // borderRight:"1px solid"
+    }}
+  >
+    {user.points.toLocaleString()} XP
+  </Box>
+
+</Box>
+
   );
 }

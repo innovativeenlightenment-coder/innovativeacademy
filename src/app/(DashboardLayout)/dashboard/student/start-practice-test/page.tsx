@@ -236,18 +236,18 @@ console.log(data.questions)
               {filteredRows.map((row, i) => (
                 <TableRow key={i}>
                   <TableCell>
-                    <Chip label={row.course} size="small" variant="outlined" />
+                    <Chip label={row.course} size="small" sx={{fontWeight:600}} variant="outlined" />
                   </TableCell>
 
                   <TableCell>
                     {row.subject ? (
-                      <Chip label={row.subject} size="small" variant="outlined" />
+                      <Chip label={row.subject} size="small" sx={{fontWeight:600}} variant="outlined" />
                     ) : '—'}
                   </TableCell>
 
                   <TableCell>
                     {row.chapter ? (
-                      <Chip label={row.chapter} size="small" variant="outlined" />
+                      <Chip label={row.chapter} size="small" sx={{fontWeight:600}} variant="outlined" />
                     ) : '—'}
                   </TableCell>
 
@@ -271,6 +271,17 @@ console.log(data.questions)
         : "#DCFCE7",
     color:
       row.level === "easy"
+        ? "#166534"
+        : row.level === "moderate"
+        ? "#854D0E"
+        : row.level === "difficult"
+        ? "#9A3412"
+        : row.level === "extreme"
+        ? "#991B1B"
+        : "#166534",
+      border:"1px solid",
+      borderColor:
+       row.level === "easy"
         ? "#166534"
         : row.level === "moderate"
         ? "#854D0E"

@@ -391,7 +391,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // hide sidebar paths
   const hideSidebarPaths = ["/dashboard/student/test"];
   const shouldHideSidebar = hideSidebarPaths.includes(pathname);
-  const isTestPage = pathname.includes("/student/test");
+  const isTestPage = pathname.includes("/student/test")&&!pathname.includes("/student/test-record");
 
 //   useEffect(() => {
 //     if (!isLoaded || !isSignedIn) return;
@@ -511,6 +511,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   if (isLoading) return <Loading />;
 
   // ✅ Width logic (NO flicker now)
+  console.log(isTestPage,isSubscribed,isTrialActive,screenWidth)
   const maxWidth = isTestPage
     ? "100vw"
     : isSubscribed || isTrialActive

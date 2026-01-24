@@ -438,6 +438,9 @@ export default function TestPage() {
   const testRef = useRef<any>(null);
   const questionRefs = useRef<Array<HTMLDivElement | null>>([]);
 const [durationTest,setDurationTest]=useState(0)
+
+
+  const [chapter, setChapter] = useState<string>("");
   // ---------------- LOAD TEST ----------------
   useEffect(() => {
     const saved = sessionStorage.getItem("currentTest");
@@ -449,7 +452,7 @@ const [durationTest,setDurationTest]=useState(0)
 console.log('get', saved)
     const test = JSON.parse(saved);
     testRef.current = test;
-
+setChapter(test.chapter)
     setQuestions(test.questions || []);
     setSubjectTab(test.subject || "");
 
@@ -696,15 +699,16 @@ useEffect(() => {
               bgcolor: "#fff59d",
               border: "1px solid #fdd835",
               borderRadius: 2,
-              p: 2,
+              p: 1,
               px:"28px",
               // width:"80%",
-              display: "flex",
-              justifyContent: "space-between",
+             display:"flex",
+             flexDirection:"column",
               mb: 10, // 👈 space so it doesn't overlap question
             }}
           >
-        
+        <div style={{ display: "flex",background: "#fff59d",
+              justifyContent: "space-between",}}>
             <Typography fontWeight={600} mr="12px">
               Time Left: {formatTime(timeLeft)}
             </Typography>
@@ -715,6 +719,12 @@ useEffect(() => {
             <Typography fontWeight={600}>
                Ques Left: {leftCount}
             </Typography>
+            </div>
+            <div style={{background: "#fff59d",marginTop:2}}>
+               <Typography fontWeight={600} mr="12px">
+              Chapter: {chapter}
+            </Typography>
+            </div>
           </Box>
 
 <div style={{marginTop:"80px"}}>
@@ -810,3 +820,5 @@ useEffect(() => {
     </Box>
   );
 }
+
+

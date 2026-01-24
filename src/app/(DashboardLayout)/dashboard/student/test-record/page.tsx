@@ -86,18 +86,48 @@ export default function TestRecordsPage() {
   const avgScore = totalTests
     ? records.reduce((a, b) => a + b.score, 0) / totalTests
     : 0;
+  // const avgTimeTaken =
+  // records.length > 0
+  //   ? records.reduce((sum, r) => sum + (r.duration - r.timeLeft), 0) / records.length
+  //   : 0;
+  // const avgTimePerQuestion =
+  // records.length > 0
+  //   ? records.reduce((sum, r) => {
+  //       const timeTaken = r.duration - r.timeLeft;
+  //       const attempted = r.correct + r.incorrect;
+  //       return attempted > 0 ? sum + timeTaken / attempted : sum;
+  //     }, 0) / records.length
+  //   : 0;
+  const validTimeRecords = records.filter(
+  r => typeof r.duration === "number" && typeof r.timeLeft === "number"
+);
+
 const avgTimeTaken =
-  records.length > 0
-    ? records.reduce((sum, r) => sum + (r.duration - r.timeLeft), 0) / records.length
+  validTimeRecords.length > 0
+    ? validTimeRecords.reduce(
+        (sum, r) => sum + Math.max(0, r.duration - r.timeLeft),
+        0
+      ) / validTimeRecords.length
     : 0;
+const validQuestionRecords = records.filter(r => {
+  const attempted = (r.correct || 0) + (r.incorrect || 0);
+  return (
+    typeof r.duration === "number" &&
+    typeof r.timeLeft === "number" &&
+    attempted > 0
+  );
+});
+
 const avgTimePerQuestion =
-  records.length > 0
-    ? records.reduce((sum, r) => {
-        const timeTaken = r.duration - r.timeLeft;
+  validQuestionRecords.length > 0
+    ? validQuestionRecords.reduce((sum, r) => {
+        const timeTaken = Math.max(0, r.duration - r.timeLeft);
         const attempted = r.correct + r.incorrect;
-        return attempted > 0 ? sum + timeTaken / attempted : sum;
-      }, 0) / records.length
+        return sum + timeTaken / attempted;
+      }, 0) / validQuestionRecords.length
     : 0;
+
+    console.log(avgTimeTaken,avgTimePerQuestion)
 const subjectTimeMap: Record<string, { time: number; count: number }> = {};
 
 records.forEach((r) => {
