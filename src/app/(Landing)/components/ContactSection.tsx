@@ -1,0 +1,405 @@
+"use client";
+
+
+import { useState } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import {
+  Card,
+  CardContent,
+  TextField,
+  Button,
+  Typography,
+  Box,
+  Alert,
+  CircularProgress,
+  Grid,
+} from "@mui/material";
+import {
+  LocationOn,
+  Phone,
+  Email,
+  AccessTime,
+  Send,
+} from "@mui/icons-material";
+
+// Define form schema
+const contactFormSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Please enter a valid email address"),
+  feedback: z.string().min(10, "Feedback must be at least 10 characters"),
+});
+
+type ContactFormValues = z.infer<typeof contactFormSchema>;
+
+const companyInfo = {
+  address: "Vedika Heights, Shivaji Rd, Miraj- 416410 Dist- Sangli, Maharashtra ",
+  email: "innovativetestprep@hotmail.com",
+  phone: "+91 9421567466 / +91 9881893510",
+  hours: "Mon-Sat: 9:00 AM - 6:00 PM",
+};
+
+export default function ContactSection() {
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { control, handleSubmit, formState: { errors }, reset } = useForm<ContactFormValues>({
+    resolver: zodResolver(contactFormSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      feedback: "",
+    }
+  });
+
+  function onSubmit(data: ContactFormValues) {
+    setIsSubmitting(true);
+    setTimeout(() => {
+      reset();
+      setFormSubmitted(true);
+      setIsSubmitting(false);
+    }, 1000);
+  }
+
+  return (
+    <section id="contact" className="py-8 bg-gray-50">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-6">
+          <Typography variant="h4" component="h2" className="font-bold text-gray-900 mb-2">
+            Get In Touch
+          </Typography>
+          <Typography variant="body1" className="text-gray-600 max-w-7xl mx-auto">
+            Have questions about our programs? Reach out to our support team.
+          </Typography>
+        </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  {/* Left Column: Contact Info & Map */}
+  <div className="space-y-4 mt-2">
+   
+    {/* Google Map */}
+    <div className="rounded-2 overflow-hidden shadow-md h-64 w-full">
+      <iframe
+        title="Our Location"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d954.770716189948!2d74.64349971983643!3d16.82224475021483!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc1230773dff2e9%3A0xa71a5edeb52b2e4f!2sInnovative%20Computer!5e0!3m2!1sen!2sin!4v1750771045444!5m2!1sen!2sin"
+        width="100%"
+        height="100%"
+        allowFullScreen
+        loading="lazy"
+        referrerPolicy="no-referrer-when-downgrade"
+      />
+    </div>
+     {/* Contact Info Card */}
+    <Card className="bg-white p-1 rounded-2 shadow-md">
+      <CardContent className="p-0">
+        <Typography variant="h5" className="font-bold mb-3 text-gray-900 font-bold">
+          {/* Contact Information */}
+        </Typography>
+
+        <Box className="flex items-start gap-3 mb-1 font-bold">
+          <LocationOn className="text-blue-500 mt-.5" />
+          <div>
+            {/* <Typography variant="subtitle1" className="font-medium text-gray-800">
+              Address
+            </Typography> */}
+            <Typography variant="body2" className="text-gray-600 mt-1">
+              {companyInfo.address}
+            </Typography>
+          </div>
+        </Box>
+
+        <Box className="flex items-start gap-3 mb-3">
+          <Phone className="text-blue-500 mt-0.5" />
+          <div>
+            {/* <Typography variant="subtitle1" className="font-medium text-gray-800">
+              Phone
+            </Typography> */}
+            <Typography variant="body2" className="text-gray-600 mt-1">
+                  {companyInfo.phone}
+            </Typography>
+          </div>
+        </Box>
+
+        <Box className="flex items-start gap-3 mb-3">
+          <Email className="text-blue-500 " />
+          <div>
+            {/* <Typography variant="subtitle1" className="font-medium text-gray-800">
+              Email
+            </Typography> */}
+            <Typography variant="body2" className="text-gray-600 mt-0.5">
+                  {companyInfo.email}
+            </Typography>
+          </div>
+        </Box>
+
+        <Box className="flex items-start gap-3">
+          <AccessTime className="text-blue-500 " />
+          <div>
+            {/* <Typography variant="subtitle1" className="font-medium text-gray-800">
+              Office Hours
+            </Typography> */}
+            <Typography variant="body2" className="text-gray-600">
+                  {companyInfo.hours}
+            </Typography>
+          </div>
+        </Box>
+      </CardContent>
+    </Card>
+
+  </div>
+
+  {/* Right Column: Contact Form */}
+  <div>
+    
+            <Card className="bg-white p-4 rounded-2 shadow-md">
+              <CardContent className="p-0">
+                <Typography variant="h5" className="font-bold mb-1 text-gray-900">
+                  Send us your feedback
+                  <span className="text-sm text-gray-600">Connect us- 12x6</span>
+                </Typography>
+
+                {formSubmitted ? (
+                  <Alert 
+                    severity="success" 
+                    className="p-3 rounded-2 mb-2"
+                  >
+                    <Typography variant="subtitle1" className="font-medium mb-1">
+                      Thank You!
+                    </Typography>
+                    <Typography variant="body2" className="mb-2">
+                      Your feedback has been received. We appreciate your input.
+                    </Typography>
+                    <Button 
+                      variant="contained" 
+                      color="primary"
+                      onClick={() => setFormSubmitted(false)}
+                      className="mt-1"
+                    >
+                      Send Another Message
+                    </Button>
+                  </Alert>
+                ) : (
+                  <form onSubmit={handleSubmit(onSubmit)}>
+                    <Controller
+                      name="name"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Your Name"
+                          placeholder="Enter your full name"
+                          fullWidth
+                          margin="normal"
+                          error={!!errors.name}
+                          helperText={errors.name?.message}
+                        />
+                      )}
+                    />
+                    
+                    <Controller
+                      name="email"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Your Email"
+                          placeholder="Enter your email address"
+                          fullWidth
+                          margin="normal"
+                          error={!!errors.email}
+                          helperText={errors.email?.message}
+                        />
+                      )}
+                    />
+                    
+                    <Controller
+                      name="feedback"
+                      control={control}
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          label="Your Feedback"
+                          placeholder="Please share your thoughts with us"
+                          fullWidth
+                          multiline
+                          rows={4}
+                          margin="normal"
+                          error={!!errors.feedback}
+                          helperText={errors.feedback?.message}
+                        />
+                      )}
+                    />
+
+                    <Button 
+                      type="submit" 
+                      variant="contained" 
+                      color="primary"
+                      disabled={isSubmitting}
+                      fullWidth
+                      size="large"
+                      className="mt-4"
+                      endIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <Send />}
+                    >
+                      {isSubmitting ? "Sending..." : "Send Feedback"}
+                    </Button>
+                  </form>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+
+
+
+// import { useState } from "react";
+// import { useForm, Controller } from "react-hook-form";
+// import { zodResolver } from "@hookform/resolvers/zod";
+// import { z } from "zod";
+// import {
+//   Card,
+//   CardContent,
+//   TextField,
+//   Button,
+//   Typography,
+//   Box,
+//   Alert,
+//   CircularProgress
+// } from "@mui/material";
+// import {
+//   LocationOn,
+//   Phone,
+//   Email,
+//   AccessTime,
+//   Send
+// } from "@mui/icons-material";
+
+// // Define form schema
+// const contactFormSchema = z.object({
+//   name: z.string().min(2, "Name must be at least 2 characters"),
+//   email: z.string().email("Please enter a valid email address"),
+//   subject: z.string().min(3, "Subject must be at least 3 characters"),
+//   message: z.string().min(10, "Message must be at least 10 characters")
+// });
+
+// type ContactFormValues = z.infer<typeof contactFormSchema>;
+
+// export default function ContactSection() {
+//   const [formSubmitted, setFormSubmitted] = useState(false);
+//   const [isSubmitting, setIsSubmitting] = useState(false);
+
+//   const { control, handleSubmit, formState: { errors }, reset } = useForm<ContactFormValues>({
+//     resolver: zodResolver(contactFormSchema),
+//     defaultValues: {
+//       name: "",
+//       email: "",
+//       subject: "",
+//       message: ""
+//     }
+//   });
+
+//   function onSubmit(data: ContactFormValues) {
+//     setIsSubmitting(true);
+
+//     // Simulate form submission with timeout
+//     setTimeout(() => {
+//       console.log("Form submitted:", data);
+//       reset();
+//       setFormSubmitted(true);
+//       setIsSubmitting(false);
+//     }, 1000);
+//   }
+
+//   return (
+//     <section id="contact" className="py-8 bg-gray-100">
+//       <div className="container mx-auto px-4">
+//         {/* Section Header */}
+//         <div className="text-center mb-6">
+//           <Typography variant="h4" component="h2" className="font-bold text-gray-900 mb-2">
+//             Get In Touch
+//           </Typography>
+//           <Typography variant="body1" className="text-gray-600 max-w-7xl mx-auto">
+//             Have questions about our programs? Reach out to our support team.
+//           </Typography>
+//         </div>
+
+//         {/* Content Area */}
+//         <div className="flex flex-col lg:flex-row gap-4">
+//           {/* Contact Form Column */}
+//           <div className="flex-1">
+//             <Card className="bg-white p-4 rounded-2 shadow-md">
+//               <CardContent className="p-0">
+//                 <Typography variant="h5" className="font-bold mb-3 text-gray-900">
+//                   Send us a message
+//                 </Typography>
+
+//                 {formSubmitted ? (
+//                   <Alert 
+//                     severity="success" 
+//                     className="p-3 rounded-2 mb-2"
+//                   >
+//                     <Typography variant="subtitle1" className="font-medium mb-1">
+//                       Thank You!
+//                     </Typography>
+//                     <Typography variant="body2" className="mb-2">
+//                       Your message has been received. We'll get back to you shortly.
+//                     </Typography>
+//                     <Button 
+//                       variant="contained" 
+//                       color="primary"
+//                       onClick={() => setFormSubmitted(false)}
+//                       className="mt-1"
+//                     >
+//                       Send Another Message
+//                     </Button>
+//                   </Alert>
+//                 ) : (
+//                   <form onSubmit={handleSubmit(onSubmit)}>
+//                     {/* Form fields remain largely unchanged, only sx props are removed */}
+//                     <Controller
+//                       name="name"
+//                       control={control}
+//                       render={({ field }) => (
+//                         <TextField
+//                           {...field}
+//                           label="Your Name"
+//                           placeholder="Enter your full name"
+//                           fullWidth
+//                           margin="normal"
+//                           error={!!errors.name}
+//                           helperText={errors.name?.message}
+//                         />
+//                       )}
+//                     />
+//                     {/* ...other form fields... */}
+//                     <Button 
+//                       type="submit" 
+//                       variant="contained" 
+//                       color="primary"
+//                       disabled={isSubmitting}
+//                       fullWidth
+//                       size="large"
+//                       className="mt-2 py-1.5"
+//                       endIcon={isSubmitting ? <CircularProgress size={20} color="inherit" /> : <Send />}
+//                     >
+//                       {isSubmitting ? "Sending..." : "Send Message"}
+//                     </Button>
+//                   </form>
+//                 )}
+//               </CardContent>
+//             </Card>
+//           </div>
+
+//           {/* Contact Info Column (styling largely untouched for brevity) */}
+//           {/* ... */}
+//         </div>
+//       </div>
+//     </section>
+//   );
+// }
