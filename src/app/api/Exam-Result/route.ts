@@ -6,6 +6,10 @@ import QuestionBank from "@/model/QuestionBankSchema";
 import mongoose from "mongoose";
 import { unstable_noStore as noStore } from "next/cache";
 
+
+export const dynamic = "force-dynamic";
+
+
 noStore();
 
 type QuestionInfo = {

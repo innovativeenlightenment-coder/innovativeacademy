@@ -5,7 +5,9 @@ const nextConfig = {
   domains: ['res.cloudinary.com','images.unsplash.com',
       'i.ytimg.com',
       'source.unsplash.com']
-}
+},
+
+  output: "standalone",
 };
 
 module.exports = nextConfig;

@@ -98,92 +98,92 @@ function waitForImages(container: HTMLElement) {
 }
 
 // Generate PDF
-export async function handleDownloadPDF(questions: any[]) {
-  const container = document.createElement("div");
-  container.style.padding = "20px";
-  container.style.fontFamily = "Arial, sans-serif";
+// async function handleDownloadPDF(questions: any[]) {
+//   const container = document.createElement("div");
+//   container.style.padding = "20px";
+//   container.style.fontFamily = "Arial, sans-serif";
 
-  // Header
-  const header = document.createElement("h2");
-  header.innerText = "Innovative Academy";
-  header.style.textAlign = "center";
-  header.style.marginBottom = "20px";
-  container.appendChild(header);
+//   // Header
+//   const header = document.createElement("h2");
+//   header.innerText = "Innovative Academy";
+//   header.style.textAlign = "center";
+//   header.style.marginBottom = "20px";
+//   container.appendChild(header);
 
-  // Each question
-  questions.forEach((q, idx) => {
-    const block = document.createElement("div");
-    block.style.marginBottom = "25px";
-    block.style.padding = "12px";
-    block.style.borderBottom = "1px solid #ccc";
-    block.style.pageBreakInside = "avoid";
+//   // Each question
+//   questions.forEach((q, idx) => {
+//     const block = document.createElement("div");
+//     block.style.marginBottom = "25px";
+//     block.style.padding = "12px";
+//     block.style.borderBottom = "1px solid #ccc";
+//     block.style.pageBreakInside = "avoid";
 
-    // Question number
-    const qNum = document.createElement("h4");
-    qNum.innerText = `Q${idx + 1}:`;
-    block.appendChild(qNum);
+//     // Question number
+//     const qNum = document.createElement("h4");
+//     qNum.innerText = `Q${idx + 1}:`;
+//     block.appendChild(qNum);
 
-    // Question content
-    const qDiv = document.createElement("div");
-    if (q.questionType === "image" && q.question.imgUrl) {
-      qDiv.innerHTML = `<img src="${q.question.imgUrl}" style="max-width:500px; height:auto; border-radius:4px;" />`;
-    } else {
-      qDiv.innerHTML = String(RenderMath(q.question.text));
-    }
-    qDiv.style.marginBottom = "8px";
-    qDiv.style.wordWrap = "break-word";
-    qDiv.style.whiteSpace = "normal";
-    block.appendChild(qDiv);
+//     // Question content
+//     const qDiv = document.createElement("div");
+//     if (q.questionType === "image" && q.question.imgUrl) {
+//       qDiv.innerHTML = `<img src="${q.question.imgUrl}" style="max-width:500px; height:auto; border-radius:4px;" />`;
+//     } else {
+//       qDiv.innerHTML = String(RenderMath(q.question.text));
+//     }
+//     qDiv.style.marginBottom = "8px";
+//     qDiv.style.wordWrap = "break-word";
+//     qDiv.style.whiteSpace = "normal";
+//     block.appendChild(qDiv);
 
-    // Options vertical
-    ["A", "B", "C", "D"].forEach((opt, i) => {
-      const optText = q.options?.[i]?.text ?? "";
-      const optImg = q.options?.[i]?.imgUrl ?? "";
-      if (optText || optImg) {
-        const optDiv = document.createElement("div");
-        if (optImg) {
-          optDiv.innerHTML = `<strong>${opt}.</strong> <img src="${optImg}" style="max-width:400px; height:auto; border-radius:4px;" />`;
-        } else {
-          optDiv.innerHTML = `<strong>${opt}.</strong> ${String(RenderMath(optText))}`;
-        }
-        optDiv.style.marginBottom = "4px";
-        block.appendChild(optDiv);
-      }
-    });
+//     // Options vertical
+//     ["A", "B", "C", "D"].forEach((opt, i) => {
+//       const optText = q.options?.[i]?.text ?? "";
+//       const optImg = q.options?.[i]?.imgUrl ?? "";
+//       if (optText || optImg) {
+//         const optDiv = document.createElement("div");
+//         if (optImg) {
+//           optDiv.innerHTML = `<strong>${opt}.</strong> <img src="${optImg}" style="max-width:400px; height:auto; border-radius:4px;" />`;
+//         } else {
+//           optDiv.innerHTML = `<strong>${opt}.</strong> ${String(RenderMath(optText))}`;
+//         }
+//         optDiv.style.marginBottom = "4px";
+//         block.appendChild(optDiv);
+//       }
+//     });
 
-    // Answer & level
-    const ansDiv = document.createElement("div");
-    ansDiv.innerHTML = `<strong>Answer:</strong> ${q.answer ?? ""} &nbsp; | &nbsp; <strong>Level:</strong> ${q.level ?? ""}`;
-    ansDiv.style.marginTop = "6px";
-    block.appendChild(ansDiv);
+//     // Answer & level
+//     const ansDiv = document.createElement("div");
+//     ansDiv.innerHTML = `<strong>Answer:</strong> ${q.answer ?? ""} &nbsp; | &nbsp; <strong>Level:</strong> ${q.level ?? ""}`;
+//     ansDiv.style.marginTop = "6px";
+//     block.appendChild(ansDiv);
 
-    // Subject, Chapter, Course
-    const metaDiv = document.createElement("div");
-    metaDiv.innerHTML = `<strong>Subject:</strong> ${q.subject ?? ""} &nbsp; | &nbsp; <strong>Chapter:</strong> ${q.chapter ?? ""} &nbsp; | &nbsp; <strong>Course:</strong> ${q.course ?? ""}`;
-    metaDiv.style.marginTop = "2px";
-    metaDiv.style.fontSize = "0.9em";
-    metaDiv.style.color = "#555";
-    block.appendChild(metaDiv);
+//     // Subject, Chapter, Course
+//     const metaDiv = document.createElement("div");
+//     metaDiv.innerHTML = `<strong>Subject:</strong> ${q.subject ?? ""} &nbsp; | &nbsp; <strong>Chapter:</strong> ${q.chapter ?? ""} &nbsp; | &nbsp; <strong>Course:</strong> ${q.course ?? ""}`;
+//     metaDiv.style.marginTop = "2px";
+//     metaDiv.style.fontSize = "0.9em";
+//     metaDiv.style.color = "#555";
+//     block.appendChild(metaDiv);
 
-    container.appendChild(block);
-  });
+//     container.appendChild(block);
+//   });
 
-  document.body.appendChild(container);
-  await waitForImages(container); // wait for images
+//   document.body.appendChild(container);
+//   await waitForImages(container); // wait for images
 
-  html2pdf()
-    .set({
-      margin: 0.5,
-      filename: "InnovativeAcademy_Questions.pdf",
-      html2canvas: { scale: 2, allowTaint: true },
-      jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
-    })
-    .from(container)
-    .save()
-    .finally(() => {
-      document.body.removeChild(container);
-    });
-}
+//   html2pdf()
+//     .set({
+//       margin: 0.5,
+//       filename: "InnovativeAcademy_Questions.pdf",
+//       html2canvas: { scale: 2, allowTaint: true },
+//       jsPDF: { unit: "in", format: "a4", orientation: "portrait" },
+//     })
+//     .from(container)
+//     .save()
+//     .finally(() => {
+//       document.body.removeChild(container);
+//     });
+// }
 
 export default function ManageQuestionBank() {
   // Use the Question type for the state
@@ -939,7 +939,7 @@ if(isLoading){
               Export
             </Button>
           </Grid>
-<Grid item xs={12} sm="auto">
+ {/* <Grid item xs={12} sm="auto">
   <Button
     fullWidth
     variant="contained"
@@ -949,7 +949,7 @@ if(isLoading){
   >
     Download PDF (Table)
   </Button>
-</Grid>
+</Grid> */}
           {/* Delete Selected */}
           {selectedQuestions.length > 0 && (
             <Grid item xs={12} sm="auto">
