@@ -337,7 +337,7 @@
 //                   &#34;My mission is to help each students imporve, grow, and excel not only in exams but in life...&rdquo;
 //                 </p>
 //                 <div className="border-t border-gray-200 my-4"></div>
-//                   <p className="text-purple-600 font-semibold text-3xl mb-2">Shaukatali Mujawar</p>
+//                   <p className="text-purple-600 font-semibold text-3xl mb-2">Shaokatali Mujawar</p>
 //                 <h3 className="text-xl font-bold text-slate-900 mb-3">Founder & CEO</h3>
 //                 <p className="text-md text-slate-500 mb-4">Education | 20+ Years Experience | Professional Trainer | Service Provider to NAAC & many more colleges</p>
 
@@ -351,7 +351,7 @@
 //             {/* CEO Info */}
 //             <div className="md:max-w-3/5">
 //               <div className="bg-white border-2 border-purple-200 rounded-2xl p-6">
-//                 {/* <p className="text-purple-600 font-semibold text-2xl mb-2">Shaukatali Mujawar</p>
+//                 {/* <p className="text-purple-600 font-semibold text-2xl mb-2">Shaokatali Mujawar</p>
 //                 <h3 className="text-lg font-bold text-slate-900 mb-3">Founder & CEO</h3>
 //                 <p className="text-sm text-slate-500 mb-4">Education | 20+ Years Experience | Professional Trainer | Service Provider to NAAC & many more colleges</p>
 
@@ -1957,25 +1957,19 @@ export default function Index() {
         <div className="max-w-6xl mx-auto">
           <h2 className="text-3xl sm:text-4xl font-bold mb-16 text-center text-slate-900">Meet Our Visionary</h2>
 
-          <div className="md:flex gap-8 items-center max-w-full px-4 mx-auto">
+             <div className="md:flex gap-8 items-center max-w-full px-4 mx-auto">
             {/* CEO Image */}
             <div className="hidden md:block md:max-w-2/5">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-br from-purple-100 to-purple-50 rounded-3xl blur-2xl opacity-60"></div>
                 <div className="relative bg-white rounded-3xl border-2 border-purple-200 p-6 shadow-2xl">
                 
+                <img src="/images/abbu2.png" className='m-auto border-4 rounded-full max-w-60 max-h-60' />
+                <div className="border-t border-gray-200 my-4"></div>
                   <p className="text-slate-900 text-xl bold italic mb-8">
                   {/* "My mission is to prove that with the right approach, every student can excel. It's not about how smart you are, it's about how you learn." */}
                   &#34;My mission is to help each students imporve, grow, and excel not only in exams but in life...&rdquo;
                 </p>
-                <div className="border-t border-gray-200 my-4"></div>
-                  <p className="text-purple-600 font-semibold text-3xl mb-2">Shaukatali Mujawar</p>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">Founder & CEO</h3>
-                <p className="text-md text-slate-500 mb-4">Education | 20+ Years Experience | Professional Trainer | Service Provider to NAAC & many more colleges</p>
-
-                  {/* <div className="aspect-square bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center text-9xl">
-                    👨‍💼
-                  </div> */}
                 </div>
               </div>
             </div>
@@ -1983,12 +1977,19 @@ export default function Index() {
             {/* CEO Info */}
             <div className="md:max-w-3/5">
               <div className="bg-white border-2 border-purple-200 rounded-2xl p-6">
-                {/* <p className="text-purple-600 font-semibold text-2xl mb-2">Shaukatali Mujawar</p>
+                {/* <p className="text-purple-600 font-semibold text-2xl mb-2">Shokatali Mujawar</p>
                 <h3 className="text-lg font-bold text-slate-900 mb-3">Founder & CEO</h3>
                 <p className="text-sm text-slate-500 mb-4">Education | 20+ Years Experience | Professional Trainer | Service Provider to NAAC & many more colleges</p>
 
                 <div className="border-t border-gray-200 my-4"></div> */}
+  <p className="text-purple-600 font-semibold text-2xl mb-2">Shokatali Mujawar</p>
+                <h3 className="text-lg font-bold text-slate-900 mb-3">Founder & CEO</h3>
+                 <p className="text-md text-slate-500 mb-4">Education | 20+ Years Experience | Professional Trainer | Service Provider to NAAC & many more colleges</p>
 
+                  {/* <div className="aspect-square bg-gradient-to-br from-purple-500 to-purple-700 rounded-2xl flex items-center justify-center text-9xl">
+                    👨‍💼
+                  </div> */}
+                    <div className="border-t border-gray-200 my-4"></div>
                 <p className="text-slate-700 text-sm mb-4 leading-relaxed">
                   With over 20 years of experience in education and teachnology, our founder has provided software and hardware services to 25+ colleges, school, and hotel. Also he has been working in education field from past 20 years and is honour to conduct competitive exams like AMP Scholarship, and many more. And with the vision to transform how students learn, and to help each student grow and achieve concept clarity, academic excellence, confidence to participate in competitive exam, he has started Innovative Academy. Here studdents get guidance, confidence, clarity. Our teaching method is interesting, and focus on each students growth, we also help students study easily by making different methods to study. With all this we aso focus on life skills like communication, confidence, career guidance, and many more. And our Online App Platform helps each student to practice, analyse, improve and achieve.
                 </p>
@@ -2625,7 +2626,7 @@ export default function Index() {
   {/* Google Map */}
   <div className="w-full h-[380px] rounded-2xl overflow-hidden border-2 border-purple-200 shadow-sm">
     <iframe
-      src="https://www.google.com/maps?q=Vedika%20Heights%20Miraj%20Shivaji%20Road%20Near%20HDFC%20Bank&output=embed"
+     src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3819.088615626635!2d74.64146391008234!3d16.821959383905146!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3bc1230773dff2e9%3A0xa71a5edeb52b2e4f!2sInnovative%20Computer!5e0!3m2!1sen!2sin!4v1774183063704!5m2!1sen!2sin" 
       width="100%"
       height="100%"
       style={{ border: 0 }}
