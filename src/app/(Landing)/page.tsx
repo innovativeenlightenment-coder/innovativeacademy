@@ -1977,12 +1977,12 @@ export default function Index() {
             {/* CEO Info */}
             <div className="md:max-w-3/5">
               <div className="bg-white border-2 border-purple-200 rounded-2xl p-6">
-                {/* <p className="text-purple-600 font-semibold text-2xl mb-2">Shokatali Mujawar</p>
+                {/* <p className="text-purple-600 font-semibold text-2xl mb-2">Shoukatali Mujawar</p>
                 <h3 className="text-lg font-bold text-slate-900 mb-3">Founder & CEO</h3>
                 <p className="text-sm text-slate-500 mb-4">Education | 20+ Years Experience | Professional Trainer | Service Provider to NAAC & many more colleges</p>
 
                 <div className="border-t border-gray-200 my-4"></div> */}
-  <p className="text-purple-600 font-semibold text-2xl mb-2">Shokatali Mujawar</p>
+  <p className="text-purple-600 font-semibold text-2xl mb-2">Shoukatali Mujawar</p>
                 <h3 className="text-lg font-bold text-slate-900 mb-3">Founder & CEO</h3>
                  <p className="text-md text-slate-500 mb-4">Education | 20+ Years Experience | Professional Trainer | Service Provider to NAAC & many more colleges</p>
 
@@ -2390,9 +2390,9 @@ export default function Index() {
               </div>
 
               <div className="mb-8">
-                <span className="text-5xl font-bold text-slate-900">₹1499<sup>*</sup></span>
+                <span className="text-5xl font-bold text-slate-900">₹2999<sup>*</sup></span>
                 <span className="text-slate-600 ml-2">per year</span>
-                <div className="text-sm text-purple-600 font-semibold mt-2">Only ₹125/month</div>
+                <div className="text-sm text-purple-600 font-semibold mt-2">Only ₹250/month</div>
               </div>
 
               {/* <button className="w-full px-6 py-3 bg-purple-600 text-white rounded-lg font-semibold hover:bg-purple-700 transition-all hover:shadow-lg mb-8">
