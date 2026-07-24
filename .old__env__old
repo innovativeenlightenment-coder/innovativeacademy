@@ -1,0 +1,10 @@
+MONGODB_URI=mongodb+srv://shayan:Mshayanali13@cluster0.qkx8m.mongodb.net/test-series-mini?retryWrites=true&w=majority&appName=Cluster0
+
+CLOUDINARY_CLOUD_NAME=denwnopqb
+CLOUDINARY_API_KEY=545219293289513
+CLOUDINARY_API_SECRET=r_Rqai1eCeCjvBlCCvyi9s2kkn8
+CLOUDINARY_URL=cloudinary://545219293289513:r_Rqai1eCeCjvBlCCvyi9s2kkn8@denwnopqb
+
+
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_ZW1pbmVudC1mb2FsLTE4LmNsZXJrLmFjY291bnRzLmRldiQ
+CLERK_SECRET_KEY=sk_test_Zml24DHexBlyLuKiUh6jEFlQPqRkosB7jIPvHZUo8Q
