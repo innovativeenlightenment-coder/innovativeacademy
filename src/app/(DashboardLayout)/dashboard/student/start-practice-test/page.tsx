@@ -129,13 +129,13 @@ const handleStart = async (row: PracticeRow) => {
     }
 console.log(data.questions)
 // Count difficulty levels
-          const levelCounts = data.questions.reduce((acc: Record<string, number>, q: Question) => {
-            const level = q.level || "unknown";
-            acc[level] = (acc[level] || 0) + 1;
-            return acc;
-          }, {});
-          console.log("Difficulty Levels:", levelCounts);
-const durationSec = (levelCounts["easy"] || 0) * 20 + (levelCounts["moderate"] || 0) * 35 + (levelCounts["difficult"] || 0) * 60 + (levelCounts["extreme"] || 0) * 90;
+          // const levelCounts = data.questions.reduce((acc: Record<string, number>, q: Question) => {
+          //   const level = q.level || "unknown";
+          //   acc[level] = (acc[level] || 0) + 1;
+          //   return acc;
+          // }, {});
+          // console.log("Difficulty Levels:", levelCounts);
+// const durationSec = (levelCounts["easy"] || 0) * 20 + (levelCounts["moderate"] || 0) * 35 + (levelCounts["difficult"] || 0) * 60 + (levelCounts["extreme"] || 0) * 90;
 
     // 3️⃣ Prepare test session object
     const testSession = {
@@ -148,7 +148,7 @@ const durationSec = (levelCounts["easy"] || 0) * 20 + (levelCounts["moderate"] |
       chapterLevel: data.chapterLevel,
       totalQuestions: data.totalQuestions,
       avgScore: data.avgScore,
-      durationSec,
+      // durationSec:,
       startTime: Date.now(), // optional: store test start time
     };
 

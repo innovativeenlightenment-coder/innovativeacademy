@@ -54,6 +54,7 @@ const SidebarItems = ({ toggleMobileSidebar }: SidebarItemsProps) => {
     }, []);
 
     async function handleLogout() {
+      sessionStorage.clear();
   const res = await fetch("/api/auth/logout", {
     method: "POST",
   });

@@ -13,6 +13,7 @@ const PleaseSubscribe = () => {
 // const { signOut } = useClerk();
 
 async function handleLogout() {
+  sessionStorage.clear();
   const res = await fetch("/api/auth/logout", {
     method: "POST",
   });

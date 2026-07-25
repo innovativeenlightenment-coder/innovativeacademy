@@ -457,15 +457,6 @@ setChapter(test.chapter)
     setQuestions(test.questions || []);
     setSubjectTab(test.subject || "");
 
-    // Count difficulty levels
-    const levelCounts = test.questions.reduce((acc: Record<string, number>, q: Question) => {
-      const level = q.level || "unknown";
-      acc[level] = (acc[level] || 0) + 1;
-      return acc;
-    }, {});
-    console.log("Difficulty Levels:", levelCounts,test.questions);
-
-// const duration = (levelCounts["easy"] || 0) * 20 + (levelCounts["moderate"] || 0) * 35 + (levelCounts["difficult"] || 0) * 60 + (levelCounts["extreme"] || 0) * 90;
 const duration=20*60
 setDurationTest(duration)
     let endTime = Number(sessionStorage.getItem("testEndTime"));
@@ -496,10 +487,11 @@ useEffect(() => {
     //   handleSubmit();
     // }
     if (diff <= 0 && !isSubmittingRef.current) {
-      isSubmittingRef.current = true;
-  clearInterval(interval);
-  handleSubmit(true); // ✅ auto submit (no confirm)
-}
+      // isSubmittingRef.current = true;
+      document.getElementById("submitBtn")?.click();
+      clearInterval(interval);
+      // handleSubmit(true); // ✅ auto submit (no confirm)
+    }
   }, 1000);
 
   return () => clearInterval(interval);
@@ -557,8 +549,9 @@ useEffect(() => {
     
     console.log("aaaa",questions.length,isSubmittingRef)
     alert("❌ Test auto-submitted due to tab switching.");
-    isSubmittingRef.current = true; // ✅ lock
-    handleSubmit(true);
+    // isSubmittingRef.current = true; // ✅ lock
+    document.getElementById("submitBtn")?.click();
+    // handleSubmit(true);
   };
 
   document.addEventListener("visibilitychange", handleVisibilityChange);
@@ -865,13 +858,13 @@ const handleSubmit = async (auto: boolean = false) => {
   // lock
   
   // confirm only for manual submit
-  if (!auto) {
-    const ok = window.confirm("Are you sure you want to submit the test?");
-    if (!ok) {
-      isSubmittingRef.current = false;
-      return;
-    }
-  }
+  // if (!auto) {
+  //   const ok = window.confirm("Are you sure you want to submit the test?");
+  //   if (!ok) {
+  //     isSubmittingRef.current = false;
+  //     return;
+  //   }
+  // }
   isSubmittingRef.current = true;
 
   try {
@@ -1107,11 +1100,13 @@ useEffect(() => {
           <Box sx={{ display: { xs: "block", md: "none" }, mt: 3 }}>
             <Button
               fullWidth
+              id="submitBtn"
               color="error"
               variant="contained"
               size="large"
               onClick={()=>handleSubmit(false)}
               disabled={isSubmittingRef.current}
+              
             >
               Submit Test
             </Button>
@@ -1171,6 +1166,7 @@ useEffect(() => {
 
             <Button
               fullWidth
+              id="submitBtn"
               color="error"
               variant="contained"
               sx={{ mt: 2 }}
