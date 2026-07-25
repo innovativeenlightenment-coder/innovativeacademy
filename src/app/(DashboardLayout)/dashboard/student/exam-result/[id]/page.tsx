@@ -1,503 +1,3 @@
-// "use client";
-
-// import { useEffect, useState } from "react";
-// import { useParams } from "next/navigation";
-// import {
-//   PieChart,
-//   Pie,
-//   Cell,
-//   Tooltip,
-//   ResponsiveContainer,
-// } from "recharts";
-// import { getCurrentUser } from "@/lib/getCurrentUser";
-
-// function RankHexBadge({ rank }: { rank: number }) {
-//   return (
-//     <div className="relative w-24 h-24 flex items-center justify-center">
-//       <div
-//         className="absolute inset-0 animate-pulse"
-//         style={{
-//           clipPath:
-//             "polygon(25% 6%, 75% 6%, 100% 50%, 75% 94%, 25% 94%, 0% 50%)",
-//           background:
-//             "linear-gradient(135deg,#00f5ff,#7c3aed,#ff00c8)",
-//           boxShadow: "0 0 30px rgba(124,58,237,0.6)",
-//         }}
-//       />
-//       <span className="relative text-3xl font-bold text-white drop-shadow-lg">
-//         {rank}
-//       </span>
-//     </div>
-//   );
-// }
-
-// export default function ExamDetailPage() {
-//   const { id } = useParams();
-//   const [data, setData] = useState<any>(null);
-//   const [userEmail, setUserEmail] = useState("");
-
-//   useEffect(() => {
-//     async function fetchData() {
-//       const userData = await getCurrentUser();
-//       const email = userData.user.email;
-//       setUserEmail(email);
-
-//       const res = await fetch(
-//         `/api/Exam-Result-Details?examId=${id}&email=${email}`
-//       );
-//       const result = await res.json();
-//       setData(result);
-//     }
-
-//     fetchData();
-//   }, [id]);
-
-//   if (!data) return <div className="p-10 text-white">Loading...</div>;
-
-//   const { exam, record, analytics, topperList } = data;
-
-//   const studentPerformance = [
-//     { name: "Correct", value: record.correct },
-//     { name: "Incorrect", value: record.incorrect },
-//     { name: "Unanswered", value: record.unanswered },
-//   ];
-
-//   const classDistribution = [
-//     { name: "High", value: data.highCount },
-//     { name: "Medium", value: data.mediumCount },
-//     { name: "Low", value: data.lowCount },
-//   ];
-
-//   const colors1 = ["#22c55e", "#ef4444", "#facc15"];
-//   const colors2 = ["#3b82f6", "#a855f7", "#f43f5e"];
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-[#0f172a] via-[#1e1b4b] to-black p-8 text-white">
-
-//       {/* HEADER */}
-//       <div className="mb-12 text-center">
-//         <h1 className="text-4xl font-bold tracking-wide">
-//           Exam Performance
-//         </h1>
-//         <p className="text-gray-400 mt-2">
-//           {exam.course} • {exam.testType}
-//         </p>
-//       </div>
-
-//       {/* RANK + SCORE SECTION */}
-//       <div className="grid md:grid-cols-2 gap-10 mb-16">
-
-//         {/* RANK CARD */}
-//         <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-10 shadow-2xl flex flex-col items-center">
-//           <h2 className="text-lg text-gray-300 mb-6">
-//             Your Rank
-//           </h2>
-
-//           <RankHexBadge rank={analytics.rank} />
-
-//           <p className="mt-6 text-gray-400">
-//             Out of {analytics.totalStudents} students
-//           </p>
-
-//           <p className="text-cyan-400 font-semibold mt-2">
-//             Percentile: {analytics.percentile}%
-//           </p>
-//         </div>
-
-//         {/* SCORE SUMMARY */}
-//         <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-10 shadow-2xl grid grid-cols-2 gap-6">
-//           <div>
-//             <p className="text-gray-400">Score</p>
-//             <p className="text-3xl font-bold text-cyan-400">
-//               {record.score}
-//             </p>
-//           </div>
-//           <div>
-//             <p className="text-gray-400">Total</p>
-//             <p className="text-3xl font-bold">
-//               {exam.totalMarks}
-//             </p>
-//           </div>
-//           <div>
-//             <p className="text-green-400">Correct</p>
-//             <p className="text-2xl font-bold">
-//               {record.correct}
-//             </p>
-//           </div>
-//           <div>
-//             <p className="text-red-400">Incorrect</p>
-//             <p className="text-2xl font-bold">
-//               {record.incorrect}
-//             </p>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* CHARTS */}
-//       <div className="grid md:grid-cols-2 gap-10 mb-16">
-
-//         {/* STUDENT DONUT */}
-//         <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 shadow-xl">
-//           <h2 className="mb-6 text-lg text-gray-300">
-//             Your Performance
-//           </h2>
-
-//           <ResponsiveContainer width="100%" height={280}>
-//             <PieChart>
-//               <Pie
-//                 data={studentPerformance}
-//                 dataKey="value"
-//                 innerRadius={70}
-//                 outerRadius={100}
-//               >
-//                 {studentPerformance.map((entry, index) => (
-//                   <Cell key={index} fill={colors1[index]} />
-//                 ))}
-//               </Pie>
-//               <Tooltip />
-//             </PieChart>
-//           </ResponsiveContainer>
-//         </div>
-
-//         {/* CLASS DONUT */}
-//         <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-8 shadow-xl">
-//           <h2 className="mb-6 text-lg text-gray-300">
-//             Class Distribution
-//           </h2>
-
-//           <ResponsiveContainer width="100%" height={280}>
-//             <PieChart>
-//               <Pie
-//                 data={classDistribution}
-//                 dataKey="value"
-//                 innerRadius={70}
-//                 outerRadius={100}
-//               >
-//                 {classDistribution.map((entry, index) => (
-//                   <Cell key={index} fill={colors2[index]} />
-//                 ))}
-//               </Pie>
-//               <Tooltip />
-//             </PieChart>
-//           </ResponsiveContainer>
-//         </div>
-//       </div>
-
-//       {/* LEADERBOARD */}
-//       <div className="backdrop-blur-xl bg-white/10 border border-white/20 rounded-3xl p-10 shadow-2xl">
-//         <h2 className="text-xl mb-8">🏆 Leaderboard</h2>
-
-//         <div className="space-y-5">
-//           {topperList?.map((t: any, index: number) => {
-//             const isUser = t.email === userEmail;
-
-//             return (
-//               <div
-//                 key={index}
-//                 className={`flex justify-between items-center p-5 rounded-2xl transition-all duration-300 ${
-//                   isUser
-//                     ? "bg-cyan-500/20 border border-cyan-400 scale-105"
-//                     : "bg-white/5 hover:bg-white/10"
-//                 }`}
-//               >
-//                 <div className="flex items-center gap-6">
-//                   <RankHexBadge rank={index + 1} />
-//                   <div>
-//                     <p className="font-semibold text-lg">
-//                       {t.name}
-//                     </p>
-//                     <p className="text-sm text-gray-400">
-//                       {t.percentage?.toFixed(1)}%
-//                     </p>
-//                   </div>
-//                 </div>
-
-//                 <div className="text-xl font-bold text-cyan-400">
-//                   {t.score}
-//                 </div>
-//               </div>
-//             );
-//           })}
-//         </div>
-//       </div>
-
-//     </div>
-//   );
-// }
-
-// "use client";
-
-// import React, { useEffect, useState, useRef } from "react";
-// import {
-//   BarChart,
-//   Bar,
-//   XAxis,
-//   YAxis,
-//   Tooltip,
-//   ResponsiveContainer,
-//   CartesianGrid,
-//   LineChart,
-//   Line,
-// } from "recharts";
-// import jsPDF from "jspdf";
-// import html2canvas from "html2canvas";
-// import { useParams } from "next/navigation";
-// import { getCurrentUser } from "@/lib/getCurrentUser";
-
-// interface Exam {
-//   _id: string;
-//   testType: string;
-//   course: string;
-//   startTime: string;
-//   endTime: string;
-//   totalQuestions: number;
-//   totalMarks: number;
-// }
-
-// interface Record {
-//   _id: string;
-//   name: string;
-//   email: string;
-//   score: number;
-//   percentage: number;
-//   correct: number;
-//   incorrect: number;
-//   unanswered: number;
-//   duration: number;
-//   timeLeft: number;
-//   resultStatus: string;
-// }
-
-// interface Analytics {
-//   rank: number;
-//   percentile: string;
-//   totalStudents: number;
-// }
-
-// interface ApiResponse {
-//   success: boolean;
-//   exam: Exam;
-//   record: Record;
-//   analytics: Analytics;
-// }
-
-// const ResultPage = () => {
-//   const [data, setData] = useState<ApiResponse | null>(null);
-  // const resultRef = useRef<HTMLDivElement | null>(null);
-  //  const { id } = useParams();
-
-
-  // useEffect(() => {
-  //   const fetchResult = async () => {
-  //     try {
-  //             const userData = await getCurrentUser();
-  //     const email = userData.user.email;
-      
-
-  //     const res = await fetch(
-  //       `/api/Exam-Result-Details?examId=${id}&email=${email}`
-  //     );
-
-  //       // const res = await fetch("/api/result"); // same API style
-  //       const json: ApiResponse = await res.json();
-  //       setData(json);
-  //     } catch (error) {
-  //       console.error("Failed to fetch result", error);
-  //     }
-  //   };
-
-  //   fetchResult();
-  // }, []);
-
-//   const handleDownload = async () => {
-//     if (!resultRef.current) return;
-
-//     const canvas = await html2canvas(resultRef.current);
-//     const imgData = canvas.toDataURL("image/png");
-
-//     const pdf = new jsPDF({
-//       orientation: "portrait",
-//       unit: "mm",
-//       format: "a4",
-//     });
-
-//     const pdfWidth = pdf.internal.pageSize.getWidth();
-//     const pdfHeight =
-//       (canvas.height * pdfWidth) / canvas.width;
-
-//     pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
-//     pdf.save("result.pdf");
-//   };
-
-//   if (!data) {
-//     return (
-//       <div className="flex items-center justify-center h-screen">
-//         Loading...
-//       </div>
-//     );
-//   }
-
-//   const { exam, record, analytics } = data;
-
-//   const marksPerQuestion =
-//     exam.totalMarks / exam.totalQuestions;
-
-//   const accuracy =
-//     record.correct + record.incorrect === 0
-//       ? 0
-//       : Number(
-//           (
-//             (record.correct /
-//               (record.correct + record.incorrect)) *
-//             100
-//           ).toFixed(2)
-//         );
-
-//   const speed =
-//     record.duration === 0
-//       ? 0
-//       : Number(
-//           (
-//             exam.totalQuestions /
-//             (record.duration / 60)
-//           ).toFixed(2)
-//         );
-
-//   return (
-//     <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-white p-6">
-//       <div
-//         ref={resultRef}
-//         className="max-w-6xl mx-auto bg-white shadow-xl rounded-2xl p-8 space-y-10"
-//       >
-//         {/* Rank */}
-//         <div className="text-center">
-//           <p className="text-gray-500">
-//             Your Rank
-//           </p>
-//           <h1 className="text-5xl font-bold text-indigo-600">
-//             #{analytics.rank}
-//           </h1>
-//           <p className="text-gray-600">
-//             Out of {analytics.totalStudents} students
-//           </p>
-//         </div>
-
-//         {/* Score */}
-//         <div className="text-center">
-//           <p className="text-gray-500">
-//             Score
-//           </p>
-//           <h2 className="text-4xl font-semibold text-gray-800">
-//             {record.score} / {exam.totalMarks}
-//           </h2>
-//           <p className="text-indigo-600 font-medium">
-//             {record.percentage.toFixed(2)}%
-//           </p>
-//         </div>
-
-//         {/* Charts */}
-//         <div className="grid md:grid-cols-2 gap-8">
-//           {/* Marks Breakdown */}
-//           <div className="bg-gray-50 p-6 rounded-xl shadow-sm">
-//             <h3 className="font-semibold mb-4">
-//               Marks Breakdown
-//             </h3>
-//             <ResponsiveContainer width="100%" height={250}>
-//               <BarChart
-//                 data={[
-//                   {
-//                     name: "Scored",
-//                     value:
-//                       record.correct *
-//                       marksPerQuestion,
-//                   },
-//                   {
-//                     name: "Lost",
-//                     value:
-//                       record.incorrect *
-//                       marksPerQuestion,
-//                   },
-//                   {
-//                     name: "Unattempted",
-//                     value:
-//                       record.unanswered *
-//                       marksPerQuestion,
-//                   },
-//                 ]}
-//               >
-//                 <CartesianGrid strokeDasharray="3 3" />
-//                 <XAxis dataKey="name" />
-//                 <YAxis />
-//                 <Tooltip />
-//                 <Bar
-//                   dataKey="value"
-//                   fill="#6366f1"
-//                   radius={[6, 6, 0, 0]}
-//                 />
-//               </BarChart>
-//             </ResponsiveContainer>
-//           </div>
-
-//           {/* Speed vs Accuracy */}
-//           <div className="bg-gray-50 p-6 rounded-xl shadow-sm">
-//             <h3 className="font-semibold mb-4">
-//               Speed vs Accuracy
-//             </h3>
-//             <ResponsiveContainer width="100%" height={250}>
-//               <LineChart
-//                 data={[
-//                   {
-//                     name: "Performance",
-//                     Speed: speed,
-//                     Accuracy: accuracy,
-//                   },
-//                 ]}
-//               >
-//                 <CartesianGrid strokeDasharray="3 3" />
-//                 <XAxis dataKey="name" />
-//                 <YAxis />
-//                 <Tooltip />
-//                 <Line
-//                   type="monotone"
-//                   dataKey="Speed"
-//                   stroke="#10b981"
-//                   strokeWidth={3}
-//                 />
-//                 <Line
-//                   type="monotone"
-//                   dataKey="Accuracy"
-//                   stroke="#6366f1"
-//                   strokeWidth={3}
-//                 />
-//               </LineChart>
-//             </ResponsiveContainer>
-
-//             <div className="flex justify-around mt-4 text-sm">
-//               <span>
-//                 Speed: {speed} Q/min
-//               </span>
-//               <span>
-//                 Accuracy: {accuracy}%
-//               </span>
-//             </div>
-//           </div>
-//         </div>
-//       </div>
-
-//       {/* Download */}
-//       <div className="text-center mt-6">
-//         <button
-//           onClick={handleDownload}
-//           className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-lg shadow-md transition"
-//         >
-//           Download Result (PDF)
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default ResultPage;
 
 
 "use client";
@@ -557,18 +57,92 @@ interface Analytics {
   percentile: string;
   totalStudents: number;
 }
+interface SubjectAnalysis {
+  subject: string;
+  total: number;
+  correct: number;
+  incorrect: number;
+  skipped: number;
+  score: number;
+  percentage: number;
+}
+
+interface ChapterAnalysis {
+  chapter: string;
+  total: number;
+  correct: number;
+  incorrect: number;
+  skipped: number;
+  score: number;
+  percentage: number;
+}
+
+interface DifficultyAnalysis {
+  difficulty: string;
+  total: number;
+  correct: number;
+  incorrect: number;
+  skipped: number;
+  percentage: number;
+}
+
+interface QuestionReview {
+  questionId: string;
+  subject: string;
+  chapter: string;
+  difficulty: string;
+  question: {
+    text?: string;
+    imgUrl?: string;
+  };
+  options: {
+    text?: string;
+    imgUrl?: string;
+  }[];
+  hint: {
+    text?: string;
+    imgUrl?: string;
+  };
+  correctAnswer: string;
+  selectedAnswer: string;
+  status: "correct" | "incorrect" | "skipped";
+}
 
 interface ApiResponse {
   success: boolean;
+
   exam: Exam;
+
   record: RecordType;
+
   analytics: Analytics;
+
   topperList: Student[];
+
   positiveMarking: number;
   negativeMarking: number;
   totalMarksObtained: number;
-}
 
+  subjectAnalysis: SubjectAnalysis[];
+
+  chapterAnalysis: ChapterAnalysis[];
+
+  difficultyAnalysis: DifficultyAnalysis[];
+
+  questionReview: QuestionReview[];
+
+  strongestSubject: string | null;
+  weakestSubject: string | null;
+
+  strongestChapter: string | null;
+  weakestChapter: string | null;
+
+  marksLost: {
+    wrong: number;
+    skipped: number;
+    total: number;
+  };
+}
 // ---------------- COMPONENT ----------------
 
 export default function ResultPage() {
@@ -646,14 +220,27 @@ const handleDownload = async () => {
   if (!data) return <div>Result not found</div>;
 
   const {
-    exam,
-    record,
-    analytics,
-    topperList,
-    positiveMarking,
-    negativeMarking,
-    totalMarksObtained,
-  } = data;
+  exam,
+  record,
+  analytics,
+  topperList,
+  positiveMarking,
+  negativeMarking,
+  totalMarksObtained,
+
+  subjectAnalysis,
+  chapterAnalysis,
+  difficultyAnalysis,
+  questionReview,
+
+  strongestSubject,
+  weakestSubject,
+
+  strongestChapter,
+  weakestChapter,
+
+  marksLost,
+} = data;
 
   const accuracy =
     record.correct + record.incorrect === 0
@@ -681,6 +268,14 @@ const handleDownload = async () => {
     (record.score / exam.totalMarks) * 100
   );
 
+  const strongest = subjectAnalysis.find(
+  (s) => s.subject === strongestSubject
+);
+
+const weakest = subjectAnalysis.find(
+  (s) => s.subject === weakestSubject
+);
+
   const marksData = [
     { name: "Positive", value: positiveMarking },
     { name: "Negative", value: negativeMarking },
@@ -705,58 +300,223 @@ const handleDownload = async () => {
           ref={resultRef}
           className="bg-white shadow-xl rounded-2xl p-8 space-y-10"
         >
-          {/* ===== SUMMARY SECTION ===== */}
-          <div className="grid md:grid-cols-3 gap-6">
+        {/* ================= PERFORMANCE DASHBOARD ================= */}
 
-            {/* Rank */}
-            <div className="bg-indigo-600 text-white p-6 rounded-xl text-center shadow-md">
-              <p className="text-sm opacity-80">Your Rank</p>
-              <h2 className="text-4xl font-bold mt-2">
-                #{analytics.rank}
-              </h2>
-              <p className="text-sm mt-1">
-                Out of {analytics.totalStudents}
-              </p>
-            </div>
+<div className="grid lg:grid-cols-3 md:grid-cols-2 gap-5">
 
-            {/* Score */}
-            <div className="bg-white border p-6 rounded-xl text-center shadow-sm">
-              <p className="text-sm text-gray-500">Score</p>
-              <h2 className="text-3xl font-bold mt-2">
-                {record.score} / {exam.totalMarks}
-              </h2>
-              <p
-                className={`mt-1 font-medium ${
-                  record.score < 0
-                    ? "text-red-500"
-                    : "text-indigo-600"
-                }`}
-              >
-                {record.percentage.toFixed(2)}%
-              </p>
+  {/* SCORE */}
+  <div className="rounded-2xl border bg-white p-6 shadow-sm">
+    <p className="text-sm text-gray-500">
+      Final Score
+    </p>
 
-              {/* Progress Bar */}
-              <div className="w-full bg-gray-200 rounded-full h-3 mt-4">
-                <div
-                  className="bg-indigo-600 h-3 rounded-full"
-                  style={{
-                    width: `${percentageWidth}%`,
-                  }}
-                />
-              </div>
-            </div>
+    <h2 className="text-4xl font-bold mt-2">
+      {record.score}
+      <span className="text-lg text-gray-400">
+        {" "}
+        / {exam.totalMarks}
+      </span>
+    </h2>
 
-            {/* Performance */}
-            <div className="bg-white border p-6 rounded-xl text-center shadow-sm">
-              <p className="text-sm text-gray-500">Performance</p>
-              <h2 className="text-lg font-semibold mt-2">
-                Accuracy: {accuracy}%
-              </h2>
-              <p className="text-gray-600 mt-1">
-                Speed: {speed} Q/min
-              </p>
-            </div>
-          </div>
+    <p className="text-indigo-600 font-semibold mt-2">
+      {record.percentage.toFixed(2)}%
+    </p>
+
+    <div className="w-full bg-gray-200 rounded-full h-3 mt-5">
+      <div
+        className="bg-indigo-600 h-3 rounded-full"
+        style={{
+          width: `${percentageWidth}%`,
+        }}
+      />
+    </div>
+  </div>
+
+  {/* RANK */}
+
+  <div className="rounded-2xl border bg-white p-6 shadow-sm">
+
+    <p className="text-sm text-gray-500">
+      Overall Rank
+    </p>
+
+    <h2 className="text-4xl font-bold mt-2">
+      #{analytics.rank}
+    </h2>
+
+    <p className="mt-2 text-gray-600">
+      Out of {analytics.totalStudents} Students
+    </p>
+
+    <div className="mt-4">
+
+      <span className="inline-flex px-3 py-1 rounded-full bg-green-100 text-green-700 font-semibold">
+
+        Better than {analytics.percentile}%
+
+      </span>
+
+    </div>
+
+  </div>
+
+  {/* ACCURACY */}
+
+  <div className="rounded-2xl border bg-white p-6 shadow-sm">
+
+    <p className="text-sm text-gray-500">
+
+      Accuracy
+
+    </p>
+
+    <h2 className="text-4xl font-bold mt-2">
+
+      {accuracy}%
+
+    </h2>
+
+    <div className="mt-5 space-y-2 text-sm">
+
+      <div className="flex justify-between">
+
+        <span>Correct</span>
+
+        <span className="font-semibold text-green-600">
+
+          {record.correct}
+
+        </span>
+
+      </div>
+
+      <div className="flex justify-between">
+
+        <span>Incorrect</span>
+
+        <span className="font-semibold text-red-600">
+
+          {record.incorrect}
+
+        </span>
+
+      </div>
+
+      <div className="flex justify-between">
+
+        <span>Skipped</span>
+
+        <span className="font-semibold text-gray-600">
+
+          {record.unanswered}
+
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  {/* MARKS LOST */}
+
+  <div className="rounded-2xl border bg-white p-6 shadow-sm">
+
+    <p className="text-sm text-gray-500">
+
+      Marks Lost
+
+    </p>
+
+    <h2 className="text-4xl font-bold text-red-500 mt-2">
+
+      {marksLost.total}
+
+    </h2>
+
+    <div className="mt-5 space-y-2 text-sm">
+
+      <div className="flex justify-between">
+
+        <span>Wrong Answers</span>
+
+        <span>
+
+          -{marksLost.wrong}
+
+        </span>
+
+      </div>
+
+      <div className="flex justify-between">
+
+        <span>Skipped</span>
+
+        <span>
+
+          -{marksLost.skipped}
+
+        </span>
+
+      </div>
+
+    </div>
+
+  </div>
+
+  {/* STRONGEST */}
+
+  <div className="rounded-2xl border bg-green-50 p-6 shadow-sm">
+
+    <p className="text-sm text-gray-500">
+
+      Strongest Subject
+
+    </p>
+
+    <h2 className="text-3xl font-bold text-green-700 mt-3">
+
+      {strongestSubject || "-"}
+
+    </h2>
+
+    <p className="mt-3 text-sm text-gray-600">
+
+      {strongest?.correct ?? 0} Correct
+
+      / {strongest?.total ?? 0}
+
+    </p>
+
+  </div>
+
+  {/* WEAKEST */}
+
+  <div className="rounded-2xl border bg-red-50 p-6 shadow-sm">
+
+    <p className="text-sm text-gray-500">
+
+      Needs Improvement
+
+    </p>
+
+    <h2 className="text-3xl font-bold text-red-600 mt-3">
+
+      {weakestSubject || "-"}
+
+    </h2>
+
+    <p className="mt-3 text-sm text-gray-600">
+
+      {weakest?.correct ?? 0} Correct
+
+      / {weakest?.total ?? 0}
+
+    </p>
+
+  </div>
+
+</div>
 
           {/* ===== ANALYSIS SECTION ===== */}
           <div className="grid md:grid-cols-2 gap-8">
@@ -808,86 +568,265 @@ const handleDownload = async () => {
             </div>
           </div>
 
-          {/* ===== TOPPER LIST ===== */}
-          <div className="overflow-hidden rounded-2xl border border-indigo-100 bg-white shadow-sm">
-            <div className="flex flex-col gap-1 border-b border-indigo-100 bg-gradient-to-r from-indigo-600 to-violet-600 px-5 py-4 text-white sm:flex-row sm:items-center sm:justify-between sm:px-6">
-              <div>
-                <h3 className="text-lg font-bold">Leaderboard</h3>
-                <p className="text-sm text-indigo-100">
-                  See how students performed in this exam
-                </p>
-              </div>
-              <span className="w-fit rounded-full bg-white/15 px-3 py-1 text-xs font-medium text-indigo-50">
-                {topperList.length} {topperList.length === 1 ? "student" : "students"}
-              </span>
+         {/* ================= SUBJECT PERFORMANCE ================= */}
+
+<div className="bg-white rounded-2xl border shadow-sm p-6">
+
+  <div className="mb-6">
+
+    <h2 className="text-2xl font-bold">
+      Subject Performance
+    </h2>
+
+    <p className="text-gray-500 mt-1">
+      See where you performed well and where you need improvement.
+    </p>
+
+  </div>
+
+  <div className="space-y-5">
+
+    {subjectAnalysis.map((subject) => {
+
+      const progress =
+        subject.total === 0
+          ? 0
+          : (subject.correct / subject.total) * 100;
+
+      return (
+
+        <div
+          key={subject.subject}
+          className="border rounded-xl p-5 hover:shadow-md transition"
+        >
+
+          <div className="flex justify-between items-center mb-3">
+
+            <div>
+
+              <h3 className="text-lg font-semibold">
+                {subject.subject}
+              </h3>
+
+              <p className="text-sm text-gray-500">
+
+                {subject.correct} Correct · {subject.incorrect} Wrong · {subject.skipped} Skipped
+
+              </p>
+
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[620px] border-collapse text-sm">
-                <thead>
-                  <tr className="border-b border-indigo-100 bg-indigo-50/70 text-xs uppercase tracking-wide text-indigo-700">
-                    <th className="px-5 py-4 text-left font-semibold">Rank</th>
-                    <th className="px-5 py-4 text-left font-semibold">Student</th>
-                    <th className="px-5 py-4 text-center font-semibold">Score</th>
-                    <th className="px-5 py-4 text-center font-semibold">Percentage</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {topperList.map((student, index) => {
-                    const isCurrentStudent = student.email === record.email;
-                    return (
-                      <tr
-                        key={student._id}
-                        className={`border-b border-gray-100 transition-colors last:border-0 hover:bg-indigo-50/50 ${
-                          isCurrentStudent ? "bg-indigo-50/80" : ""
-                        }`}
-                      >
-                        <td className="px-5 py-4">
-                          <span
-                            className={`inline-flex h-8 min-w-8 items-center justify-center rounded-full px-2 font-bold ${
-                              index === 0
-                                ? "bg-amber-100 text-amber-700"
-                                : index === 1
-                                  ? "bg-slate-200 text-slate-700"
-                                  : index === 2
-                                    ? "bg-orange-100 text-orange-700"
-                                    : "bg-gray-100 text-gray-600"
-                            }`}
-                          >
-                            #{index + 1}
-                          </span>
-                        </td>
-                        <td className="px-5 py-4 font-medium text-gray-800">
-                          <div className="flex items-center gap-3">
-                            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-indigo-100 font-bold text-indigo-600">
-                              {student.name.charAt(0).toUpperCase()}
-                            </span>
-                            <span className="whitespace-nowrap">
-                              {student.name}
-                              {isCurrentStudent && (
-                                <span className="ml-2 rounded-full bg-indigo-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-indigo-700">
-                                  You
-                                </span>
-                              )}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 text-center font-semibold text-gray-700">
-                          {student.score}
-                        </td>
-                        <td className="px-5 py-4 text-center">
-                          <span className="rounded-full bg-emerald-50 px-3 py-1 font-semibold text-emerald-700">
-                            {student.percentage.toFixed(2)}%
-                          </span>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+            <div className="text-right">
+
+              <div className="text-xl font-bold">
+
+                {subject.score}
+
+              </div>
+
+              <div className="text-sm text-gray-500">
+
+                Marks
+
+              </div>
+
             </div>
+
           </div>
 
+          <div className="w-full bg-gray-200 rounded-full h-3">
+
+            <div
+              className={`h-3 rounded-full ${
+                progress >= 80
+                  ? "bg-green-500"
+                  : progress >= 60
+                  ? "bg-yellow-500"
+                  : "bg-red-500"
+              }`}
+              style={{
+                width: `${progress}%`,
+              }}
+            />
+
+          </div>
+
+          <div className="mt-4 grid grid-cols-4 gap-3 text-center">
+
+            <div>
+
+              <p className="text-xs text-gray-500">
+                Accuracy
+              </p>
+
+              <p className="font-semibold">
+
+                {subject.percentage}%
+
+              </p>
+
+            </div>
+
+            <div>
+
+              <p className="text-xs text-gray-500">
+                Correct
+              </p>
+
+              <p className="font-semibold text-green-600">
+
+                {subject.correct}
+
+              </p>
+
+            </div>
+
+            <div>
+
+              <p className="text-xs text-gray-500">
+                Wrong
+              </p>
+
+              <p className="font-semibold text-red-600">
+
+                {subject.incorrect}
+
+              </p>
+
+            </div>
+
+            <div>
+
+              <p className="text-xs text-gray-500">
+                Skipped
+              </p>
+
+              <p className="font-semibold text-gray-600">
+
+                {subject.skipped}
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      );
+
+    })}
+
+  </div>
+
+</div>
+{/* ================= LEADERBOARD ================= */}
+
+<div className="bg-white rounded-2xl border shadow-sm p-6">
+
+  <div className="flex items-center justify-between mb-6">
+
+    <div>
+
+      <h2 className="text-2xl font-bold">
+        🏆 Top Performers
+      </h2>
+
+      <p className="text-gray-500 mt-1">
+        Top students in this exam
+      </p>
+
+    </div>
+
+    <div className="bg-indigo-100 text-indigo-700 px-3 py-1 rounded-full text-sm font-semibold">
+      {analytics.totalStudents} Students
+    </div>
+
+  </div>
+
+  <div className="space-y-4">
+
+    {topperList.map((student, index) => {
+
+      const isYou = student.email === record.email;
+
+      return (
+
+        <div
+          key={student._id}
+          className={`flex items-center justify-between rounded-xl border p-4 transition ${
+            isYou
+              ? "border-indigo-500 bg-indigo-50"
+              : "hover:bg-gray-50"
+          }`}
+        >
+
+          <div className="flex items-center gap-4">
+
+            <div
+              className={`w-12 h-12 rounded-full flex items-center justify-center font-bold text-lg
+              ${
+                index === 0
+                  ? "bg-yellow-400 text-white"
+                  : index === 1
+                  ? "bg-gray-300 text-gray-700"
+                  : index === 2
+                  ? "bg-orange-300 text-white"
+                  : "bg-indigo-100 text-indigo-700"
+              }`}
+            >
+              #{index + 1}
+            </div>
+
+            <div>
+
+              <div className="font-semibold text-lg">
+
+                {student.name}
+
+                {isYou && (
+                  <span className="ml-2 text-xs bg-indigo-600 text-white px-2 py-1 rounded-full">
+                    YOU
+                  </span>
+                )}
+
+              </div>
+
+              <div className="text-gray-500 text-sm">
+
+                {student.percentage.toFixed(2)}%
+
+              </div>
+
+            </div>
+
+          </div>
+
+          <div className="text-right">
+
+            <div className="text-2xl font-bold text-indigo-600">
+
+              {student.score}
+
+            </div>
+
+            <div className="text-xs text-gray-500">
+
+              Marks
+
+            </div>
+
+          </div>
+
+        </div>
+
+      );
+
+    })}
+
+  </div>
+
+</div>
         </div>
       </div>
     </div>

@@ -141,386 +141,6 @@ const [generatingPdf, setGeneratingPdf] = useState(false);
     // open result modal once result is ready
     setOpenResultModal(true);
   }, []);
-// const [resultInsight, setResultInsight] = useState("");
-// const [emotionSet, setEmotionSet] = useState<{ left: string; right: string; title: string } | null>(null);
-// // const [gainedPoints, setGainedPoints] = useState(0);
-// // const [progress, setProgress] = useState(10);
-// // const [showPoints, setShowPoints] = useState(false);
-
-
-// // const [xpSteps, setXpSteps] = useState<
-// //   { label: string; value: number; visible: boolean }[]
-// // >([]);
-
-// // const [totalXP, setTotalXP] = useState(0);
-
-
-// // useEffect(() => {
-// //   if (!openResultModal) return;
-
-// //   // Reset everything
-// //   setProgress(0);
-// //   setShowPoints(false);
-// //   setTotalXP(0);
-
-// //   const steps = [
-// //     { label: "Base XP (Test Attempt)", value: XP_CONFIG.base },
-// //     { label: "Performance Bonus", value: XP_CONFIG.performance },
-// //     { label: "Discipline Bonus", value: XP_CONFIG.discipline },
-// //     { label: "Time Mastery Bonus", value: XP_CONFIG.time },
-// //   ];
-
-// //   setXpSteps(steps.map(s => ({ ...s, visible: false })));
-
-// //   let accumulated = 0;
-
-// //   steps.forEach((step, index) => {
-// //     setTimeout(() => {
-// //       accumulated += step.value;
-
-// //       setXpSteps(prev =>
-// //         prev.map((s, i) =>
-// //           i === index ? { ...s, visible: true } : s
-// //         )
-// //       );
-
-// //       setTotalXP(accumulated);
-// //     }, 600 * (index + 1));
-// //   });
-
-// //   // After all XP lines
-// //   setTimeout(() => {
-// //     setShowPoints(true);
-
-// //     // Smooth progress animation (single run)
-// //     const target = 60; // pretend user is now at 60%
-// //     let start = 0;
-// //     const duration = 1200;
-// //     const startTime = performance.now();
-
-// //     const animate = (time: number) => {
-// //       const elapsed = time - startTime;
-// //       const progressValue = Math.min(
-// //         start + (elapsed / duration) * target,
-// //         target
-// //       );
-// //       setProgress(progressValue);
-
-// //       if (elapsed < duration) {
-// //         requestAnimationFrame(animate);
-// //       }
-// //     };
-
-// //     requestAnimationFrame(animate);
-// //   }, 600 * (steps.length + 1));
-
-// // }, [openResultModal]);
-
-
-// // After your sessionStorage parsing and state setup
-// useEffect(() => {
-//   if (!loading) {
-//     const result = buildTestInsight({
-//       correct: correctCount,
-//       incorrect: incorrectCount,
-//       unanswered: unansweredCount,
-//       percentage: Number(percentage),
-//       duration: test.duration,
-//       timeLeft: test.timeLeft,
-//       subject: test.subject,
-//       chapter: test.chapter,
-//     });
-
-//     setResultInsight(result.insight);
-//     setEmotionSet(result.emotion);
-//     setGainedPoints(result.gainedPoints);
-//     setOpenResultModal(true);
-//   }
-// }, [loading, correctCount, incorrectCount, unansweredCount, percentage, test]);
-
-
-// // useEffect(() => {
-// //   if (!openResultModal) return;
-
-// //   setProgress(10);
-// //   setShowPoints(false);
-
-// //   const start = 10;
-// //   const end = 40;
-// //   const duration = 2000; // ms
-// //   const startTime = performance.now();
-
-// //   const animate = (time: number) => {
-// //     const elapsed = time - startTime;
-// //     const progressValue = Math.min(
-// //       start + (elapsed / duration) * (end - start),
-// //       end
-// //     );
-
-// //     setProgress(progressValue);
-
-// //     if (progressValue < end) {
-// //       requestAnimationFrame(animate);
-// //     } else {
-// //       setShowPoints(true);
-// //     }
-// //   };
-
-// //   requestAnimationFrame(animate);
-// // }, [openResultModal]);
-
-
-// // XP + Level
-// const [currentLevel, setCurrentLevel] = useState(1);
-// const [nextLevel, setNextLevel] = useState(2);
-// const [levelName, setLevelName] = useState("");
-// const [pointsBefore, setPointsBefore] = useState(0);
-// const [pointsAfter, setPointsAfter] = useState(0);
-
-// // Progress %
-// const [progress, setProgress] = useState(0);
-
-// // XP breakdown animation
-// const [xpSteps, setXpSteps] = useState<
-//   { label: string; value: number; visible: boolean }[]
-// >([
-//   { label: "Base XP", value: 0, visible: false },
-//   { label: "Score Bonus", value: 0, visible: false },
-//   { label: "Time Bonus", value: 0, visible: false },
-// ]);
-
-// const [totalXP, setTotalXP] = useState(0);
-// const [showPoints, setShowPoints] = useState(false);
-// const [gainedPoints, setGainedPoints] = useState(0);
-
-
-// // useEffect(() => {
-// //   if (!openResultModal) return;
-
-// //   const runXPFlow = async () => {
-// //     // reset UI
-// //     setProgress(0);
-// //     setShowPoints(false);
-// //     setTotalXP(0);
-// //     setXpSteps((s) => s.map(x => ({ ...x, visible: false, value: 0 })));
-// //     const userData=await getCurrentUser()
-// //     const res = await fetch("/api/Add-Points", {
-// //       method: "POST",
-// //       headers: { "Content-Type": "application/json" },
-// //       body: JSON.stringify({
-// //         userId: userData.user._id, // 🔴 make sure this exists
-// //         scorePercent: Number(percentage),
-// //         timeUsed: test.duration - test.timeLeft,
-// //         totalTime: test.duration,
-// //         attemptedQuestions: ((questions.length)+1)-(unansweredCount+1),
-// //     totalQuestions: (questions.length)+1,
-// //       }),
-// //     });
-
-// //     const data = await res.json();
-
-// //     if (!data.success) return;
-
-// //     // save backend truth
-// //     setCurrentLevel(data.level);
-// //     setLevelName(data.levelName);
-// //     setPointsBefore(data.previousPoints);
-// //     setPointsAfter(data.totalPoints);
-// //     setGainedPoints(data.gainedPoints);
-// //     setNextLevel(data.level + 1);
-
-// //     animateXP(data);
-// //   };
-
-// //   runXPFlow();
-// // }, [openResultModal]);
-
-// // const animateXP = async (data: any) => {
-// //   const steps = [
-// //     { label: "Base XP", value: 20 },
-// //     { label: "Score Bonus", value: data.gainedPoints >= 40 ? 20 : 0 },
-// //     {
-// //       label: "Time Bonus",
-// //       value: data.gainedPoints > 40 ? data.gainedPoints - 40 : 0,
-// //     },
-// //   ];
-
-// //   let runningTotal = 0;
-
-// //   for (let i = 0; i < steps.length; i++) {
-// //     await delay(500);
-
-// //     animateNumber(0, steps[i].value, (val) => {
-// //       setXpSteps((prev) => {
-// //         const copy = [...prev];
-// //         copy[i] = { ...copy[i], value: val, visible: true };
-// //         return copy;
-// //       });
-// //     });
-
-// //     runningTotal += steps[i].value;
-// //   }
-
-// //   // show total
-// //   await delay(400);
-// //   animateNumber(0, runningTotal, (val) => setTotalXP(val));
-
-// //   // fly XP to bar
-// //   await delay(600);
-// //   setShowPoints(true);
-
-// //   // progress bar move
-// //   await delay(300);
-// //   animateProgress();
-// // };
-
-// // const animateProgress = () => {
-// //   // get current & next level ranges
-// //   const currentLevelData = LEVELS.find(
-// //     (l) => l.level === currentLevel
-// //   );
-// //   const nextLevelData = LEVELS.find(
-// //     (l) => l.level === nextLevel
-// //   );
-
-// //   if (!currentLevelData || !nextLevelData) return;
-
-// //   const levelRange =
-// //     nextLevelData.minPoints - currentLevelData.minPoints;
-
-// //   const progressPercent =
-// //     ((pointsAfter - currentLevelData.minPoints) / levelRange) * 100;
-
-// //   animateNumber(0, progressPercent, (val) =>
-// //     setProgress(val)
-// //   );
-
-// //   // optional sound
-// //   new Audio("/sounds/xp.mp3").play().catch(() => {});
-// // };
-
-// useEffect(() => {
-//   if (!openResultModal) return;
-
-//   const runXPFlow = async () => {
-//     // reset UI
-//     setProgress(0);
-//     setShowPoints(false);
-//     setTotalXP(0);
-//     setXpSteps((s) => s.map((x) => ({ ...x, visible: false, value: 0 })));
-
-//     const userData = await getCurrentUser();
-
-//     const res = await fetch("/api/Add-Points", {
-//       method: "POST",
-//       headers: { "Content-Type": "application/json" },
-//       body: JSON.stringify({
-//         userId: userData.user._id,
-//         scorePercent: Number(percentage),
-//         timeUsed: test.duration - test.timeLeft,
-//         totalTime: test.duration,
-//         attemptedQuestions: questions.length - unansweredCount,
-//         totalQuestions: questions.length,
-//       }),
-//     });
-
-//     const data = await res.json();
-//     if (!data.success) return;
-
-//     // Save backend truth
-//     setCurrentLevel(data.level);
-//     setLevelName(data.levelName);
-//     setPointsBefore(data.previousPoints);
-//     setPointsAfter(data.totalPoints);
-//     setNextLevel(data.level + 1);
-
-//     // Use points breakdown from backend
-//     const steps = [
-//       { label: "Base XP", value: data.pointsBreakdown.basePoints },
-//       { label: "Score Bonus", value: data.pointsBreakdown.scorePoints },
-//       { label: "Time Bonus", value: data.pointsBreakdown.timePoints },
-//     ];
-
-//     // Animate XP step by step
-//     let runningTotal = 0;
-//     for (let i = 0; i < steps.length; i++) {
-//       await delay(500);
-
-//       animateNumber(0, steps[i].value, (val) => {
-//         setXpSteps((prev) => {
-//           const copy = [...prev];
-//           copy[i] = { ...copy[i], value: val, visible: true };
-//           return copy;
-//         });
-//       });
-
-//       runningTotal += steps[i].value;
-//     }
-
-//     // Animate total XP
-//     await delay(400);
-//     animateNumber(0, runningTotal, (val) => setTotalXP(val));
-
-//     // Fly points to progress bar
-//     await delay(600);
-//     setShowPoints(true);
-
-//     // Animate progress bar
-//     await delay(300);
-//     animateProgressBar(data);
-//   };
-
-//   runXPFlow();
-// }, [openResultModal]);
-
-// // -----------------------
-// // Progress Bar Animation
-// // -----------------------
-// const animateProgressBar = (data: any) => {
-//   const currentLevelData = LEVELS.find((l) => l.level === data.level);
-// const nextLevelData = LEVELS.find((l) => l.level === data.level + 1);
-
-// // If currentLevelData is missing, fallback to first level
-// if (!currentLevelData) return;
-
-// // If max level, hide progress bar
-// if (!nextLevelData || data.level === LEVELS[LEVELS.length - 1].level) {
-//   setProgress(100);
-//   return;
-// }
-
-// const levelRange = nextLevelData.minPoints - currentLevelData.minPoints;
-// const pointsIntoLevel = data.totalPoints - currentLevelData.minPoints;
-// const targetPercent = Math.min((pointsIntoLevel / levelRange) * 100, 100);
-
-// animateNumber(0, targetPercent, (val) => setProgress(val));
-
-
-//   // Play XP sound
-//   new Audio("/sounds/xp.mp3").play().catch(() => {});
-// };
-
-// // -----------------------
-// // Generic number animation helper
-// // -----------------------
-// function animateNumber(start: number, end: number, callback: (val: number) => void, duration = 800) {
-//   const startTime = performance.now();
-//   const step = (time: number) => {
-//     const elapsed = time - startTime;
-//     const progress = Math.min(elapsed / duration, 1);
-//     const value = Math.round(start + (end - start) * progress);
-//     callback(value);
-//     if (progress < 1) requestAnimationFrame(step);
-//   };
-//   requestAnimationFrame(step);
-// }
-
-// // -----------------------
-// // Simple delay
-// // -----------------------
-// function delay(ms: number) {
-//   return new Promise((resolve) => setTimeout(resolve, ms));
-// }
 
 
   useEffect(() => {
@@ -566,35 +186,6 @@ const [generatingPdf, setGeneratingPdf] = useState(false);
       setLoading(false);
     }
   }, []);
-
-// const handleDownload = (e: { preventDefault: () => void; }) => {
-//   e.preventDefault();
-//   const element = document.getElementById("result-pdf");
-//   if (!element) return;
-// setGeneratingPdf(true);
-//   // Show element for PDF rendering
-//   element.style.display = "block";
-
-//     const parts = [`${test.course}`];
-//   if (test.subject && test.subject !== "-") parts.push(test.subject);
-//   if (test.chapter && test.chapter !== "-") parts.push(test.chapter);
-//   if (test.date) parts.push(new Date(test.date).toISOString().slice(0, 10));
-//   const filename = `test-result-${parts.join('-')}.pdf`;
-
-//   const opt = {
-//     margin:       0.2, // mm
-//     filename:     filename,
-//     image:        { type: "jpeg", quality: 1 },
-//     html2canvas:  { dpi: 300, useCORS: true, scrollY: 0, scale: 2 },
-//     jsPDF:        { unit: "mm", format: "a4", orientation: "portrait" },
-//     pagebreak:    { mode: ["avoid-all", "css", "legacy"] },
-//   };
-
-//   html2pdf().set(opt).from(element).save().then(() => {
-//     element.style.display = "none"; // hide after PDF
-//     setGeneratingPdf(false);
-//   });
-// };
 
 const handleDownload = async (e: { preventDefault: () => void }) => {
   e.preventDefault();
@@ -1702,7 +1293,7 @@ console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer,
                   <Box sx={{ mb: 2 }}>
                     {q.questionType === "text" ? (
                       <Typography variant="body1" sx={{ fontSize: "12px", fontWeight: 500, mb: 2 }}>
-                        {q.question.text}
+                       <RenderMath text={q.question.text} />
                       </Typography>
                     ) : (
                       <Box component="img"
@@ -1731,7 +1322,7 @@ console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer,
                         </span>
                         {q.optionType === "text" ? (
                           <Typography variant="body2" sx={{ fontSize: "12px" }}>
-                            {option.text}
+                            <RenderMath text={option.text} />
                           </Typography>
                         ) : (
                           <Box component="img"
@@ -1749,7 +1340,7 @@ console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer,
                 <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2, maxWidth: "240px", minWidth:"180px" }}>
                   {q.hintType === "text" ? (
                     <Typography variant="body2" sx={{ fontSize: "12px", fontStyle: 'italic' }}>
-                      {q.hint.text || "—"}
+                      <RenderMath text={q.hint.text || "—"} />
                     </Typography>
                   ) : (
                     <Box component="img"
@@ -1816,7 +1407,7 @@ console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer,
               <Box sx={{ mb: 2 }}>
                 {q.questionType === "text" ? (
                   <Typography variant="body1" sx={{ fontSize: "12px", fontWeight: 500, mb: 2 }}>
-                    {q.question.text}
+                    <RenderMath text={q.question.text} />
                   </Typography>
                 ) : (
                   <Box component="img"
@@ -1845,7 +1436,7 @@ console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer,
                     </span>
                     {q.optionType === "text" ? (
                       <Typography variant="body2" sx={{ fontSize: "12px" }}>
-                        {option.text}
+                        <RenderMath text={option.text} />
                       </Typography>
                     ) : (
                       <Box component="img"
@@ -1863,7 +1454,7 @@ console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer,
             <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2, maxWidth: "240px", minWidth:"180px" }}>
               {q.hintType === "text" ? (
                 <Typography variant="body2" sx={{ fontSize: "12px", fontStyle: 'italic' }}>
-                  {q.hint.text || "—"}
+                  <RenderMath text={q.hint.text || "—"} />
                 </Typography>
               ) : (
                 <Box component="img"
@@ -1899,7 +1490,6 @@ console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer,
               </CardContent>
             </Card>
             </Box>
-
                 <ResultModal
         openResultModal={openResultModal}
         handleClose={() => setOpenResultModal(false)}
@@ -1910,218 +1500,7 @@ console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer,
         questions={questions}
         test={test}
       />
-           {/* <Dialog
-  open={openResultModal}
-  onClose={handleClose}
-  PaperProps={{
-    sx: {
-      borderRadius: 4,
-      boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
-      overflow: "visible",
-      p: 0,
-    },
-  }}
->
-  <Box
-    sx={{
-      width: { xs: 320, sm: 480, md: 540 },
-      p: 4,
-      borderRadius: 4,
-      background: "linear-gradient(180deg, #ffffff, #f0f4f8)",
-      position: "relative",
-      textAlign: "center",
-      display: "flex",
-      flexDirection: "column",
-      alignItems: "center",
-      gap: 3,
-    }}
-  >
-    
-    <Box
-      sx={{
-        position: "absolute",
-        top: -28,
-        left: -28,
-        fontSize: 48,
-        transform: "rotate(-15deg)",
-      }}
-    >
-      🎓
-    </Box>
-    <Box
-      sx={{
-        position: "absolute",
-        top: -28,
-        right: -28,
-        fontSize: 48,
-        transform: "rotate(15deg)",
-      }}
-    >
-      🏆
-    </Box>
-
-    
-    <Typography
-      variant="h5"
-      sx={{ fontWeight: 700, color: "#0f172a", mt: 1 }}
-    >
-      {emotionSet?.title || "Result"}
-    </Typography>
-
-   
-    <Typography
-      sx={{
-        fontSize: 15,
-        color: "#334155",
-        lineHeight: 1.6,
-        px: 2,
-        textAlign: "center",
-      }}
-    >
-      {resultInsight}
-    </Typography>
-
-    <Box sx={{ width: "100%", mt: 2, position: "relative" }}>
-      <LinearProgress
-        variant="determinate"
-        value={progress}
-        sx={{
-          height: 12,
-          borderRadius: 6,
-          backgroundColor: "#e2e8f0",
-          "& .MuiLinearProgress-bar": {
-            borderRadius: 6,
-            background: "linear-gradient(90deg, #4ade80, #3b82f6)",
-            transition: "width 1s ease-in-out",
-          },
-        }}
-      />
-      <Box
-  sx={{
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    mb: 1,
-  }}
->
-  
-  <Box className="hex">
-    <Typography>{currentLevel}</Typography>
-  </Box>
-
-  <Box className="hex muted">
-    <Typography>{nextLevel}</Typography>
-  </Box>
-</Box>
-
-<Box sx={{ width: "100%", mt: 2 }}>
-  {xpSteps.map((step, i) =>
-    step.visible ? (
-      <Box
-        key={i}
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          px: 2,
-          py: 0.5,
-          animation: "fadeSlideIn 0.4s ease",
-        }}
-      >
-        <Typography sx={{ color: "#475569", fontSize: 14 }}>
-          {step.label}
-        </Typography>
-        <Typography sx={{ fontWeight: 600, color: "#0f172a" }}>
-          +{step.value}
-        </Typography>
-      </Box>
-    ) : null
-  )}
-
-  {totalXP > 0 && (
-    <Box
-      sx={{
-        mt: 1.5,
-        pt: 1,
-        borderTop: "1px dashed #cbd5f5",
-        display: "flex",
-        justifyContent: "space-between",
-        px: 2,
-        fontWeight: 700,
-        animation: "fadeSlideIn 0.5s ease",
-      }}
-    >
-      <Typography>Total XP</Typography>
-      <Typography color="#2563eb">{totalXP}</Typography>
-    </Box>
-  )}
-</Box>
-
-    
-      {showPoints && (
-        <Typography
-          sx={{
-            position: "absolute",
-            right: 8,
-            top: -28,
-            fontWeight: 700,
-            color: "#2563eb",
-            animation: "floatUp 1.2s ease forwards",
-          }}
-        >
-          +{gainedPoints} 🎯
-        </Typography>
-      )}
-    </Box>
-
-   
-    <Box sx={{ mt: 3, display: "flex", gap: 3 }}>
-      <Box
-        sx={{
-          width: 64,
-          height: 64,
-          bgcolor: "#e0f2fe",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 28,
-        }}
-      >
-        📚
-      </Box>
-      <Box
-        sx={{
-          width: 64,
-          height: 64,
-          bgcolor: "#fef3c7",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 28,
-        }}
-      >
-        ⭐
-      </Box>
-      <Box
-        sx={{
-          width: 64,
-          height: 64,
-          bgcolor: "#ede9fe",
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          fontSize: 28,
-        }}
-      >
-        🏅
-      </Box>
-    </Box>
-  </Box>
-</Dialog> */}
-
-
+       
         </PageContainer>
       </Box>
     </>
