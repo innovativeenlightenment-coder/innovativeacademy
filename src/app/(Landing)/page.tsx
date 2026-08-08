@@ -25,12 +25,12 @@ const managementMembers: any[] = [
     qualification: "Managing Director",
     image: "/images/team/adbulkareem.jpg",
   },
-   {
-    name: "Akhtar Sir",
-    designation: "Administrator",
-    qualification: "Parent and Student Relations",
-    image: "/images/team/akhtar.jpg",
-  },
+  //  {
+  //   name: "Akhtar Sir",
+  //   designation: "Administrator",
+  //   qualification: "Parent and Student Relations",
+  //   image: "/images/team/akhtar.jpg",
+  // },
 ];
 
 const facultyMembers: any[] = [
@@ -271,9 +271,9 @@ const mentors = [
             </div>
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-8">
-                <a href="#about" className="text-slate-700 hover:text-purple-600 transition-colors text-sm font-medium">
+                {/* <a href="#about" className="text-slate-700 hover:text-purple-600 transition-colors text-sm font-medium">
                 About
-              </a>
+              </a> */}
              
               <a href="#founder" className="text-slate-700 hover:text-purple-600 transition-colors text-sm font-medium">
                 Team
@@ -317,9 +317,9 @@ const mentors = [
           {/* Mobile Menu */}
           {mobileMenuOpen && (
             <div className="md:hidden pb-4 space-y-2">
-             <a href="#about" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="block px-4 py-2 text-slate-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition-colors">
+             {/* <a href="#about" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="block px-4 py-2 text-slate-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition-colors">
                 About
-              </a>
+              </a> */}
              
               <a href="#founder" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="block px-4 py-2 text-slate-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition-colors">
                 Team
@@ -443,10 +443,9 @@ const mentors = [
         </div>
       </section>
 {/* About Us Section */}
-<section  id="about"  className="bg-white py-20 lg:py-24"
+{/* <section  id="about"  className="bg-white py-20 lg:py-24"
 >
   <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-     {/* Accent */}
      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
 
@@ -460,7 +459,6 @@ const mentors = [
     </div>
     <div className="grid items-center gap-16 lg:grid-cols-2">
 
-      {/* Left Visual */}
       <div className="order-2 md:order-1 flex justify-center">
         <div className="relative w-full max-w-md">
           <div className="absolute inset-0 rounded-[32px] bg-gradient-to-br from-purple-200/40 to-pink-100/30 blur-3xl"></div>
@@ -477,7 +475,6 @@ const mentors = [
         </div>
       </div>
 
-      {/* Right Content */}
       <div className="order-1 md:order-2">
 
        
@@ -550,7 +547,7 @@ const mentors = [
       </div>
     </div>
   </div>
-</section>
+</section> */}
 {/* Vision Section */}
 <section className="bg-[#faf8ff] py-20 lg:py-24" id="vision">
   <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
