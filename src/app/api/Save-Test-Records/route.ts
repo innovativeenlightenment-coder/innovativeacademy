@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";  import { connectDB } from "@/lib/mongoose";
 import TestRecords from "@/model/TestRecordSchema";
 import { unstable_noStore as noStore } from "next/cache";
+import { InstantResult } from "@/types/instantResult";
 
 /* ================= TYPES ================= */
 
@@ -21,6 +22,7 @@ type SavePayload = {
   percentage: number;
   username?: string;
   name?: string;
+  instantResult?: InstantResult;
   testType:string;
   email: string;
   duration:number;
@@ -40,6 +42,7 @@ export async function POST(req: Request) {
     const body: SavePayload = await req.json();
 
     const {
+      instantResult,
       correct,
       incorrect,
       unanswered,
@@ -76,6 +79,7 @@ export async function POST(req: Request) {
     /* ================= SAVE RECORD ================= */
 
     const record = await TestRecords.create({
+      instantResult,
       correct,
       incorrect,
       unanswered,

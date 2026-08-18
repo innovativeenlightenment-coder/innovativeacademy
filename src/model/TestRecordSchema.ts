@@ -64,6 +64,9 @@ type:String,
     type: String,
     required: true,
   },
+  instantResult: {
+    type: Object,
+  },
   date: {
     type: Date,
    

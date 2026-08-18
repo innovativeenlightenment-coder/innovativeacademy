@@ -1096,7 +1096,7 @@ if(isLoading){
   {/* removed level */}
   {["Subject", "Chapter", 
   
-   "Question", "Options", "Answer","Hint","Course","Level" ,  "Actions"].map((header) => (
+   "Question", "Options", "Answer","Hint","Uploaded By/At","Course","Level" ,  "Actions"].map((header) => (
     <TableCell
       key={header}
       sx={{
@@ -1229,6 +1229,15 @@ if(isLoading){
             )}
             {/* {q.hint?.text||"-"} */}
           </TableCell>
+          <TableCell >
+            
+              <p >
+                  {q.uploadedBy}/{Date.parse(q.createdAt)}
+                </p>
+          
+            {/* {q.hint?.text||"-"} */}
+          </TableCell>
+          
            <TableCell >{q.course}</TableCell>
                       <TableCell >{q.level}</TableCell>
           <TableCell >

@@ -268,1241 +268,674 @@ const formatDuration = (totalSeconds: number) => {
 
   return (
     <>
-      {/* Print-specific CSS */}
-      <style jsx global>{`
-        @media print {
-          body {
-            margin: 0;
-            padding: 0;
-            background: white !important;
-          }
-          
-          .MuiBox-root {
-            break-inside: avoid;
-          }
-          
-          .MuiCard-root {
-            break-inside: avoid;
-            box-shadow: none !important;
-            border: 1px solid #ddd !important;
-          }
-          
-          .MuiTableContainer-root {
-            break-inside: avoid;
-          }
-          
-          .MuiTableRow-root {
-            break-inside: avoid;
-          }
-          
-          .MuiTableCell-root {
-            border: 1px solid #ddd !important;
-          }
-          
-          .MuiButton-root {
-            display: none !important;
-          }
-          
-          .MuiChip-root {
-            border: 1px solid #ddd !important;
-          }
-          
-          .MuiIcon-root {
-            display: none !important;
-          }
-          
-          .MuiGrid-container {
-            break-inside: avoid;
-          }
-          
-          .MuiGrid-item {
-            break-inside: avoid;
-          }
-          
-          /* Ensure proper page breaks */
-          .MuiCard-root:first-child {
-            page-break-after: auto;
-          }
-          
-          .MuiCard-root:last-child {
-            page-break-before: auto;
-          }
-          
-          /* Hide action buttons when printing */
-          .print-hide {
-            display: none !important;
-          }
-        }
-          @keyframes floatUp {
-  0% { transform: translateY(0); opacity: 0; }
-  30% { opacity: 1; }
-  100% { transform: translateY(-24px); opacity: 0; }
-}
-  @keyframes fadeSlideIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+    
+ <>
+ 
+  <div className="min-h-screen bg-[#f7f8fc] px-4 py-6 md:px-8">
+    <div className="mx-auto max-w-6xl">
 
-@keyframes floatUp {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(-10px);
-  }
-}
+      {/* ================= TOP BAR ================= */}
 
-      `}</style>
-      
-      <Box sx={{
-        maxWidth: "100vw",
-        "@media (min-width: 1200px)": {
-          maxWidth: "calc(100vw - 335px)",
-        },
-        overflowX: "hidden",
-        margin:'0 auto',
-      }}>
-        <PageContainer title="Test Result" description="View your test results">
-          <Box p={3}>
-            {/* Header with Actions */}
-            <Box sx={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center', 
-              mb: 3,
-              flexWrap: 'wrap',
-              gap: 2
-            }} className="print-hide">
-              <Typography variant="h4" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                Test Results
-              </Typography>
-              <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                <Button
-                  id="download-btn"
-                  variant="contained"
-                  startIcon={<DownloadIcon />}
-                  onClick={handleDownload}
-                  sx={{ 
-                    backgroundColor: '#4caf50',
-                    '&:hover': { backgroundColor: '#45a049' }
+      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <p className="text-sm font-medium text-indigo-600">
+            Practice Test
+          </p>
+
+          <h1 className="mt-1 text-2xl font-bold text-gray-900 md:text-3xl">
+            Test Review
+          </h1>
+
+          <p className="mt-1 text-sm text-gray-500">
+            {test.course}
+            {test.subject && test.subject !== "-" && ` • ${test.subject}`}
+            {test.chapter && test.chapter !== "-" && ` • ${test.chapter}`}
+          </p>
+        </div>
+
+        <button
+          onClick={handleDownload}
+          disabled={generatingPdf}
+          className="rounded-xl bg-gray-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-gray-800 disabled:opacity-50"
+        >
+          {generatingPdf ? "Generating..." : "Download Result"}
+        </button>
+      </div>
+
+
+      {/* ================= RESULT HERO ================= */}
+
+      <div
+        className="mb-5 overflow-hidden rounded-3xl bg-white shadow-sm ring-1 ring-gray-200"
+      >
+        <div className="grid md:grid-cols-[1fr_220px]">
+
+          {/* LEFT */}
+
+          <div className="p-6 md:p-8">
+
+            <div className="mb-6 flex items-center gap-3">
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-50 text-2xl">
+                🎯
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500">
+                  Your performance
+                </p>
+
+                <h2 className="text-xl font-bold text-gray-900">
+                  {Number(percentage) >= 80
+                    ? "Great work!"
+                    : Number(percentage) >= 60
+                    ? "Good attempt!"
+                    : "Keep improving!"}
+                </h2>
+              </div>
+            </div>
+
+
+            {/* PROGRESS */}
+
+            <div className="mb-6">
+              <div className="mb-2 flex justify-between text-sm">
+                <span className="font-medium text-gray-700">
+                  Accuracy
+                </span>
+
+                <span className="font-bold text-gray-900">
+                  {percentage}%
+                </span>
+              </div>
+
+              <div className="h-3 overflow-hidden rounded-full bg-gray-100">
+                <div
+                  className="h-full rounded-full transition-all"
+                  style={{
+                    width: `${Math.min(
+                      Math.max(Number(percentage), 0),
+                      100
+                    )}%`,
+                    backgroundColor: getGradeColor(
+                      Number(percentage)
+                    ),
                   }}
-                  disabled={generatingPdf}
-                >
-                  {generatingPdf ? "Generating PDF" : "Download PDF"}
-                </Button>
-                {/* <Button
-                  variant="outlined"
-                  startIcon={<PrintIcon />}
-                  onClick={handlePrint}
-                  sx={{ borderColor: '#1976d2', color: '#1976d2' }}
-                >
-                  Print
-                </Button> */}
-              </Box>
-            </Box>
+                />
+              </div>
+            </div>
 
 
-{/* Show Result Card */}
-            <Card sx={{ mb: 4, boxShadow: 3, borderRadius: 3 }} className="web-only">
-              <CardContent sx={{ p: 2 }}>
-                {/* Academy Header */}
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  mb: 3,
-                  p: 2,
-                  backgroundColor: '#f5f5f5',
-                  borderRadius: 2
-                }}>
-                  <Box>
-                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                      Innovative Academy
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Excellence in Education
-                    </Typography>
-                  </Box>
-                  <Box>                  <span 
-  className="chip" 
-  style={{ backgroundColor: "#1976d2", color: "white", fontWeight: 700, padding: "4px 22px 4px 22px", fontSize: "1rem", flexWrap:"wrap", gap:"10px" , verticalAlign: "middle" }}
->
-  {test.course.toUpperCase()}
-</span>
-</Box>
+            {/* STATS */}
 
-                
-                </Box>
+            <div className="grid grid-cols-3 gap-3">
 
-                {/* Test Details Grid */}
-                <Grid container spacing={3} sx={{ mb: 4 }}>
-              <Grid item xs={12} sm={6} md={2.5} lg={2}>
-                    <Box sx={{ textAlign: 'center', p: 1 }}>
-                      <SchoolIcon sx={{ fontSize: 25, color: '#1976d2', mb: 0.5 }} />
-                      <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
-                        {test.course}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Course
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  {test.subject && test.subject !== "-" && (
-                    <Grid item xs={12} sm={6} md={2.5} lg={2}>
-                      <Box sx={{ textAlign: 'center', p: 1 }}>
-                        <AssignmentIcon sx={{ fontSize: 25, color: '#ff9800', mb: 0.5 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
-                          {test.subject}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Subject
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  )}
-                  {test.chapter && test.chapter !== "-" && (
-                    <Grid item xs={12} sm={6} md={2.5} lg={2}>
-                      <Box sx={{ textAlign: 'center', p: 1 }}>
-                        <MenuBookIcon sx={{ fontSize: 25, color: '#9c27b0', mb: 0.5 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
-                          {test.chapter}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Chapter
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  )}
-                  <Grid item xs={12} sm={6} md={2.5} lg={2}>
-                    <Box sx={{ textAlign: 'center', p: 1 }}>
-                      <TimerIcon sx={{ fontSize: 25, color: '#4caf50', mb: 0.5 }} />
-                      <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
-                        {/* test.duration is in seconds; show hrs:mins when appropriate */}
-                                                                     {/* {test.duration >= 3600
-                                                                            ? `${test.duration / 3600}h ${test.duration % 3600 / 60}m`
-                                                                        : test.duration >= 60
-                                                                                           ? `${test.duration / 60}m`
-                                                                          : `${test.duration}s`} */}
-                                                                          {formatDuration(test.duration)}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Duration
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.5} lg={2}>
-                    <Box sx={{ textAlign: 'center', p: 1 }}>
-                       <EmojiEventsIcon  sx={{ fontSize: 25, color: '#0f5d7eff', mb: 0.5 }} />
-                      <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
-                        {test.questionIds.length}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Questions
-                      </Typography>
-                    </Box>
-                  </Grid>
-                </Grid>
+              <div className="rounded-2xl bg-green-50 p-4">
+                <p className="text-xs font-medium text-green-700">
+                  Correct
+                </p>
 
-                {/* Score Summary Cards */}
-                <Grid container spacing={3} sx={{ mb: 4 }}>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <Card sx={{ 
-                      backgroundColor: '#e8f5e8', 
-                      border: '2px solid #4caf50',
-                      textAlign: 'center',
-                      p: 1
-                    }}>
-                      <CheckCircleIcon sx={{ fontSize: 25, color: '#4caf50', mb: 0.5 }} />
-                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#2e7d32' }}>
-                        {correctCount}
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#2e7d32' }}>
-                        Correct
-                      </Typography>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <Card sx={{ 
-                      backgroundColor: '#ffebee', 
-                      border: '2px solid #f44336',
-                      textAlign: 'center',
-                      p: 1
-                    }}>
-                      <CancelIcon sx={{ fontSize: 25, color: '#f44336', mb: 0.5 }} />
-                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#c62828' }}>
-                        {incorrectCount}
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#c62828' }}>
-                        Incorrect
-                      </Typography>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <Card sx={{ 
-                      backgroundColor: '#f5f5f5', 
-                      border: '2px solid #9e9e9e',
-                      textAlign: 'center',
-                      p: 1
-                    }}>
-                      <HelpIcon sx={{ fontSize: 25, color: '#9e9e9e', mb: 0.5 }} />
-                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#616161' }}>
-                        {unansweredCount}
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#616161' }}>
-                        Skipped
-                      </Typography>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <Card sx={{ 
-                      backgroundColor: '#e3f2fd', 
-                      border: '2px solid #2196f3',
-                      textAlign: 'center',
-                      p: 1
-                    }}>
-                      <EmojiEventsIcon sx={{ fontSize: 25, color: '#2196f3', mb: 0.5, textAlign: "center", margin: "auto" }} />
-                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
-                        {score}
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
-                        Score
-                      </Typography>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <Card sx={{ 
-                      backgroundColor: '#fff3e0', 
-                      border: '2px solid #ff9800',
-                      textAlign: 'center',
-                      p: 1
-                    }}>
-                       <PercentIcon sx={{ fontSize: 25, color: '#ff9800', mb: 0.5 }}  /> 
+                <p className="mt-1 text-2xl font-bold text-green-700">
+                  {correctCount}
+                </p>
+              </div>
 
-                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#f57c00' }}>
-                        {percentage}%
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#f57c00' }}>
-                        Percentage
-                      </Typography>
-                    </Card>
-                  </Grid>
-                </Grid>
 
-                {/* Grade Display */}
-                <Box sx={{ 
-                  textAlign: 'center', 
-                  p: 2, 
-                  backgroundColor: getGradeColor(parseFloat(percentage)),
-                  borderRadius: 2,
-                  mb: 1
-                }}>
-                  <Typography variant="h6" sx={{ 
-                    fontWeight: 'semibold', 
-                    color: 'white',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-                  }}>
-                    Grade: {getGrade(parseFloat(percentage))}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'white', mt: 1 }}>
-                    {parseFloat(percentage) >= 60 ? 'Congratulations! You passed!' : 'Keep practicing to improve!'}
-                  </Typography>
-                </Box>
+              <div className="rounded-2xl bg-red-50 p-4">
+                <p className="text-xs font-medium text-red-700">
+                  Wrong
+                </p>
 
-                {/* Test Date */}
-                <Box sx={{ 
-                  textAlign: 'center', 
-                  p: 2, 
-                  backgroundColor: '#f5f5f5',
-                  borderRadius: 2,
-                  mb: 3,
-                  border: '1px solid #e0e0e0'
-                }}>
-                  <Typography variant="body1" sx={{ fontWeight: 'semibold' }}>
-                    Test Date: {new Date(test.date).toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </Typography>
-                </Box>
+                <p className="mt-1 text-2xl font-bold text-red-700">
+                  {incorrectCount}
+                </p>
+              </div>
 
-                {/* Question-wise Analysis */}
-                <Box sx={{ mt: 4 }}>
-                  <Typography variant="h5" sx={{ fontWeight: 'semibold', mb: 3, color: '#1976d2' }}>
-                    Question-wise Analysis
-                  </Typography>
-                  
-                  <TableContainer component={Paper} elevation={1} sx={{ border: "1px solid #e0e0e0" }}>
-                    <Table>
-                      <TableHead>
-                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                          <TableCell sx={{ 
-                            border: "1px solid #e0e0e0",
-                            textAlign: "center",
-                            fontSize: "12px",
-                            py: 2,
-                            px: 1,
-                            maxWidth: "60px",
-                            fontWeight: 'semibold'
-                          }}>
-                            No.
-                          </TableCell>
-                          <TableCell sx={{ 
-                            border: "1px solid #e0e0e0",
-                            textAlign: "center",
-                            fontSize: "12px",
-                            py: 2,
-                            px: 1,
-                            fontWeight: 'semibold'
-                          }}>
-                            Question & Options
-                          </TableCell>
-                          <TableCell sx={{ 
-                            border: "1px solid #e0e0e0",
-                            textAlign: "center",
-                            fontSize: "12px",
-                            py: 2,
-                            px: 1,
-                            maxWidth: "250px",
-                            fontWeight: 'semibold'
-                          }}>
-                            Hint
-                          </TableCell>
-                          <TableCell sx={{ 
-                            border: "1px solid #e0e0e0",
-                            textAlign: "center",
-                            fontSize: "12px",
-                            py: 2,
-                            px: 1,
-                            maxWidth: "220px",
-                            fontWeight: 'semibold'
-                          }}>
-                            Your Answer & Result
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                     
-                     <TableBody>
-  {test.testType === "mock"
-    ?
-    
-     Array.from(
-        questions.reduce((acc, q, i) => {
-          const group = acc.get(q.subject) || [];
-          group.push({ ...q, index: i });
-          acc.set(q.subject, group);
-          return acc;
-        }, new Map<string, (Question & { index: number })[]>())
-      ).map(([subject, subjectQuestions]) => (
-        <React.Fragment key={subject}>
-          {/* Subject Header Row */}
-          <TableRow>
-            <TableCell colSpan={4} align="center" sx={{
-              fontWeight: 'bold',
-              fontSize: "14px",
-              backgroundColor: "#e0e0e0",
-              textTransform: "uppercase",
-            }}>
-              {subject}
-            </TableCell>
-          </TableRow>
 
-          {/* Only show questions where q.subject === subject */}
-          {subjectQuestions.map((q, subjIdx) => {
-            console.log(subjectQuestions,subject)
-            console.log("Rendering question:", q._id, "under subject:", subject);
-            if (q.subject !== subject) return null;
+              <div className="rounded-2xl bg-gray-50 p-4">
+                <p className="text-xs font-medium text-gray-600">
+                  Skipped
+                </p>
 
-            const answerObj = answers.find(a => a.id === q._id);
-            const selected = answerObj;
-            const result =
-              selected?.selected.toLowerCase() === "skipped"
-                ? "⧗ Skipped"
-                : selected?.selected === q.answer
-                ? "✅ Correct"
-                : "❌ Incorrect";
-            const color =
-              result === "✅ Correct"
-                ? "#4caf50"
-                : result === "❌ Incorrect"
-                ? "#f44336"
-                : "#9e9e9e";
-console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer, "Result:", result, subjIdx);
+                <p className="mt-1 text-2xl font-bold text-gray-700">
+                  {unansweredCount}
+                </p>
+              </div>
+
+            </div>
+
+          </div>
+
+
+          {/* SCORE */}
+
+          <div className="flex flex-col items-center justify-center bg-gray-900 p-8 text-white">
+
+            <p className="text-sm text-gray-400">
+              Score
+            </p>
+
+            <p className="mt-2 text-6xl font-bold">
+              {score}
+            </p>
+
+            <div className="mt-3 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold">
+              Grade {getGrade(Number(percentage))}
+            </div>
+
+            <p className="mt-5 text-center text-xs text-gray-400">
+              {correctCount} correct out of {questions.length}
+            </p>
+
+          </div>
+
+        </div>
+      </div>
+
+
+      {/* ================= WHAT TO DO NEXT ================= */}
+
+      <div className="mb-6 rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+
+        <div className="mb-5">
+          <p className="text-sm font-semibold text-indigo-600">
+            AFTER THIS TEST
+          </p>
+
+          <h2 className="mt-1 text-xl font-bold text-gray-900">
+            What should you focus on?
+          </h2>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-3">
+
+          <div className="rounded-2xl border border-green-100 bg-green-50 p-5">
+            <div className="mb-3 text-xl">
+              💪
+            </div>
+
+            <h3 className="font-bold text-green-800">
+              Keep your strengths
+            </h3>
+
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              You answered {correctCount} questions correctly.
+              Don't just move on—understand why those answers
+              were correct.
+            </p>
+          </div>
+
+
+          <div className="rounded-2xl border border-red-100 bg-red-50 p-5">
+            <div className="mb-3 text-xl">
+              🎯
+            </div>
+
+            <h3 className="font-bold text-red-800">
+              Fix your mistakes
+            </h3>
+
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              You have {incorrectCount} incorrect answers.
+              These are your most important questions to review.
+            </p>
+          </div>
+
+
+          <div className="rounded-2xl border border-amber-100 bg-amber-50 p-5">
+            <div className="mb-3 text-xl">
+              📚
+            </div>
+
+            <h3 className="font-bold text-amber-800">
+              Attempt the skipped ones
+            </h3>
+
+            <p className="mt-2 text-sm leading-6 text-gray-600">
+              You skipped {unansweredCount} questions.
+              Try them again after revision.
+            </p>
+          </div>
+
+        </div>
+      </div>
+
+
+      {/* ================= QUESTION REVIEW ================= */}
+
+      <div className="rounded-3xl bg-white p-6 shadow-sm ring-1 ring-gray-200">
+
+        <div className="mb-6">
+
+          <p className="text-sm font-semibold text-indigo-600">
+            LEARN FROM YOUR TEST
+          </p>
+
+          <h2 className="mt-1 text-2xl font-bold text-gray-900">
+            Question Review
+          </h2>
+
+          <p className="mt-1 text-sm text-gray-500">
+            Don't just see the answer. Understand what you need
+            to improve next time.
+          </p>
+
+        </div>
+
+
+        <div className="space-y-4">
+
+          {questions.map((question, index) => {
+
+            /*
+             * IMPORTANT:
+             * Keep your existing submittedAnswers structure.
+             * We only use it here to display the result.
+             */
+
+            const selectedAnswer =
+              submittedAnswers[question._id];
+
+            const selectedLetter =
+              selectedAnswer !== undefined &&
+              selectedAnswer !== null
+                ? String.fromCharCode(65 + Number(selectedAnswer))
+                : "";
+
+            const correctLetter = question.answer;
+
+            const isSkipped =
+              selectedAnswer === undefined ||
+              selectedAnswer === null;
+
+            const isCorrect =
+              !isSkipped &&
+              selectedLetter === correctLetter;
+
+            const isIncorrect =
+              !isSkipped &&
+              selectedLetter !== correctLetter;
+
+
             return (
-              <TableRow key={q._id} sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}>
-                <TableCell sx={{
-                  border: "1px solid #e0e0e0",
-                  py: 2,
-                  px: 1,
-                  textAlign: "center",
-                  maxWidth: "60px"
-                }}>
-                  <Typography variant="h6" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
-                    {subjIdx + 1}
-                  </Typography>
-                </TableCell>
+              <div
+                key={question._id}
+                className={`overflow-hidden rounded-2xl border ${
+                  isCorrect
+                    ? "border-green-200"
+                    : isIncorrect
+                    ? "border-red-200"
+                    : "border-gray-200"
+                }`}
+              >
 
-                <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2 }}>
-                  <Box sx={{ mb: 2 }}>
-                    {q.questionType === "text" ? (
-                      <Typography variant="body1" sx={{ fontSize: "12px", fontWeight: 500, mb: 2 }}>
-                        {/* {q.question.text} */}
-                        <RenderMath text={q.question.text} />
-                      </Typography>
-                    ) : (
-                      <Box component="img"
-                        src={q.question.imgUrl}
-                        alt="question"
-                        crossOrigin="anonymous"
-                        sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', mb: 2 }}
+                {/* QUESTION HEADER */}
+
+                <div
+                  className={`flex flex-col gap-3 px-5 py-4 md:flex-row md:items-center md:justify-between ${
+                    isCorrect
+                      ? "bg-green-50"
+                      : isIncorrect
+                      ? "bg-red-50"
+                      : "bg-gray-50"
+                  }`}
+                >
+
+                  <div className="flex flex-wrap items-center gap-2">
+
+                    <span className="font-bold text-gray-900">
+                      Q{index + 1}
+                    </span>
+
+                    <span className="text-gray-300">
+                      |
+                    </span>
+
+                    <span className="text-sm text-gray-600">
+                      {question.subject}
+                    </span>
+
+                    <span className="text-gray-300">
+                      •
+                    </span>
+
+                    <span className="text-sm text-gray-600">
+                      {question.chapter}
+                    </span>
+
+                    <span className="rounded-full bg-white px-2.5 py-1 text-xs font-medium text-gray-500">
+                      {question.level}
+                    </span>
+
+                  </div>
+
+
+                  <div>
+
+                    {isCorrect && (
+                      <span className="rounded-full bg-green-100 px-3 py-1.5 text-xs font-bold text-green-700">
+                        ✓ CORRECT
+                      </span>
+                    )}
+
+                    {isIncorrect && (
+                      <span className="rounded-full bg-red-100 px-3 py-1.5 text-xs font-bold text-red-700">
+                        ✕ NEEDS REVIEW
+                      </span>
+                    )}
+
+                    {isSkipped && (
+                      <span className="rounded-full bg-gray-200 px-3 py-1.5 text-xs font-bold text-gray-600">
+                        ○ SKIPPED
+                      </span>
+                    )}
+
+                  </div>
+
+                </div>
+
+
+                {/* QUESTION BODY */}
+
+                <div className="p-5">
+
+                  {/* QUESTION */}
+
+                  <div className="mb-5">
+
+                    {question.question?.text && (
+                      <p className="text-base font-semibold leading-7 text-gray-900 md:text-lg">
+                        {question.question.text}
+                      </p>
+                    )}
+
+                    {question.question?.imgUrl && (
+                      <img
+                        src={question.question.imgUrl}
+                        alt={`Question ${index + 1}`}
+                        className="mt-4 max-h-72 rounded-xl object-contain"
                       />
                     )}
-                  </Box>
 
-                  <Box sx={{ pl: 2, borderTop: "1px solid #e0e0e0" }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 'semibold', mb: 1, color: '#666' }}>
-                      Options:
-                    </Typography>
-                    {q.options.map((option, idx) => (
-                      <Box key={idx} sx={{
-                        mb: 1,
-                        pl: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1
-                      }}>
-                        <span className="chip" style={{ backgroundColor: "#e3f2fd", color: "#2A3547", fontWeight:"300", padding: "6px 12px" }}>
-                          {String.fromCharCode(65 + idx)}
+                  </div>
+
+
+                  {/* OPTIONS */}
+
+                  <div className="grid gap-3 md:grid-cols-2">
+
+                    {question.options.map(
+                      (option, optionIndex) => {
+
+                        const letter =
+                          String.fromCharCode(
+                            65 + optionIndex
+                          );
+
+                        const correct =
+                          letter === correctLetter;
+
+                        const selected =
+                          letter === selectedLetter;
+
+
+                        return (
+                          <div
+                            key={optionIndex}
+                            className={`rounded-xl border p-4 ${
+                              correct
+                                ? "border-green-300 bg-green-50"
+                                : selected
+                                ? "border-red-300 bg-red-50"
+                                : "border-gray-200 bg-gray-50/50"
+                            }`}
+                          >
+
+                            <div className="flex items-start gap-3">
+
+                              <div
+                                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-sm font-bold ${
+                                  correct
+                                    ? "bg-green-200 text-green-800"
+                                    : selected
+                                    ? "bg-red-200 text-red-800"
+                                    : "bg-gray-100 text-gray-600"
+                                }`}
+                              >
+                                {letter}
+                              </div>
+
+
+                              <div className="flex-1">
+
+                                {option.text && (
+                                  <p className="text-sm leading-6 text-gray-800">
+                                    {option.text}
+                                  </p>
+                                )}
+
+                                {option.imgUrl && (
+                                  <img
+                                    src={option.imgUrl}
+                                    alt={`Option ${letter}`}
+                                    className="mt-2 max-h-36 rounded-lg object-contain"
+                                  />
+                                )}
+
+                              </div>
+
+
+                              {correct && (
+                                <span className="text-xs font-bold text-green-700">
+                                  Correct
+                                </span>
+                              )}
+
+                              {selected && !correct && (
+                                <span className="text-xs font-bold text-red-700">
+                                  You chose
+                                </span>
+                              )}
+
+                            </div>
+
+                          </div>
+                        );
+
+                      }
+                    )}
+
+                  </div>
+
+
+                  {/* ANSWER RESULT */}
+
+                  <div className="mt-5 grid gap-3 md:grid-cols-2">
+
+                    <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+
+                      <p className="text-xs font-semibold uppercase tracking-wide text-gray-400">
+                        Your answer
+                      </p>
+
+                      <p
+                        className={`mt-1 text-lg font-bold ${
+                          isCorrect
+                            ? "text-green-600"
+                            : isIncorrect
+                            ? "text-red-600"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {isSkipped
+                          ? "Not attempted"
+                          : selectedLetter}
+                      </p>
+
+                    </div>
+
+
+                    <div className="rounded-xl border border-green-100 bg-green-50 p-4">
+
+                      <p className="text-xs font-semibold uppercase tracking-wide text-green-600">
+                        Correct answer
+                      </p>
+
+                      <p className="mt-1 text-lg font-bold text-green-700">
+                        {correctLetter}
+                      </p>
+
+                    </div>
+
+                  </div>
+
+
+                  {/* HINT */}
+
+                  {question.hint &&
+                    (question.hint.text ||
+                      question.hint.imgUrl) && (
+
+                    <div className="mt-4 rounded-xl border border-indigo-100 bg-indigo-50 p-4">
+
+                      <div className="flex items-start gap-3">
+
+                        <span className="text-lg">
+                          💡
                         </span>
-                        {q.optionType === "text" ? (
-                          <Typography variant="body2" sx={{ fontSize: "12px" }}>
-                            {/* {option.text} */}
-                            <RenderMath text={option.text} />
-                          </Typography>
-                        ) : (
-                          <Box component="img"
-                            src={option.imgUrl}
-                            alt="option"
-                            crossOrigin="anonymous"
-                            sx={{ maxWidth: '60px', objectFit: 'contain' }}
-                          />
-                        )}
-                      </Box>
-                    ))}
-                  </Box>
-                </TableCell>
 
-                <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2, maxWidth: "240px", minWidth:"180px" }}>
-                  {q.hintType === "text" ? (
-                    <Typography variant="body2" sx={{ fontSize: "12px", fontStyle: 'italic' }}>
-                      {/* {q.hint.text || "—"} */}
-                      <RenderMath text={q.hint.text || "—"} />
-                    </Typography>
-                  ) : (
-                    <Box component="img"
-                      src={q.hint.imgUrl}
-                      alt="hint"
-                      crossOrigin="anonymous"
-                      sx={{ maxWidth: '100%', objectFit: 'contain' }}
-                    />
+                        <div>
+
+                          <p className="text-sm font-bold text-indigo-700">
+                            Hint
+                          </p>
+
+                          {question.hint.text && (
+                            <p className="mt-1 text-sm leading-6 text-gray-700">
+                              {question.hint.text}
+                            </p>
+                          )}
+
+                          {question.hint.imgUrl && (
+                            <img
+                              src={question.hint.imgUrl}
+                              alt="Hint"
+                              className="mt-3 max-h-40 rounded-lg object-contain"
+                            />
+                          )}
+
+                        </div>
+
+                      </div>
+
+                    </div>
                   )}
-                </TableCell>
 
-                <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 1.5, maxWidth: "220px", minWidth:"180px" }}>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
-                      Your Answer: <b>{selected?.selected || "Skipped"}</b>
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
-                      Correct Answer: <b>{q.answer}</b>
-                    </Typography>
-                    <Divider sx={{ my: 1 }} />
-                    <span className="chip" style={{ backgroundColor: color, color: "white", padding: "6px 12px" }}>
-                      {result}
-                    </span>
-                  </Box>
-                </TableCell>
-              </TableRow>
+
+                  {/* LEARNING MESSAGE */}
+
+                  <div className="mt-4">
+
+                    {isCorrect && (
+                      <div className="rounded-xl bg-green-50 px-4 py-3">
+                        <p className="text-sm font-medium text-green-700">
+                          ✓ Good. You understood this question.
+                          Keep this concept strong.
+                        </p>
+                      </div>
+                    )}
+
+                    {isIncorrect && (
+                      <div className="rounded-xl bg-red-50 px-4 py-3">
+                        <p className="text-sm font-medium text-red-700">
+                          ⚠ You should review this question.
+                          Check the correct answer and hint, then
+                          try a similar question again.
+                        </p>
+                      </div>
+                    )}
+
+                    {isSkipped && (
+                      <div className="rounded-xl bg-gray-50 px-4 py-3">
+                        <p className="text-sm font-medium text-gray-600">
+                          📚 You skipped this question. Try it again
+                          after revising {question.chapter}.
+                        </p>
+                      </div>
+                    )}
+
+                  </div>
+
+                </div>
+
+              </div>
             );
           })}
-        </React.Fragment>
-      ))
-    : questions.map((q, i) => {
-        // Fallback for non-mock testType (unchanged)
-        const answerObj = answers.find(a => a.id === q._id);
-        const selected = answerObj;
-        const result =
-          selected?.selected.toLowerCase() === "skipped"
-            ? "⧗ Skipped"
-            : selected?.selected === q.answer
-            ? "✅ Correct"
-            : "❌ Incorrect";
-        const color =
-          result === "✅ Correct"
-            ? "#4caf50"
-            : result === "❌ Incorrect"
-            ? "#f44336"
-            : "#9e9e9e";
 
-        return (
-          <TableRow key={i}>
-            <TableCell sx={{
-              border: "1px solid #e0e0e0",
-              py: 2,
-              px: 1,
-              textAlign: "center",
-              maxWidth: "60px"
-            }}>
-              <Typography variant="h6" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
-                {i + 1}
-              </Typography>
-            </TableCell>
+        </div>
 
-            <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2 }}>
-              {/* Question and Options */}
-              <Box sx={{ mb: 2 }}>
-                {q.questionType === "text" ? (
-                  <Typography variant="body1" sx={{ fontSize: "12px", fontWeight: 500, mb: 2 }}>
-                    {q.question.text}
-                  </Typography>
-                ) : (
-                  <Box component="img"
-                    src={q.question.imgUrl}
-                    alt="question"
-                    crossOrigin="anonymous"
-                    sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', mb: 2 }}
-                  />
-                )}
-              </Box>
-
-              <Box sx={{ pl: 2, borderTop: "1px solid #e0e0e0" }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'semibold', mb: 1, color: '#666' }}>
-                  Options:
-                </Typography>
-                {q.options.map((option, idx) => (
-                  <Box key={idx} sx={{
-                    mb: 1,
-                    pl: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}>
-                    <span className="chip" style={{ backgroundColor: "#e3f2fd", color: "#2A3547", fontWeight:"300", padding: "6px 12px" }}>
-                      {String.fromCharCode(65 + idx)}
-                    </span>
-                    {q.optionType === "text" ? (
-                      <Typography variant="body2" sx={{ fontSize: "12px" }}>
-                        {option.text}
-                      </Typography>
-                    ) : (
-                      <Box component="img"
-                        src={option.imgUrl}
-                        alt="option"
-                        crossOrigin="anonymous"
-                        sx={{ maxWidth: '60px', objectFit: 'contain' }}
-                      />
-                    )}
-                  </Box>
-                ))}
-              </Box>
-            </TableCell>
-
-            <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2, maxWidth: "240px", minWidth:"180px" }}>
-              {q.hintType === "text" ? (
-                <Typography variant="body2" sx={{ fontSize: "12px", fontStyle: 'italic' }}>
-                  {q.hint.text || "—"}
-                </Typography>
-              ) : (
-                <Box component="img"
-                  src={q.hint.imgUrl}
-                  alt="hint"
-                  crossOrigin="anonymous"
-                  sx={{ maxWidth: '100%', objectFit: 'contain' }}
-                />
-              )}
-            </TableCell>
-
-            <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 1.5, maxWidth: "220px", minWidth:"180px" }}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
-                  Your Answer: <b>{selected?.selected || "Skipped"}</b>
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
-                  Correct Answer: <b>{q.answer}</b>
-                </Typography>
-                <Divider sx={{ my: 1 }} />
-                <span className="chip" style={{ backgroundColor: color, color: "white", padding: "6px 12px" }}>
-                  {result}
-                </span>
-              </Box>
-            </TableCell>
-          </TableRow>
-        );
-      })}
-</TableBody>
-
-                    </Table>
-                  </TableContainer>
-                </Box>
-              </CardContent>
-            </Card>
+      </div>
 
 
-            {/* For PDF */}
-             <Card id="result-pdf" sx={{ mb: 4, boxShadow: 3, borderRadius: 3,}} className="pdf-only">
-              <CardContent sx={{ p: 2 }}>
-                {/* Academy Header */}
-                <Box sx={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center', 
-                  mb: 3,
-                  p: 2,
-                  backgroundColor: '#f5f5f5',
-                  borderRadius: 2
-                }}>
-                  <Box>
-                    <Typography variant="h5" sx={{ fontWeight: 'bold', color: '#1976d2' }}>
-                      Innovative Academy
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      Excellence in Education
-                    </Typography>
-                  </Box>
-                  <span 
-  className="chip" 
-  style={{ backgroundColor: "#1976d2", color: "white", fontWeight: 700, padding: "0px 22px 12px 22px", fontSize: "1rem", verticalAlign: "middle" }}
->
-  {test.course.toUpperCase()}
-</span>
-                
-                </Box>
+      {/* ================= FINAL MESSAGE ================= */}
 
-                {/* Test Details Grid */}
-                <Grid container spacing={3} sx={{ mb: 4 }}>
-              <Grid item xs={12} sm={6} md={3}>
-                    <Box sx={{ textAlign: 'center', p: 1 }}>
-                      <SchoolIcon sx={{ fontSize: 25, color: '#1976d2', mb: 0.5 }} />
-                      <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
-                        {test.course}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Course
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  {test.subject && test.subject !== "-" && (
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Box sx={{ textAlign: 'center', p: 1 }}>
-                        <AssignmentIcon sx={{ fontSize: 25, color: '#ff9800', mb: 0.5 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
-                          {test.subject}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Subject
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  )}
-                  {test.chapter && test.chapter !== "-" && (
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Box sx={{ textAlign: 'center', p: 1 }}>
-                        <MenuBookIcon sx={{ fontSize: 25, color: '#9c27b0', mb: 0.5 }} />
-                        <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
-                          {test.chapter}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          Chapter
-                        </Typography>
-                      </Box>
-                    </Grid>
-                  )}
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Box sx={{ textAlign: 'center', p: 1 }}>
-                      <TimerIcon sx={{ fontSize: 25, color: '#4caf50', mb: 0.5 }} />
-                      <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
-                        {formatDuration(test.duration)}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Duration
-                      </Typography>
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Box sx={{ textAlign: 'center', p: 1 }}>
-                       <EmojiEventsIcon  sx={{ fontSize: 25, color: '#0f5d7eff', mb: 0.5 }} />
-                      <Typography variant="h6" sx={{ fontWeight: 'semibold' }}>
-                        {test.questionIds.length}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        Questions
-                      </Typography>
-                    </Box>
-                  </Grid>
-                </Grid>
+      <div className="mt-6 rounded-3xl bg-gray-900 p-8 text-center text-white">
 
-                {/* Score Summary Cards */}
-                <Grid container spacing={3} sx={{ mb: 4 }}>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <Card sx={{ 
-                      backgroundColor: '#e8f5e8', 
-                      border: '2px solid #4caf50',
-                      textAlign: 'center',
-                      p: 1
-                    }}>
-                      <CheckCircleIcon sx={{ fontSize: 25, color: '#4caf50', mb: 0.5 }} />
-                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#2e7d32' }}>
-                        {correctCount}
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#2e7d32' }}>
-                        Correct
-                      </Typography>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <Card sx={{ 
-                      backgroundColor: '#ffebee', 
-                      border: '2px solid #f44336',
-                      textAlign: 'center',
-                      p: 1
-                    }}>
-                      <CancelIcon sx={{ fontSize: 25, color: '#f44336', mb: 0.5 }} />
-                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#c62828' }}>
-                        {incorrectCount}
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#c62828' }}>
-                        Incorrect
-                      </Typography>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <Card sx={{ 
-                      backgroundColor: '#f5f5f5', 
-                      border: '2px solid #9e9e9e',
-                      textAlign: 'center',
-                      p: 1
-                    }}>
-                      <HelpIcon sx={{ fontSize: 25, color: '#9e9e9e', mb: 0.5 }} />
-                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#616161' }}>
-                        {unansweredCount}
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#616161' }}>
-                        Skipped
-                      </Typography>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <Card sx={{ 
-                      backgroundColor: '#e3f2fd', 
-                      border: '2px solid #2196f3',
-                      textAlign: 'center',
-                      p: 1
-                    }}>
-                      <EmojiEventsIcon sx={{ fontSize: 25, color: '#2196f3', mb: 0.5, textAlign: "center", margin: "auto" }} />
-                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
-                        {score}
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
-                        Score
-                      </Typography>
-                    </Card>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <Card sx={{ 
-                      backgroundColor: '#fff3e0', 
-                      border: '2px solid #ff9800',
-                      textAlign: 'center',
-                      p: 1
-                    }}>
-                       <PercentIcon sx={{ fontSize: 25, color: '#ff9800', mb: 0.5 }}  /> 
+        <p className="text-2xl font-bold">
+          Your mistakes are your study list. 🚀
+        </p>
 
-                      <Typography variant="h4" sx={{ fontWeight: 'semibold', color: '#f57c00' }}>
-                        {percentage}%
-                      </Typography>
-                      <Typography variant="body1" sx={{ fontWeight: 'semibold', color: '#f57c00' }}>
-                        Percentage
-                      </Typography>
-                    </Card>
-                  </Grid>
-                </Grid>
+        <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-gray-400">
+          Don't just check your score and leave.
+          Review the incorrect and skipped questions,
+          understand them, and come back stronger in your next test.
+        </p>
 
-                {/* Grade Display */}
-                <Box sx={{ 
-                  textAlign: 'center', 
-                  p: 2, 
-                  backgroundColor: getGradeColor(parseFloat(percentage)),
-                  borderRadius: 2,
-                  mb: 1
-                }}>
-                  <Typography variant="h6" sx={{ 
-                    fontWeight: 'semibold', 
-                    color: 'white',
-                    textShadow: '2px 2px 4px rgba(0,0,0,0.3)'
-                  }}>
-                    Grade: {getGrade(parseFloat(percentage))}
-                  </Typography>
-                  <Typography variant="body2" sx={{ color: 'white', mt: 1 }}>
-                    {parseFloat(percentage) >= 60 ? 'Congratulations! You passed!' : 'Keep practicing to improve!'}
-                  </Typography>
-                </Box>
+      </div>
 
-                {/* Test Date */}
-                <Box sx={{ 
-                  textAlign: 'center', 
-                  p: 2, 
-                  backgroundColor: '#f5f5f5',
-                  borderRadius: 2,
-                  mb: 3,
-                  border: '1px solid #e0e0e0'
-                }}>
-                  <Typography variant="body1" sx={{ fontWeight: 'semibold' }}>
-                    Test Date: {new Date(test.date).toLocaleDateString('en-US', { 
-                      weekday: 'long', 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </Typography>
-                </Box>
+    </div>
 
-                {/* Question-wise Analysis */}
-                <Box sx={{ mt: 4 }}>
-                  <Typography variant="h5" sx={{ fontWeight: 'semibold', mb: 3, color: '#1976d2' }}>
-                    Question-wise Analysis
-                  </Typography>
-                  
-                  <TableContainer component={Paper} elevation={1} sx={{ border: "1px solid #e0e0e0" }}>
-                    <Table>
-                      <TableHead>
-                        <TableRow sx={{ backgroundColor: '#f5f5f5' }}>
-                          <TableCell sx={{ 
-                            border: "1px solid #e0e0e0",
-                            textAlign: "center",
-                            fontSize: "12px",
-                            py: 2,
-                            px: 1,
-                            maxWidth: "60px",
-                            fontWeight: 'semibold'
-                          }}>
-                            No.
-                          </TableCell>
-                          <TableCell sx={{ 
-                            border: "1px solid #e0e0e0",
-                            textAlign: "center",
-                            fontSize: "12px",
-                            py: 2,
-                            px: 1,
-                            fontWeight: 'semibold'
-                          }}>
-                            Question & Options
-                          </TableCell>
-                          <TableCell sx={{ 
-                            border: "1px solid #e0e0e0",
-                            textAlign: "center",
-                            fontSize: "12px",
-                            py: 2,
-                            px: 1,
-                            maxWidth: "250px",
-                            fontWeight: 'semibold'
-                          }}>
-                            Hint
-                          </TableCell>
-                          <TableCell sx={{ 
-                            border: "1px solid #e0e0e0",
-                            textAlign: "center",
-                            fontSize: "12px",
-                            py: 2,
-                            px: 1,
-                            maxWidth: "220px",
-                            fontWeight: 'semibold'
-                          }}>
-                            Your Answer & Result
-                          </TableCell>
-                        </TableRow>
-                      </TableHead>
-                                <TableBody>
-  {test.testType === "mock"
-    ?
-    
-     Array.from(
-        questions.reduce((acc, q, i) => {
-          const group = acc.get(q.subject) || [];
-          group.push({ ...q, index: i });
-          acc.set(q.subject, group);
-          return acc;
-        }, new Map<string, (Question & { index: number })[]>())
-      ).map(([subject, subjectQuestions]) => (
-        <React.Fragment key={subject}>
-          {/* Subject Header Row */}
-          <TableRow>
-            <TableCell colSpan={4} align="center" sx={{
-              fontWeight: 'bold',
-              fontSize: "14px",
-              backgroundColor: "#e0e0e0",
-              textTransform: "uppercase",
-            }}>
-              {subject}
-            </TableCell>
-          </TableRow>
 
-          {/* Only show questions where q.subject === subject */}
-          {subjectQuestions.map((q, subjIdx) => {
-            console.log(subjectQuestions,subject)
-            console.log("Rendering question:", q._id, "under subject:", subject);
-            if (q.subject !== subject) return null;
+    {/* ================= PDF AREA ================= */}
 
-            const answerObj = answers.find(a => a.id === q._id);
-            const selected = answerObj;
-            const result =
-              selected?.selected.toLowerCase() === "skipped"
-                ? "⧗ Skipped"
-                : selected?.selected === q.answer
-                ? "✅ Correct"
-                : "❌ Incorrect";
-            const color =
-              result === "✅ Correct"
-                ? "#4caf50"
-                : result === "❌ Incorrect"
-                ? "#f44336"
-                : "#9e9e9e";
-console.log("Selected answer:", selected?.selected, "Correct answer:", q.answer, "Result:", result, subjIdx);
-            return (
-              <TableRow key={q._id} sx={{ '&:nth-of-type(odd)': { backgroundColor: '#fafafa' } }}>
-                <TableCell sx={{
-                  border: "1px solid #e0e0e0",
-                  py: 2,
-                  px: 1,
-                  textAlign: "center",
-                  maxWidth: "60px"
-                }}>
-                  <Typography variant="h6" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
-                    {subjIdx + 1}
-                  </Typography>
-                </TableCell>
+    <div
+      id="result-pdf"
+      style={{ display: "none" }}
+      className="bg-white p-8"
+    >
 
-                <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2 }}>
-                  <Box sx={{ mb: 2 }}>
-                    {q.questionType === "text" ? (
-                      <Typography variant="body1" sx={{ fontSize: "12px", fontWeight: 500, mb: 2 }}>
-                       <RenderMath text={q.question.text} />
-                      </Typography>
-                    ) : (
-                      <Box component="img"
-                        src={q.question.imgUrl}
-                        alt="question"
-                        crossOrigin="anonymous"
-                        sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', mb: 2 }}
-                      />
-                    )}
-                  </Box>
+      <h1 className="text-2xl font-bold">
+        Practice Test Result
+      </h1>
 
-                  <Box sx={{ pl: 2, borderTop: "1px solid #e0e0e0" }}>
-                    <Typography variant="subtitle2" sx={{ fontWeight: 'semibold', mb: 1, color: '#666' }}>
-                      Options:
-                    </Typography>
-                    {q.options.map((option, idx) => (
-                      <Box key={idx} sx={{
-                        mb: 1,
-                        pl: 2,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 1
-                      }}>
-                        <span className="chip" style={{ backgroundColor: "#e3f2fd", color: "#2A3547", fontWeight:"300", padding: "6px 12px" }}>
-                          {String.fromCharCode(65 + idx)}
-                        </span>
-                        {q.optionType === "text" ? (
-                          <Typography variant="body2" sx={{ fontSize: "12px" }}>
-                            <RenderMath text={option.text} />
-                          </Typography>
-                        ) : (
-                          <Box component="img"
-                            src={option.imgUrl}
-                            alt="option"
-                            crossOrigin="anonymous"
-                            sx={{ maxWidth: '60px', objectFit: 'contain' }}
-                          />
-                        )}
-                      </Box>
-                    ))}
-                  </Box>
-                </TableCell>
+      <p className="mt-2">
+        {test.course} • {test.subject} • {test.chapter}
+      </p>
 
-                <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2, maxWidth: "240px", minWidth:"180px" }}>
-                  {q.hintType === "text" ? (
-                    <Typography variant="body2" sx={{ fontSize: "12px", fontStyle: 'italic' }}>
-                      <RenderMath text={q.hint.text || "—"} />
-                    </Typography>
-                  ) : (
-                    <Box component="img"
-                      src={q.hint.imgUrl}
-                      alt="hint"
-                      crossOrigin="anonymous"
-                      sx={{ maxWidth: '100%', objectFit: 'contain' }}
-                    />
-                  )}
-                </TableCell>
+      <div className="mt-5">
+        <p>
+          Score: <b>{score}</b>
+        </p>
 
-                <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 1.5, maxWidth: "220px", minWidth:"180px" }}>
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
-                      Your Answer: <b>{selected?.selected || "Skipped"}</b>
-                    </Typography>
-                    <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
-                      Correct Answer: <b>{q.answer}</b>
-                    </Typography>
-                    <Divider sx={{ my: 1 }} />
-                    <span className="chip" style={{ backgroundColor: color, color: "white", padding: "6px 12px" }}>
-                      {result}
-                    </span>
-                  </Box>
-                </TableCell>
-              </TableRow>
-            );
-          })}
-        </React.Fragment>
-      ))
-    : questions.map((q, i) => {
-        // Fallback for non-mock testType (unchanged)
-        const answerObj = answers.find(a => a.id === q._id);
-        const selected = answerObj;
-        const result =
-          selected?.selected.toLowerCase() === "skipped"
-            ? "⧗ Skipped"
-            : selected?.selected === q.answer
-            ? "✅ Correct"
-            : "❌ Incorrect";
-        const color =
-          result === "✅ Correct"
-            ? "#4caf50"
-            : result === "❌ Incorrect"
-            ? "#f44336"
-            : "#9e9e9e";
+        <p>
+          Percentage: <b>{percentage}%</b>
+        </p>
 
-        return (
-          <TableRow key={i}>
-            <TableCell sx={{
-              border: "1px solid #e0e0e0",
-              py: 2,
-              px: 1,
-              textAlign: "center",
-              maxWidth: "60px"
-            }}>
-              <Typography variant="h6" sx={{ fontWeight: 'semibold', color: '#1976d2' }}>
-                {i + 1}
-              </Typography>
-            </TableCell>
+        <p>
+          Correct: <b>{correctCount}</b>
+        </p>
 
-            <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2 }}>
-              {/* Question and Options */}
-              <Box sx={{ mb: 2 }}>
-                {q.questionType === "text" ? (
-                  <Typography variant="body1" sx={{ fontSize: "12px", fontWeight: 500, mb: 2 }}>
-                    <RenderMath text={q.question.text} />
-                  </Typography>
-                ) : (
-                  <Box component="img"
-                    src={q.question.imgUrl}
-                    alt="question"
-                    crossOrigin="anonymous"
-                    sx={{ maxWidth: '100%', maxHeight: 200, objectFit: 'contain', mb: 2 }}
-                  />
-                )}
-              </Box>
+        <p>
+          Incorrect: <b>{incorrectCount}</b>
+        </p>
 
-              <Box sx={{ pl: 2, borderTop: "1px solid #e0e0e0" }}>
-                <Typography variant="subtitle2" sx={{ fontWeight: 'semibold', mb: 1, color: '#666' }}>
-                  Options:
-                </Typography>
-                {q.options.map((option, idx) => (
-                  <Box key={idx} sx={{
-                    mb: 1,
-                    pl: 2,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 1
-                  }}>
-                    <span className="chip" style={{ backgroundColor: "#e3f2fd", color: "#2A3547", fontWeight:"300", padding: "6px 12px" }}>
-                      {String.fromCharCode(65 + idx)}
-                    </span>
-                    {q.optionType === "text" ? (
-                      <Typography variant="body2" sx={{ fontSize: "12px" }}>
-                        <RenderMath text={option.text} />
-                      </Typography>
-                    ) : (
-                      <Box component="img"
-                        src={option.imgUrl}
-                        alt="option"
-                        crossOrigin="anonymous"
-                        sx={{ maxWidth: '60px', objectFit: 'contain' }}
-                      />
-                    )}
-                  </Box>
-                ))}
-              </Box>
-            </TableCell>
+        <p>
+          Skipped: <b>{unansweredCount}</b>
+        </p>
+      </div>
 
-            <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 2, maxWidth: "240px", minWidth:"180px" }}>
-              {q.hintType === "text" ? (
-                <Typography variant="body2" sx={{ fontSize: "12px", fontStyle: 'italic' }}>
-                  <RenderMath text={q.hint.text || "—"} />
-                </Typography>
-              ) : (
-                <Box component="img"
-                  src={q.hint.imgUrl}
-                  alt="hint"
-                  crossOrigin="anonymous"
-                  sx={{ maxWidth: '100%', objectFit: 'contain' }}
-                />
-              )}
-            </TableCell>
-
-            <TableCell sx={{ border: "1px solid #e0e0e0", py: 2, px: 1.5, maxWidth: "220px", minWidth:"180px" }}>
-              <Box sx={{ textAlign: 'center' }}>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
-                  Your Answer: <b>{selected?.selected || "Skipped"}</b>
-                </Typography>
-                <Typography variant="body2" sx={{ mb: 1, fontWeight: 'semibold' }}>
-                  Correct Answer: <b>{q.answer}</b>
-                </Typography>
-                <Divider sx={{ my: 1 }} />
-                <span className="chip" style={{ backgroundColor: color, color: "white", padding: "6px 12px" }}>
-                  {result}
-                </span>
-              </Box>
-            </TableCell>
-          </TableRow>
-        );
-      })}
-</TableBody>
-                    </Table>
-                  </TableContainer>
-                </Box>
-              </CardContent>
-            </Card>
-            </Box>
-                <ResultModal
-        openResultModal={openResultModal}
-        handleClose={() => setOpenResultModal(false)}
-        correctCount={correctCount}
-        incorrectCount={incorrectCount}
-        unansweredCount={unansweredCount}
-        percentage={Number(percentage)}
-        questions={questions}
-        test={test}
-      />
-       
-        </PageContainer>
-      </Box>
+    </div>
+  </div>
+</>
     </>
   );
 }
