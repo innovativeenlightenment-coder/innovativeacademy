@@ -1316,7 +1316,7 @@ export default function ManageLearningVideosPage() {
                           e.target.value
                         )
                       }
-                      placeholder="dQw4w9WgXcQ"
+                      placeholder="L2NAh3CIdig"
                       required
                       className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-blue-500 focus:bg-white focus:ring-4 focus:ring-blue-50"
                     />
@@ -1324,9 +1324,9 @@ export default function ManageLearningVideosPage() {
                   </div>
 
                   <p className="mt-1.5 text-xs leading-5 text-slate-400">
-                    Example: youtube.com/watch?v=
+                    Example: https://www.youtube.com/watch?v=
                     <span className="font-semibold text-slate-500">
-                      dQw4w9WgXcQ
+                      L2NAh3CIdig
                     </span>
                   </p>
                 </div>
