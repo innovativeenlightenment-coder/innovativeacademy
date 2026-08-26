@@ -267,7 +267,7 @@ const mentors = [
             </div> */}
             <div className="">
  <a href="#home" >
-              <img src="/images/logos/innovative-academy.png" className='w-70' /></a>
+              <img src="/images/logos/innovative-academy.png" className='w-50' /></a>
             </div>
             {/* Desktop Menu */}
             <div className="hidden md:flex items-center gap-8">

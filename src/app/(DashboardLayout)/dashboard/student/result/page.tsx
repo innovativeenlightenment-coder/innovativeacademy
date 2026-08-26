@@ -643,10 +643,10 @@ const formatDuration = (totalSeconds: number) => {
                   <div className="mb-5">
 
                     {question.question?.text && (
-                      <p className="text-base font-semibold leading-7 text-gray-900 md:text-lg">
-                        {question.question.text}
-                      </p>
-                    )}
+  <div className="text-base font-semibold leading-7 text-gray-900 md:text-lg">
+    <RenderMath text={question.question.text} />
+  </div>
+)}
 
                     {question.question?.imgUrl && (
                       <img
@@ -707,11 +707,11 @@ const formatDuration = (totalSeconds: number) => {
 
                               <div className="flex-1">
 
-                                {option.text && (
-                                  <p className="text-sm leading-6 text-gray-800">
-                                    {option.text}
-                                  </p>
-                                )}
+                               {option.text && (
+  <div className="text-sm leading-6 text-gray-800">
+    <RenderMath text={option.text} />
+  </div>
+)}
 
                                 {option.imgUrl && (
                                   <img
@@ -809,12 +809,11 @@ const formatDuration = (totalSeconds: number) => {
                             Hint
                           </p>
 
-                          {question.hint.text && (
-                            <p className="mt-1 text-sm leading-6 text-gray-700">
-                              {question.hint.text}
-                            </p>
-                          )}
-
+                      {question.hint.text && (
+  <div className="mt-1 text-sm leading-6 text-gray-700">
+    <RenderMath text={question.hint.text} />
+  </div>
+)}
                           {question.hint.imgUrl && (
                             <img
                               src={question.hint.imgUrl}

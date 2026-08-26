@@ -272,6 +272,7 @@ const filteredQuestions = questions.filter((q) => {
         (q.subject ?? "").toLowerCase().includes(s) ||
         (q.chapter ?? "").toLowerCase().includes(s) ||
         (q.course ?? "").toLowerCase().includes(s) ||
+        (q.createdAt.split("T")[0] ?? "").toLowerCase().includes(s) ||
         (q.options ?? []).some((o) => (o.text ?? "").toLowerCase().includes(s))
       )
     : true;
@@ -1103,7 +1104,7 @@ if(isLoading){
         color: "#fff",
         fontWeight: "bold",
         border: "1px solid #efefef",
-      
+        minWidth:"fit-content",
         position: "sticky",
         top: 0,
         zIndex: 1,
@@ -1229,10 +1230,13 @@ if(isLoading){
             )}
             {/* {q.hint?.text||"-"} */}
           </TableCell>
-          <TableCell >
+          <TableCell style={{minWidth:"250px"}}>
             
               <p >
-                  {q.uploadedBy}/{Date.parse(q.createdAt)}
+                  Uploaded By:- {q.uploadedBy} 
+                  </p>
+                  <p>
+                  Date:- {q.createdAt.split("T")[0]}
                 </p>
           
             {/* {q.hint?.text||"-"} */}

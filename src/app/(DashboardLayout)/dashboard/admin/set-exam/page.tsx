@@ -25,6 +25,7 @@ import { useRouter } from "next/navigation";
 import QuestionTypeSelector from "../../components/questionTypeSelector";
 import RenderMath from "@/lib/renderMaths";
 
+
 interface QuestionType {
   _id: string;
   questionType: string;
@@ -256,9 +257,11 @@ export default function AddTestPaper() {
 
                       <TableCell>
                         {q.questionType === "image" ? (
-                          <img src={q.question?.imgUrl || ""} style={{ maxWidth: 180 }} />
+                          <img src={q.question.imgUrl} style={{ maxWidth: 180 }} />
                         ) : (
-                          <RenderMath text={q.question?.text || "-"} />
+                          <p style={{ wordBreak: "break-word" }}>
+                                          <RenderMath text={q.question.text} />
+                                         </p>
                         )}
                         {/* q.question?.text || "-" */}
                       </TableCell>
@@ -283,13 +286,19 @@ export default function AddTestPaper() {
                         />
                       </TableCell>
 
-                      <TableCell>
-                        {q.questionType === "image" ? (
-                          <img src={q.question?.imgUrl || ""} style={{ maxWidth: 180 }} />
-                        ) : (
-                          q.question?.text || "-"
-                        )}
-                      </TableCell>
+                   <TableCell>
+  {q.questionType === "image" ? (
+    <img
+      src={q.question?.imgUrl || ""}
+      alt="question"
+      style={{ maxWidth: 180 }}
+    />
+  ) : (
+    <p style={{ wordBreak: "break-word", margin: 0 }}>
+      <RenderMath text={q.question?.text || "-"} />
+    </p>
+  )}
+</TableCell>
 
                       <TableCell>{q.level}</TableCell>
                       <TableCell>{q.course}</TableCell>

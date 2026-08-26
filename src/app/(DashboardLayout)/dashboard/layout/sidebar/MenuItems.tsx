@@ -55,6 +55,20 @@ const AdminMenuitems = [
     
     href: "/dashboard/student/exam-result",
   },
+  {
+    id: uniqueId(),
+    title: "Daily Lectures",
+    icon : IconReportAnalytics,
+    
+    href: "/dashboard/student/daily-lectures",
+  },
+  {
+    id: uniqueId(),
+    title: "One Shot",
+    icon : IconReportAnalytics,
+    
+    href: "/dashboard/student/one-shots",
+  },
  {
     navlabel: true,
     subheader: "Teacher",
@@ -84,6 +98,12 @@ const AdminMenuitems = [
     href: "/dashboard/admin/manage-questionBank",
   },
   
+  {
+    id: uniqueId(),
+    title: "Manage Learning Videos",
+    icon: IconAperture,
+    href: "/dashboard/admin/manage-learning-videos",
+  },
   // {
   //   id: uniqueId(),
   //   title: "Generate Question Paper",
@@ -154,7 +174,20 @@ const StudentMenuitems = [
     
     href: "/dashboard/student/exam-result",
   },
- 
+ {
+    id: uniqueId(),
+    title: "Daily Lectures",
+    icon : IconReportAnalytics,
+    
+    href: "/dashboard/student/daily-lectures",
+  },
+  {
+    id: uniqueId(),
+    title: "One Shot",
+    icon : IconReportAnalytics,
+    
+    href: "/dashboard/student/one-shots",
+  },
 ];
 
 
