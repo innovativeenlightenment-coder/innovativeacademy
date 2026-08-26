@@ -459,7 +459,7 @@ const formatDuration = (totalSeconds: number) => {
 
             <p className="mt-2 text-sm leading-6 text-gray-600">
               You answered {correctCount} questions correctly.
-              Don't just move on—understand why those answers
+              Don&apos;t just move on—understand why those answers
               were correct.
             </p>
           </div>
@@ -515,7 +515,7 @@ const formatDuration = (totalSeconds: number) => {
           </h2>
 
           <p className="mt-1 text-sm text-gray-500">
-            Don't just see the answer. Understand what you need
+            Don&apos;t just see the answer. Understand what you need
             to improve next time.
           </p>
 
@@ -884,7 +884,7 @@ const formatDuration = (totalSeconds: number) => {
         </p>
 
         <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-gray-400">
-          Don't just check your score and leave.
+          Don&apos;t just check your score and leave.
           Review the incorrect and skipped questions,
           understand them, and come back stronger in your next test.
         </p>

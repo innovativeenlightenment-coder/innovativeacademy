@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { connectDB } from "@/lib/mongoose";
-import LearningVideo from "@/model/LearningVideo.ts";
+import LearningVideo from "@/model/LearningVideo";
 
 // GET - Fetch videos
 export async function GET(request: Request) {
