@@ -595,7 +595,8 @@ const router=useRouter()
             return acc;
           }, {});
           console.log("Difficulty Levels:", levelCounts);
-const durationSec = (levelCounts["easy"] || 0) * 20 + (levelCounts["moderate"] || 0) * 35 + (levelCounts["difficult"] || 0) * 60 + (levelCounts["extreme"] || 0) * 90;
+         
+const durationSec = (levelCounts["Easy"] ) * 20 + (levelCounts["Moderate"] ) * 35 + (levelCounts["Difficult"] ) * 60 + (levelCounts["Extreme"]) * 90;
 
       const secondsPerQuestion = normalizeSecondsPerQuestion(exam?.secondsPerQuestion);
       // const durationSec = Number(
@@ -609,6 +610,7 @@ const durationSec = (levelCounts["easy"] || 0) * 20 + (levelCounts["moderate"] |
         "currentTest",
         JSON.stringify({
           examId,
+          durationSec,
           testType: exam.testType, // monthly/quarterly
           course: exam.course,
           subject: "",
@@ -616,7 +618,7 @@ const durationSec = (levelCounts["easy"] || 0) * 20 + (levelCounts["moderate"] |
           chapterLevel: null,
           // ✅ email should NOT be stored from exam (teacher exam does not have email)
           secondsPerQuestion,
-          durationSec,
+          
           questions,
         })
       );
