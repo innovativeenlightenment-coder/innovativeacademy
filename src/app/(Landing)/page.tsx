@@ -251,7 +251,7 @@ const mentors = [
               <div className="text-center">
                 <div className="text-6xl mb-4">🎬</div>
                 <p className="text-white text-lg">Add your YouTube video embed here</p>
-                <p className="text-gray-400 text-sm mt-2">Embed code: &lt;iframe src={"https://www.youtube.com/..."}&gt;</p>
+                <p className="text-gray-400 text-sm mt-2">Embed code: &lt;iframe src={"https://www.youtube.com/watch?v=EBmr8j3915g"}&gt;</p>
               </div>
             </div>
           </div>
