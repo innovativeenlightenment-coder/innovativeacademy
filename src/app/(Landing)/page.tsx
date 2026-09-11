@@ -226,41 +226,74 @@ const mentors = [
 
   return (
     <div className="bg-white text-slate-900 min-h-screen">
-      {/* Fixed Marketing Video Box */}
-      <div className="fixed bottom-6 right-6 z-40 hidden lg:block">
+     {/* Fixed Marketing Video Box */}
+{!showVideoModal && (
+  <div className="fixed bottom-6 right-6 z-40 hidden lg:block">
+
+    <button
+      onClick={() => setShowVideoModal(true)}
+      className="group relative w-60 aspect-video rounded-2xl overflow-hidden shadow-2xl hover:shadow-purple-500/40 transition-all hover:scale-105 border-2 border-white bg-black cursor-pointer"
+    >
+      <iframe
+        className="w-full h-full pointer-events-none"
+        src="https://www.youtube.com/embed/EBmr8j3915g?autoplay=1&mute=0&loop=1&playlist=EBmr8j3915g&controls=0&rel=0&modestbranding=1"
+        title="Welcome to Innovative Academy"
+        allow="autoplay; encrypted-media"
+      />
+
+      {/* <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/30 transition-all">
+        <div className="w-12 h-12 rounded-full bg-white/90 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+          <span className="text-purple-700 text-xl ml-1">▶</span>
+        </div>
+      </div>
+
+      <div className="absolute bottom-2 left-2 right-2">
+        <div className="bg-black/70 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-lg text-center">
+          Welcome to Innovative Academy
+        </div>
+      </div> */}
+    </button>
+
+  </div>
+)}
+
+{/* Video Modal */}
+{showVideoModal && (
+  <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+
+    <div className="bg-white rounded-2xl max-w-3xl w-full overflow-hidden shadow-2xl">
+
+      {/* Modal Header */}
+      <div className="flex justify-between items-center p-5 border-b">
+        <h3 className="text-xl md:text-2xl font-bold">
+          Welcome to Innovative Academy
+        </h3>
+
         <button
-          onClick={() => setShowVideoModal(true)}
-          className="group relative w-24 h-24 bg-gradient-to-br from-purple-600 to-purple-800 rounded-full shadow-2xl hover:shadow-purple-500/40 transition-all hover:scale-110 flex items-center justify-center border-4 border-white"
+          onClick={() => setShowVideoModal(false)}
+          className="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full p-2 transition-all"
+          aria-label="Close video"
         >
-          <Play size={32} className="text-white group-hover:scale-110 transition-transform" />
-          <span className="absolute inset-0 rounded-full bg-purple-600/20 group-hover:bg-purple-600/40 transition-colors"></span>
+          <X size={24} />
         </button>
       </div>
 
-      {/* Video Modal */}
-      {showVideoModal && (
-        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-2xl w-full overflow-hidden">
-            <div className="flex justify-between items-center p-6 border-b">
-              <h3 className="text-2xl font-bold">Welcome to Innovative Academy</h3>
-              <button onClick={() => setShowVideoModal(false)} className="text-gray-500 hover:text-gray-700">
-                <X size={24} />
-              </button>
-            </div>
-            <div className="aspect-video bg-black flex items-center justify-center">
-             
+      {/* Large Video */}
+      <div className="aspect-video bg-black">
+
         <iframe
           className="w-full h-full"
-          src="https://www.youtube.com/embed/EBmr8j3915g?autoplay=1&mute=1&loop=1&playlist=EBmr8j3915g&controls=1&rel=0"
+          src="https://www.youtube.com/embed/EBmr8j3915g?autoplay=1&mute=0&controls=1&rel=0&modestbranding=1"
           title="Welcome to Innovative Academy"
           allow="autoplay; encrypted-media; picture-in-picture"
           allowFullScreen
         />
-     
-            </div>
-          </div>
-        </div>
-      )}
+
+      </div>
+
+    </div>
+  </div>
+)}
 
       {/* Navbar */}
       <nav className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200 shadow-sm">
