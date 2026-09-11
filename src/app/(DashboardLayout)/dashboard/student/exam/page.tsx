@@ -596,7 +596,7 @@ const router=useRouter()
           }, {});
           console.log("Difficulty Levels:", levelCounts);
          
-const durationSec = (levelCounts["Easy"] ) * 20 + (levelCounts["Moderate"] ) * 35 + (levelCounts["Difficult"] ) * 60 + (levelCounts["Extreme"]) * 90;
+const durationSec = (levelCounts["Easy"]||levelCounts["easy"] ) * 10 + (levelCounts["Moderate"]||levelCounts["moderate"] ) * 20 + (levelCounts["Difficult"] ||levelCounts["difficult"]) * 35 + (levelCounts["Extreme"]||levelCounts["extreme"]) * 60;
 
       const secondsPerQuestion = normalizeSecondsPerQuestion(exam?.secondsPerQuestion);
       // const durationSec = Number(
@@ -606,8 +606,7 @@ const durationSec = (levelCounts["Easy"] ) * 20 + (levelCounts["Moderate"] ) * 3
       const examEndMs = new Date(exam.endTime).getTime();
       const targetEnd = Math.min(Date.now() + durationSec * 1000, examEndMs);
 
-      sessionStorage.setItem(
-        "currentTest",
+      sessionStorage.setItem("currentTest",
         JSON.stringify({
           examId,
           durationSec,

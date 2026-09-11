@@ -233,12 +233,12 @@ export default function AddTestPaper() {
                       }}
                     />
                   </TableCell>
-                  <TableCell>Question</TableCell>
-                  <TableCell>Level</TableCell>
-                  <TableCell>Course</TableCell>
-                  <TableCell>Subject</TableCell>
-                  <TableCell>Chapter</TableCell>
-                  <TableCell>Correct Answer</TableCell>
+                  <TableCell  style={{minWidth:"300px"}}>Question</TableCell>
+                  <TableCell style={{minWidth:"150px"}}>Level</TableCell>
+                  <TableCell  style={{minWidth:"150px"}}>Course</TableCell>
+                  <TableCell  style={{minWidth:"150px"}}>Subject</TableCell>
+                  <TableCell  style={{minWidth:"150px"}}>Chapter</TableCell>
+                  <TableCell  style={{minWidth:"150px"}}>Correct Answer</TableCell>
                 </TableRow>
               </TableHead>
 
@@ -289,13 +289,13 @@ export default function AddTestPaper() {
                    <TableCell>
   {q.questionType === "image" ? (
     <img
-      src={q.question?.imgUrl || ""}
+      src={q.question.imgUrl}
       alt="question"
       style={{ maxWidth: 180 }}
     />
   ) : (
     <p style={{ wordBreak: "break-word", margin: 0 }}>
-      <RenderMath text={q.question?.text || "-"} />
+      <RenderMath text={q.question.text} />
     </p>
   )}
 </TableCell>

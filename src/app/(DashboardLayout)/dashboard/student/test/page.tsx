@@ -457,7 +457,16 @@ setChapter(test.chapter)
     setQuestions(test.questions || []);
     setSubjectTab(test.subject || "");
 
-const duration=20*60
+
+const levelCounts = test.questions.reduce((acc: Record<string, number>, q: Question) => {
+            const level = q.level || "unknown";
+            acc[level] = (acc[level] || 0) + 1;
+            return acc;
+          }, {});
+          console.log("Difficulty Levels:", levelCounts);
+         
+const duration = (levelCounts["Easy"]||levelCounts["easy"] ) * 10 + (levelCounts["Moderate"]||levelCounts["moderate"] ) * 20 + (levelCounts["Difficult"] ||levelCounts["difficult"]) * 35 + (levelCounts["Extreme"]||levelCounts["extreme"]) * 60;
+
 setDurationTest(duration)
     let endTime = Number(sessionStorage.getItem("testEndTime"));
     if (!endTime) {
