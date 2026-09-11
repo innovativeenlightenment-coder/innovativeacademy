@@ -248,27 +248,15 @@ const mentors = [
               </button>
             </div>
             <div className="aspect-video bg-black flex items-center justify-center">
-              <div className="text-center">
-                {/* <div className="text-6xl mb-4">🎬</div>
-                <p className="text-white text-lg">Add your YouTube video embed here</p>
-                <p className="text-gray-400 text-sm mt-2">Embed code: &lt;iframe src={"https://www.youtube.com/watch?v=EBmr8j3915g"}&gt;</p> */}
-                <iframe
-          className="h-full w-full"
-          src="https://www.youtube.com/watch?v=EBmr8j3915g"
-          
-          frameBorder="0"
-          allow="
-            accelerometer;
-            autoplay;
-            clipboard-write;
-            encrypted-media;
-            gyroscope;
-            picture-in-picture;
-            web-share
-          "
+             
+        <iframe
+          className="w-full h-full"
+          src="https://www.youtube.com/embed/EBmr8j3915g?autoplay=1&mute=1&loop=1&playlist=EBmr8j3915g&controls=1&rel=0"
+          title="Welcome to Innovative Academy"
+          allow="autoplay; encrypted-media; picture-in-picture"
           allowFullScreen
         />
-              </div>
+     
             </div>
           </div>
         </div>
