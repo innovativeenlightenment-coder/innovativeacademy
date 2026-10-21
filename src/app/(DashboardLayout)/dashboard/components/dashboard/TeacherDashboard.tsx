@@ -221,7 +221,7 @@ export default function TeacherDashboard() {
   ) : (
     <p className="mt-4 rounded-xl bg-slate-50 p-4 text-sm leading-6 text-slate-600">
       No courses are assigned to this teacher account yet. Add course names
-      to the user's `courses` array to populate this section.
+      to the user&apos;s `courses` array to populate this section.
     </p>
   )}
 </section>

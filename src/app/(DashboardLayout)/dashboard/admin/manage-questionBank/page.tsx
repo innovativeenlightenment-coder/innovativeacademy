@@ -625,13 +625,16 @@ export default function ManageQuestionBank() {
                         selectedOnPage.length > 0 && !allPageSelected
                       }
                       onChange={(event) => {
-                        if (event.target.checked) {
-                          setSelectedQuestions((prev) => [
-                            ...new Set([
-                              ...prev,
-                              ...questions.map((question) => question._id),
-                            ]),
-                          ]);
+                       if (event.target.checked) {
+  setSelectedQuestions((prev) =>
+    Array.from(
+      new Set([
+        ...prev,
+        ...questions.map((question) => question._id),
+      ])
+    )
+  );
+
                         } else {
                           const currentIds = new Set(
                             questions.map((question) => question._id)
@@ -707,7 +710,7 @@ export default function ManageQuestionBank() {
                           onChange={(event) => {
                             setSelectedQuestions((prev) =>
                               event.target.checked
-                                ? [...new Set([...prev, q._id])]
+                                ? Array.from(new Set([...prev, q._id]))
                                 : prev.filter((id) => id !== q._id)
                             );
                           }}
