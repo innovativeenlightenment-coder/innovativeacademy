@@ -1,0 +1,38 @@
+@keyframes marqueeLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes marqueeRight {
+  0% {
+    transform: translateX(-50%);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+
+.team-marquee-left {
+  animation: marqueeLeft linear infinite;
+  will-change: transform;
+}
+
+.team-marquee-right {
+  animation: marqueeRight linear infinite;
+  will-change: transform;
+}
+
+.team-marquee-left:hover,
+.team-marquee-right:hover{
+    animation-play-state: paused;
+}
+
+.swiper,
+.swiper-wrapper,
+.swiper-slide {
+  overflow-y: visible !important;
+}
