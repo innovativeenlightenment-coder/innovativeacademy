@@ -845,7 +845,7 @@ return (
                       },
                     }}
                   >
-                    Finish Test
+                    Submit Test →
                   </Button>
                 )}
               </Box>
@@ -1295,38 +1295,43 @@ return (
                 key={question._id}
                 onClick={() => goToQuestion(index)}
                 disableRipple
-                sx={{
-                  minWidth: 0,
-                  height: 37,
-                  p: 0,
-                  borderRadius: "9px",
-                  fontSize: 12,
-                  fontWeight: 800,
-                  textTransform: "none",
-                  color: isCurrent
-                    ? "#FFFFFF"
-                    : isAnswered
-                    ? "#86EFAC"
-                    : "#B8C0D5",
-                  bgcolor: isCurrent
-                    ? "#6D28D9"
-                    : isAnswered
-                    ? "rgba(34,197,94,0.11)"
-                    : "rgba(255,255,255,0.045)",
-                  border: isCurrent
-                    ? "1px solid #A78BFA"
-                    : isAnswered
-                    ? "1px solid rgba(34,197,94,0.25)"
-                    : "1px solid rgba(255,255,255,0.08)",
-                  boxShadow: isCurrent
-                    ? "0 3px 10px rgba(109,40,217,0.25)"
-                    : "none",
-                  "&:hover": {
-                    bgcolor: isCurrent
-                      ? "#7C3AED"
-                      : "rgba(255,255,255,0.1)",
-                  },
-                }}
+               
+sx={{
+  minWidth: 0,
+  height: 37,
+  p: 0,
+  borderRadius: "9px",
+  fontSize: 12,
+  fontWeight: 800,
+  textTransform: "none",
+
+  color: isCurrent
+    ? "#FFFFFF"
+    : isAnswered
+    ? "#15803D"
+    : "#58647A",
+
+  bgcolor: isCurrent
+    ? "#6D28D9"
+    : isAnswered
+    ? "#DCFCE7"
+    : "#FFFFFF",
+
+  border: isCurrent
+    ? "1px solid #6D28D9"
+    : isAnswered
+    ? "1px solid #86EFAC"
+    : "1px solid #DDE2EC",
+
+  "&:hover": {
+    bgcolor: isCurrent
+      ? "#5B21B6"
+      : isAnswered
+      ? "#BBF7D0"
+      : "#F1F3F9",
+  },
+}}
+
               >
                 {index + 1}
               </Button>
@@ -1382,7 +1387,7 @@ return (
       </Box>
 
       {/* Submit area */}
-      <Box
+      {/* <Box
         sx={{
           flexShrink: 0,
           p: 2,
@@ -1424,7 +1429,7 @@ return (
         >
           Review your answers before submitting.
         </Typography>
-      </Box>
+      </Box> */}
     </Box>
 
     {/* =====================================================
