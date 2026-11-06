@@ -119,10 +119,10 @@ export async function POST(req: Request) {
 
     /* ================= DURATION ================= */
     const defaultSecondsPerQuestion: SecondsPerQuestion = {
-      easy: 20,
-      moderate: 35,
-      difficult: 60,
-      extreme: 90,
+      easy: 10,
+      moderate: 20,
+      difficult: 45,
+      extreme: 60,
     };
 
     const rawSecondsPerQuestion = exam.secondsPerQuestion as any;

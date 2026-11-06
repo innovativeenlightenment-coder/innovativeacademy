@@ -436,13 +436,11 @@ export default function StudentRevisionsPage() {
       <div className="mx-auto max-w-6xl px-3 py-4 sm:px-5">
         <header className="mb-4 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-700 font-black text-white">
-              IA
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl">
+              <img src="/logo.png" alt="Innovative Academy" className="h-full w-full object-contain" />
             </div>
             <div>
-              <p className="text-xs font-black tracking-wide text-violet-700">
-                INNOVATIVE ACADEMY
-              </p>
+              
               <p className="text-[11px] text-gray-500">Learning workspace</p>
             </div>
           </div>

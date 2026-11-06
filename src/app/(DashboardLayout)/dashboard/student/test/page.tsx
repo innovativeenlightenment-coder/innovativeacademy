@@ -37,40 +37,112 @@ const [durationTest,setDurationTest]=useState(0)
 
   
   // ---------------- LOAD TEST ----------------
-  useEffect(() => {
-    const saved = sessionStorage.getItem("currentTest");
-    if (!saved) {
-      alert("No active test found");
-      window.location.href = "/dashboard/student/start-practice-test";
-      return;
-    }
-console.log('get', saved)
+  
+useEffect(() => {
+  const saved = sessionStorage.getItem("currentTest");
+
+  if (!saved) {
+    alert("No active test found");
+    window.location.href = "/dashboard/student/start-practice-test";
+    return;
+  }
+
+  try {
     const test = JSON.parse(saved);
+
     testRef.current = test;
-setChapter(test.chapter)
+
+    setChapter(test.chapter || "");
     setQuestions(test.questions || []);
     setSubjectTab(test.subject || "");
 
+    // Use the duration already calculated when the exam started.
+    let duration = Number(test.durationSec);
 
-const levelCounts = test.questions.reduce((acc: Record<string, number>, q: Question) => {
-            const level = q.level || "unknown";
-            acc[level] = (acc[level] || 0) + 1;
-            return acc;
-          }, {});
-          console.log("Difficulty Levels:", levelCounts);
-         
-const duration = (levelCounts["Easy"]||levelCounts["easy"] ) * 10 + (levelCounts["Moderate"]||levelCounts["moderate"] ) * 20 + (levelCounts["Difficult"] ||levelCounts["difficult"]) * 35 + (levelCounts["Extreme"]||levelCounts["extreme"]) * 60;
+    // Fallback for older sessions without durationSec.
+    if (!Number.isFinite(duration) || duration <= 0) {
+      const levelCounts = (test.questions || []).reduce(
+        (acc: Record<string, number>, q: Question) => {
+          const level = (q.level || "unknown").trim().toLowerCase();
+          acc[level] = (acc[level] || 0) + 1;
+          return acc;
+        },
+        {}
+      );
 
-setDurationTest(duration)
+      const seconds = test.secondsPerQuestion || {
+        easy: 10,
+        moderate: 20,
+        difficult: 35,
+        extreme: 60,
+      };
+
+      duration =
+        (levelCounts.easy || 0) * seconds.easy +
+        (levelCounts.moderate || 0) * seconds.moderate +
+        (levelCounts.difficult || 0) * seconds.difficult +
+        (levelCounts.extreme || 0) * seconds.extreme;
+    }
+
+    if (!Number.isFinite(duration) || duration <= 0) {
+      throw new Error("Invalid test duration");
+    }
+
+    setDurationTest(duration);
+
     let endTime = Number(sessionStorage.getItem("testEndTime"));
-    if (!endTime) {
+
+    if (!Number.isFinite(endTime) || endTime <= 0) {
       endTime = Date.now() + duration * 1000;
       sessionStorage.setItem("testEndTime", String(endTime));
     }
 
-    setTimeLeft(Math.max(0, Math.floor((endTime - Date.now()) / 1000)));
+    setTimeLeft(
+      Math.max(0, Math.floor((endTime - Date.now()) / 1000))
+    );
+
     setLoading(false);
-  }, []);
+  } catch (error) {
+    console.error("Test loading error:", error);
+    alert("Unable to load test. Please try again.");
+    window.location.href = "/dashboard/student/start-practice-test";
+  }
+}, []);
+
+//   useEffect(() => {
+//     const saved = sessionStorage.getItem("currentTest");
+//     if (!saved) {
+//       alert("No active test found");
+//       window.location.href = "/dashboard/student/start-practice-test";
+//       return;
+//     }
+// console.log('get', saved)
+//     const test = JSON.parse(saved);
+//     testRef.current = test;
+// setChapter(test.chapter)
+//     setQuestions(test.questions || []);
+//     setSubjectTab(test.subject || "");
+
+
+// const levelCounts = test.questions.reduce((acc: Record<string, number>, q: Question) => {
+//             const level = q.level || "unknown";
+//             acc[level] = (acc[level] || 0) + 1;
+//             return acc;
+//           }, {});
+//           console.log("Difficulty Levels:", levelCounts);
+         
+// const duration = (levelCounts["Easy"]||levelCounts["easy"] ) * 10 + (levelCounts["Moderate"]||levelCounts["moderate"] ) * 20 + (levelCounts["Difficult"] ||levelCounts["difficult"]) * 35 + (levelCounts["Extreme"]||levelCounts["extreme"]) * 60;
+
+// setDurationTest(duration)
+//     let endTime = Number(sessionStorage.getItem("testEndTime"));
+//     if (!endTime) {
+//       endTime = Date.now() + duration * 1000;
+//       sessionStorage.setItem("testEndTime", String(endTime));
+//     }
+
+//     setTimeLeft(Math.max(0, Math.floor((endTime - Date.now()) / 1000)));
+//     setLoading(false);
+//   }, []);
 
 // ---------------- TIMER ----------------
 const isSubmittingRef = useRef(false); // prevent double submit
@@ -1052,6 +1124,7 @@ return (
                   borderRadius: "12px",
                   bgcolor: "#15803D",
                   fontSize: 13,
+                  mb:"20px",
                   fontWeight: 800,
                   textTransform: "none",
                   "&:hover": {
@@ -1339,97 +1412,9 @@ sx={{
           })}
         </Box>
 
-        {/* Legend */}
-        {/* <Box
-          sx={{
-            mt: 2,
-            pt: 1.5,
-            borderTop: "1px solid rgba(255,255,255,0.08)",
-            display: "flex",
-            flexDirection: "column",
-            gap: 1,
-          }}
-        >
-          {[
-            { label: "Current question", color: "#8B5CF6" },
-            { label: "Answered", color: "#22C55E" },
-            { label: "Not answered", color: "#596078" },
-          ].map((item) => (
-            <Box
-              key={item.label}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-              }}
-            >
-              <Box
-                sx={{
-                  width: 9,
-                  height: 9,
-                  borderRadius: "3px",
-                  bgcolor: item.color,
-                  flexShrink: 0,
-                }}
-              />
-
-              <Typography
-                sx={{
-                  fontSize: 11,
-                  color: "#B5BDD0",
-                }}
-              >
-                {item.label}
-              </Typography>
-            </Box>
-          ))}
-        </Box> */}
+        
       </Box>
 
-      {/* Submit area */}
-      {/* <Box
-        sx={{
-          flexShrink: 0,
-          p: 2,
-          pt: 1.5,
-          borderTop: "1px solid rgba(255,255,255,0.08)",
-        }}
-      >
-        <Button
-          fullWidth
-          id="submitBtn"
-          variant="contained"
-          onClick={() => handleSubmit(false)}
-          disabled={isSubmittingRef.current}
-          sx={{
-            minHeight: 45,
-            borderRadius: "12px",
-            bgcolor: "#7C3AED",
-            color: "#FFFFFF",
-            fontSize: 13,
-            fontWeight: 800,
-            textTransform: "none",
-            boxShadow: "0 5px 16px rgba(124,58,237,0.2)",
-            "&:hover": {
-              bgcolor: "#6D28D9",
-              boxShadow: "0 6px 20px rgba(124,58,237,0.3)",
-            },
-          }}
-        >
-          Submit Test →
-        </Button>
-
-        <Typography
-          sx={{
-            mt: 1,
-            textAlign: "center",
-            fontSize: 10,
-            color: "#8992AA",
-          }}
-        >
-          Review your answers before submitting.
-        </Typography>
-      </Box> */}
     </Box>
 
     {/* =====================================================

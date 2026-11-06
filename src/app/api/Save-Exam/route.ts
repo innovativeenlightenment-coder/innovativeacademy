@@ -16,7 +16,7 @@ export async function POST(req: Request) {
       teacherName,
       startTime,
       endTime,
-      secondsPerQuestion = { easy: 20, moderate: 35, difficult: 60, extreme: 90 },
+      secondsPerQuestion = { easy: 10, moderate: 20, difficult: 45, extreme: 60 },
       questionIds,
       course,
       subject,

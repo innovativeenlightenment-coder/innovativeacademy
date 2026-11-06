@@ -326,10 +326,10 @@ export default function ManageTeacherExams() {
                   (editingExam?.totalQuestions ?? 0) *
                     getAverageSecondsPerQuestion(
                       editingExam?.secondsPerQuestion ?? {
-                        easy: 20,
-  moderate: 35,
-  difficult: 60,
-  extreme: 90,
+                        easy: 10,
+  moderate: 20,
+  difficult: 45,
+  extreme: 60,
                       }
                     )
                 )}

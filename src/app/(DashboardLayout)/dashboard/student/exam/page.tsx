@@ -79,14 +79,14 @@ const normalizeSecondsPerQuestion = (
   secondsPerQuestion?: number | SecondsPerQuestion
 ): SecondsPerQuestion => {
   if (!secondsPerQuestion || typeof secondsPerQuestion === "number") {
-    return { easy: 20, moderate: 35, difficult: 60, extreme: 90 };
+    return { easy: 10, moderate: 20, difficult: 45, extreme: 60 };
   }
 
   return {
-    easy: Number(secondsPerQuestion.easy ?? 20),
-    moderate: Number(secondsPerQuestion.moderate ?? 35),
-    difficult: Number(secondsPerQuestion.difficult ?? 60),
-    extreme: Number(secondsPerQuestion.extreme ?? 90),
+    easy: Number(secondsPerQuestion.easy ?? 10),
+    moderate: Number(secondsPerQuestion.moderate ?? 20),
+    difficult: Number(secondsPerQuestion.difficult ?? 45),
+    extreme: Number(secondsPerQuestion.extreme ?? 60),
   };
 };
 
@@ -275,23 +275,91 @@ const router=useRouter()
 
       const exam = json.exam;
       const questions = json.questions || [];
-      // Count difficulty levels
-          const levelCounts = questions.reduce((acc: Record<string, number>, q: Question) => {
-            const level = q.level || "unknown";
-            acc[level] = (acc[level] || 0) + 1;
-            return acc;
-          }, {});
-          console.log("Difficulty Levels:", levelCounts);
+      
+// 1. Count questions by difficulty
+const levelCounts = questions.reduce(
+  (acc: Record<string, number>, q: Question) => {
+    const level = (q.level || "unknown").trim().toLowerCase();
+
+    acc[level] = (acc[level] || 0) + 1;
+
+    return acc;
+  },
+  {}
+);
+
+console.log("Difficulty Levels:", levelCounts);
+
+// 2. Get configured time per question
+const secondsPerQuestion = normalizeSecondsPerQuestion(
+  exam?.secondsPerQuestion
+);
+
+// 3. Calculate total duration safely
+const durationSec =
+  (levelCounts["easy"] || 0) * secondsPerQuestion.easy +
+  (levelCounts["moderate"] || 0) * secondsPerQuestion.moderate +
+  (levelCounts["difficult"] || 0) * secondsPerQuestion.difficult +
+  (levelCounts["extreme"] || 0) * secondsPerQuestion.extreme;
+
+if (!Number.isFinite(durationSec) || durationSec <= 0) {
+  throw new Error("Invalid exam duration. Please contact your teacher.");
+}
+
+// 4. Validate exam end time
+const examEndMs = new Date(exam.endTime).getTime();
+
+if (!Number.isFinite(examEndMs)) {
+  throw new Error("Invalid exam end time. Please try again.");
+}
+
+// 5. Calculate final test end time
+const calculatedEndTime = Date.now() + durationSec * 1000;
+
+const targetEnd = Math.min(calculatedEndTime, examEndMs);
+
+if (targetEnd <= Date.now()) {
+  throw new Error("This exam has already ended.");
+}
+
+// 6. Save exam session
+sessionStorage.setItem(
+  "currentTest",
+  JSON.stringify({
+    examId,
+    durationSec,
+    testType: exam.testType,
+    course: exam.course,
+    subject: "",
+    chapter: "",
+    chapterLevel: null,
+    secondsPerQuestion,
+    questions,
+  })
+);
+
+sessionStorage.setItem("testEndTime", String(targetEnd));
+
+console.log("Exam duration:", durationSec);
+console.log("Exam end time:", new Date(targetEnd).toLocaleString());
+
+//       // Count difficulty levels
+//           const levelCounts = questions.reduce((acc: Record<string, number>, q: Question) => {
+//             const level = q.level || "unknown";
+//             acc[level] = (acc[level] || 0) + 1;
+//             return acc;
+//           }, {});
+//           console.log("Difficulty Levels:", levelCounts);
          
-const durationSec = (levelCounts["Easy"]||levelCounts["easy"] ) * 10 + (levelCounts["Moderate"]||levelCounts["moderate"] ) * 20 + (levelCounts["Difficult"] ||levelCounts["difficult"]) * 35 + (levelCounts["Extreme"]||levelCounts["extreme"]) * 60;
+// const durationSec = (levelCounts["Easy"]||levelCounts["easy"] ) * 10 + (levelCounts["Moderate"]||levelCounts["moderate"] ) * 20 + (levelCounts["Difficult"] ||levelCounts["difficult"]) * 35 + (levelCounts["Extreme"]||levelCounts["extreme"]) * 60;
 
-      const secondsPerQuestion = normalizeSecondsPerQuestion(exam?.secondsPerQuestion);
-      // const durationSec = Number(
-      //   exam?.durationSec ?? questions.length * secondsPerQuestion.easy
-      // );
+//       const secondsPerQuestion = normalizeSecondsPerQuestion(exam?.secondsPerQuestion);
+//       // const durationSec = Number(
+//       //   exam?.durationSec ?? questions.length * secondsPerQuestion.easy
+//       // );
 
-      const examEndMs = new Date(exam.endTime).getTime();
-      const targetEnd = Math.min(Date.now() + durationSec * 1000, examEndMs);
+//       const examEndMs = new Date(exam.endTime).getTime();
+//       const targetEnd = Math.min(Date.now() + durationSec * 1000, examEndMs);
 
       sessionStorage.setItem("currentTest",
         JSON.stringify({
@@ -343,7 +411,7 @@ const durationSec = (levelCounts["Easy"]||levelCounts["easy"] ) * 10 + (levelCou
         <Table stickyHeader>
           <TableHead>
             <TableRow>
-              {["Status", "Type", "Date", "Time", "Questions", "Duration", "Action"].map((h) => (
+              {["Status", "Type", "Date", "Time", "Questions", "Action"].map((h) => (
                 <TableCell key={h} sx={{ fontWeight: 600, backgroundColor: "#f4f5f7" }}>
                   {h}
                 </TableCell>
@@ -373,7 +441,7 @@ const durationText="30 mins"
                   <TableCell>{date}</TableCell>
                   <TableCell>{time}</TableCell>
                   <TableCell>{totalQ}</TableCell>
-                  <TableCell>{durationText}</TableCell>
+                  {/* <TableCell>{durationText}</TableCell> */}
 
                   <TableCell>
                     {/* ✅ Completed: if submitted show Result or Pending. Ongoing/Upcoming keep same behavior */}

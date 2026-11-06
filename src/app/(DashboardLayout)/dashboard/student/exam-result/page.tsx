@@ -55,7 +55,23 @@ export default function MyResultsPage() {
   }, []);
 
   if (loading) return <div className="p-4 text-center">Loading...</div>;
+if (results.length === 0) {
+  return (
+    <div className="p-6 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-semibold mb-6">My Exam Results</h1>
 
+      <div className="bg-white rounded-lg shadow p-8 text-center">
+        <h2 className="text-xl font-semibold text-gray-800">
+          No Exams Yet
+        </h2>
+        <p className="text-gray-500 mt-2">
+          You haven't given any exams yet. Once you attempt an exam, your
+          results will appear here after they are published.
+        </p>
+      </div>
+    </div>
+  );
+}
   // ✅ Only published exams
   const published = results.filter(
     (r) => r.attended && r.record?.resultStatus === "published"
@@ -79,6 +95,7 @@ export default function MyResultsPage() {
     name: `Exam ${index + 1}`,
     percentage: r.record?.percentage || 0,
   }));
+
 
   return (
     <div className="p-4 max-w-6xl mx-auto space-y-8">

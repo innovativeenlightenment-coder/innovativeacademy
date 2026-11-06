@@ -72,7 +72,7 @@ const TeacherExamPaperSchema = new Schema(
         extreme: { type: Number, required: true, min: 5 },
       },
       required: true,
-      default: { easy: 20, moderate: 35, difficult: 60, extreme: 90 },
+      default: { easy: 10, moderate: 20, difficult: 45, extreme: 60 },
     },
 
     questionIds: [

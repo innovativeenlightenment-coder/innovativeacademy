@@ -1,3 +1,4 @@
+
 "use client";
 
 import {
@@ -19,348 +20,857 @@ import {
   DialogActions,
   DialogContent,
   MenuItem,
+  Pagination,
+  CircularProgress,
 } from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
+
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import QuestionTypeSelector from "../../components/questionTypeSelector";
 import RenderMath from "@/lib/renderMaths";
 
-
 interface QuestionType {
   _id: string;
   questionType: string;
-  question: { imgUrl: string; text: string };
+  question: {
+    imgUrl: string;
+    text: string;
+  };
   answer: string;
   chapter: string;
   course: string;
   level: string;
   subject: string;
-  secondsPerQuestion?: Record<string, number>;
 }
 
-const marksPerQuestion = 4;
-const secondsPerQuestion: Record<"easy" | "moderate" | "difficult" | "extreme", number> = {
+type TestType = "" | "weekly" | "monthly" | "quarterly";
+
+const PAGE_SIZE = 25;
+const MARKS_PER_QUESTION = 4;
+
+const secondsPerQuestion = {
   easy: 20,
   moderate: 35,
   difficult: 60,
   extreme: 90,
 };
 
+const getLocalDate = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+};
+
 const formatDuration = (totalSeconds: number) => {
   const mins = Math.floor(totalSeconds / 60);
   const secs = totalSeconds % 60;
+
   if (mins <= 0) return `${secs} sec`;
   if (secs === 0) return `${mins} min`;
+
   return `${mins} min ${secs} sec`;
 };
 
-const getAverageSecondsPerQuestion = (seconds: Record<string, number>) => {
-  const values = Object.values(seconds);
-  return values.reduce((sum, sec) => sum + sec, 0) / Math.max(values.length, 1);
+const getAverageSecondsPerQuestion = () => {
+  const values = Object.values(secondsPerQuestion);
+
+  return (
+    values.reduce((sum, sec) => sum + sec, 0) /
+    values.length
+  );
 };
 
 export default function AddTestPaper() {
   const router = useRouter();
 
-  // modal fields
+  // =====================================
+  // EXAM MODAL STATES
+  // =====================================
+
   const [teacherName, setTeacherName] = useState("");
-  const [testType, setTestType] = useState<"" | "weekly" | "monthly" | "quarterly">("");
-  const [examCourse, setExamCourse] = useState(""); // ✅ course asked in modal
-  const [date, setDate] = useState<string>(new Date().toISOString().slice(0, 10));
+  const [testType, setTestType] = useState<TestType>("");
+  const [examCourse, setExamCourse] = useState("");
+  const [date, setDate] = useState(getLocalDate());
 
   const [TeacherList, setTeacherList] = useState<string[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [IsScheduling, setIsScheduling] = useState(false);
 
-  // selector only for filtering
+  // =====================================
+  // QUESTION FILTER STATES
+  // =====================================
+
   const [filterCourse, setFilterCourse] = useState("");
   const [filterSubject, setFilterSubject] = useState("");
   const [filterChapter, setFilterChapter] = useState("");
 
+  // =====================================
+  // PAGINATION STATES
+  // =====================================
+
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+
+  const [isLoadingQuestions, setIsLoadingQuestions] = useState(false);
+  const [questionError, setQuestionError] = useState("");
+
+  // =====================================
+  // QUESTION STATES
+  // =====================================
+
+  // Only contains questions from current page
   const [questions, setQuestions] = useState<QuestionType[]>([]);
-  const [filteredQuestions, setFilteredQuestions] = useState<QuestionType[]>([]);
+
+  // All selected IDs are preserved across pages
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [IsScheduling, setIsScheduling]=useState(false);
 
-  const coursesFromQuestions = useMemo(() => {
-    const set = new Set<string>();
-    questions.forEach((q) => {
-      if (q.course) set.add(q.course);
-    });
-    return Array.from(set).sort((a, b) => a.localeCompare(b));
-  }, [questions]);
+  // Courses are returned independently by API
+  const [allCourses, setAllCourses] = useState<string[]>([]);
 
-  const fetchQuestions = async () => {
-    const res = await fetch(`/api/Fetch-QuestionBank`, { cache: "no-store" });
-    const json = await res.json();
-    if (json.questions) setQuestions(json.questions);
-  };
+  // =====================================
+  // FETCH QUESTIONS (PAGINATED)
+  // =====================================
 
   useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchQuestions = async () => {
+      setIsLoadingQuestions(true);
+      setQuestionError("");
+
+      try {
+        const params = new URLSearchParams({
+          page: String(page),
+          limit: String(PAGE_SIZE),
+        });
+
+        if (filterCourse) {
+          params.set("course", filterCourse);
+        }
+
+        if (filterSubject) {
+          params.set("subject", filterSubject);
+        }
+
+        if (filterChapter) {
+          params.set("chapter", filterChapter);
+        }
+
+        const res = await fetch(
+          `/api/Fetch-QuestionBank?${params.toString()}`,
+          {
+            cache: "no-store",
+            signal: controller.signal,
+          }
+        );
+
+        const json = await res.json();
+
+        if (!res.ok || !json.success) {
+          throw new Error(
+            json.error || "Failed to fetch questions"
+          );
+        }
+
+        setQuestions(json.questions || []);
+
+        setTotalQuestions(
+          json.pagination?.total || 0
+        );
+
+        setTotalPages(
+          json.pagination?.totalPages || 0
+        );
+
+        setAllCourses(json.courses || []);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.name === "AbortError"
+        ) {
+          return;
+        }
+
+        console.error("Fetch questions error:", error);
+
+        setQuestionError(
+          error instanceof Error
+            ? error.message
+            : "Failed to load questions"
+        );
+
+        setQuestions([]);
+        setTotalQuestions(0);
+        setTotalPages(0);
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoadingQuestions(false);
+        }
+      }
+    };
+
     fetchQuestions();
+
+    return () => {
+      controller.abort();
+    };
+  }, [page, filterCourse, filterSubject, filterChapter]);
+
+  // =====================================
+  // FETCH TEACHER LIST
+  // =====================================
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    const fetchTeacherList = async () => {
+      try {
+        const res = await fetch(
+          "/api/Get-Teacher-List",
+          {
+            cache: "no-store",
+            signal: controller.signal,
+          }
+        );
+
+        const json = await res.json();
+
+        if (res.ok && json.list) {
+          setTeacherList(json.list);
+        }
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.name === "AbortError"
+        ) {
+          return;
+        }
+
+        console.error("Teacher list error:", error);
+      }
+    };
+
+    fetchTeacherList();
+
+    return () => controller.abort();
   }, []);
+
+  // =====================================
+  // QUESTION SELECTION
+  // =====================================
 
   const toggleSelect = (id: string) => {
-    setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+    setSelectedIds((prev) =>
+      prev.includes(id)
+        ? prev.filter((item) => item !== id)
+        : [...prev, id]
+    );
   };
 
-  useEffect(() => {
-    const fetchTeacherList = async () => {
-      const res = await fetch(`/api/Get-Teacher-List`, { cache: "no-store" });
-      const json = await res.json();
-      if (json.list) setTeacherList(json.list);
-    };
-    fetchTeacherList();
-  }, []);
+  // Select/deselect all questions on CURRENT PAGE
+  const handleSelectAll = (
+    checked: boolean
+  ) => {
+    const currentPageIds = questions.map((q) => q._id);
 
-  const filterQuestions = (qs: QuestionType[], c: string, s: string, ch: string): QuestionType[] => {
-    const filtered = qs.filter((q) => {
-      const matchCourse = c ? q.course?.toLowerCase() === c.toLowerCase() : true;
-      const matchSubject = s ? q.subject?.toLowerCase() === s.toLowerCase() : true;
-      const matchChapter = ch ? q.chapter?.toLowerCase() === ch.toLowerCase() : true;
-      return matchCourse && matchSubject && matchChapter;
-    });
-    setFilteredQuestions(filtered);
-    return filtered;
+    if (checked) {
+      setSelectedIds((prev) => {
+        const updated = new Set(prev);
+
+        currentPageIds.forEach((id) => {
+          updated.add(id);
+        });
+
+        return Array.from(updated);
+      });
+    } else {
+      setSelectedIds((prev) =>
+        prev.filter(
+          (id) => !currentPageIds.includes(id)
+        )
+      );
+    }
   };
 
-  useEffect(() => {
-    filterQuestions(questions, filterCourse, filterSubject, filterChapter);
-  }, [questions, filterCourse, filterSubject, filterChapter]);
+  const allCurrentPageSelected =
+    questions.length > 0 &&
+    questions.every((q) =>
+      selectedIds.includes(q._id)
+    );
+
+  const someCurrentPageSelected =
+    questions.some((q) =>
+      selectedIds.includes(q._id)
+    );
+
+  // =====================================
+  // FILTER HANDLERS
+  // =====================================
+
+  const handleCourseFilter = (value: string) => {
+    setFilterCourse(value);
+    setPage(1);
+  };
+
+  const handleSubjectFilter = (value: string) => {
+    setFilterSubject(value);
+    setPage(1);
+  };
+
+  const handleChapterFilter = (value: string) => {
+    setFilterChapter(value);
+    setPage(1);
+  };
+
+  // =====================================
+  // SCHEDULE EXAM
+  // =====================================
 
   const handleScheduleExam = async () => {
-    setIsScheduling(true)
-    if (!date || !teacherName || !testType || !examCourse || selectedIds.length === 0) {
-      alert("Please select exam type, exam course, date, teacher and questions");
-      setIsScheduling(false);
+    if (
+      !date ||
+      !teacherName ||
+      !testType ||
+      !examCourse ||
+      selectedIds.length === 0
+    ) {
+      alert(
+        "Please select exam type, course, date, teacher and questions"
+      );
       return;
     }
 
-    // fixed 9am-9pm window
-    const startTime = new Date(`${date}T09:00:00`).toISOString();
-    const endTime = new Date(`${date}T21:00:00`).toISOString();
+    if (IsScheduling) return;
 
-    const res = await fetch("/api/Save-Exam", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        testType, // "monthly" | "quarterly"
-        teacherName,
-        course: examCourse, // ✅ store course from modal
-        startTime,
-        endTime,
-        secondsPerQuestion,
-        questionIds: selectedIds,
-      }),
-    });
+    // Validate date
+    const startDate = new Date(
+      `${date}T09:00:00`
+    );
 
-    if (res.ok) {
-      alert("Exam scheduled successfully");
+    const endDate = new Date(
+      `${date}T21:00:00`
+    );
 
-      // reset UI
+    if (
+      Number.isNaN(startDate.getTime()) ||
+      Number.isNaN(endDate.getTime()) ||
+      startDate >= endDate
+    ) {
+      alert("Invalid exam date");
+      return;
+    }
+
+    setIsScheduling(true);
+
+    try {
+      const res = await fetch("/api/Save-Exam", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          testType,
+          teacherName,
+          course: examCourse,
+
+          startTime: startDate.toISOString(),
+          endTime: endDate.toISOString(),
+
+          secondsPerQuestion,
+
+          // Includes selections from ALL pages
+          questionIds: selectedIds,
+        }),
+      });
+
+      const result = await res.json();
+
+      if (!res.ok || !result.success) {
+        throw new Error(
+          result.error || "Failed to schedule exam"
+        );
+      }
+
+      alert("Exam scheduled successfully!");
+
+      // Reset exam states
       setSelectedIds([]);
-      setFilterChapter("");
+
       setFilterCourse("");
       setFilterSubject("");
+      setFilterChapter("");
 
-      setDate(new Date().toISOString().slice(0, 10));
+      setPage(1);
+
+      setDate(getLocalDate());
       setTeacherName("");
       setTestType("");
       setExamCourse("");
 
-      setFilteredQuestions([]);
       setShowModal(false);
- setIsScheduling(false)
+
       router.push("/dashboard");
-    } else {
-      const err = await res.json().catch(() => null);
-      alert(err?.error || "Failed to schedule exam");
+    } catch (error) {
+      console.error("Exam scheduling error:", error);
+
+      alert(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong while scheduling exam"
+      );
+    } finally {
+      setIsScheduling(false);
     }
   };
 
+  // =====================================
+  // RENDER
+  // =====================================
+
   return (
     <Box p={4}>
-      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-        <Typography variant="h5" mb={3}>
+
+      {/* =====================================
+          HEADER
+      ===================================== */}
+
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 2,
+          mb: 3,
+          flexWrap: "wrap",
+        }}
+      >
+        <Typography variant="h5">
           Schedule Exams
         </Typography>
 
         {selectedIds.length > 0 && (
-          <Grid item xs={12} md={4} textAlign="center">
-            <Button variant="contained" color="primary" onClick={() => setShowModal(true)}>
-              Schedule Exam ({selectedIds.length})
-            </Button>
-          </Grid>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => setShowModal(true)}
+          >
+            Schedule Exam ({selectedIds.length})
+          </Button>
         )}
       </Box>
 
-      {/* ✅ Selector is ONLY for filtering */}
+      {/* =====================================
+          FILTERS
+      ===================================== */}
+
       <Grid container spacing={2}>
+
         <Grid item xs={12}>
           <QuestionTypeSelector
-            onCourseChange={setFilterCourse}
-            onSubjectChange={setFilterSubject}
-            onChapterChange={setFilterChapter}
+            onCourseChange={handleCourseFilter}
+            onSubjectChange={handleSubjectFilter}
+            onChapterChange={handleChapterFilter}
             onLevelChange={() => {}}
             isSubmitted={true}
             title={null}
           />
         </Grid>
 
+        {/* =====================================
+            QUESTION TABLE
+        ===================================== */}
+
         <Grid item xs={12}>
-          <TableContainer component={Paper} sx={{ borderRadius: 3, maxHeight: 500 }}>
+
+          <TableContainer
+            component={Paper}
+            sx={{
+              borderRadius: 3,
+              maxHeight: 500,
+              overflow: "auto",
+            }}
+          >
             <Table stickyHeader>
+
               <TableHead>
-                <TableRow style={{ background: "#efefef" }}>
+                <TableRow
+                  sx={{
+                    background: "#efefef",
+                  }}
+                >
                   <TableCell padding="checkbox">
                     <Checkbox
-                      checked={
-                        filteredQuestions.length > 0 &&
-                        filteredQuestions.every((q) => selectedIds.includes(q._id))
+                      checked={allCurrentPageSelected}
+                      indeterminate={
+                        someCurrentPageSelected &&
+                        !allCurrentPageSelected
                       }
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          const newSelected = [...selectedIds];
-                          filteredQuestions.forEach((q) => {
-                            if (!newSelected.includes(q._id)) newSelected.push(q._id);
-                          });
-                          setSelectedIds(newSelected);
-                        } else {
-                          const newSelected = selectedIds.filter(
-                            (id) => !filteredQuestions.find((q) => q._id === id)
-                          );
-                          setSelectedIds(newSelected);
-                        }
-                      }}
+                      onChange={(e) =>
+                        handleSelectAll(
+                          e.target.checked
+                        )
+                      }
                     />
                   </TableCell>
-                  <TableCell  style={{minWidth:"300px"}}>Question</TableCell>
-                  <TableCell style={{minWidth:"150px"}}>Level</TableCell>
-                  <TableCell  style={{minWidth:"150px"}}>Course</TableCell>
-                  <TableCell  style={{minWidth:"150px"}}>Subject</TableCell>
-                  <TableCell  style={{minWidth:"150px"}}>Chapter</TableCell>
-                  <TableCell  style={{minWidth:"150px"}}>Correct Answer</TableCell>
+
+                  <TableCell sx={{ minWidth: 300 }}>
+                    Question
+                  </TableCell>
+
+                  <TableCell sx={{ minWidth: 120 }}>
+                    Level
+                  </TableCell>
+
+                  <TableCell sx={{ minWidth: 150 }}>
+                    Course
+                  </TableCell>
+
+                  <TableCell sx={{ minWidth: 150 }}>
+                    Subject
+                  </TableCell>
+
+                  <TableCell sx={{ minWidth: 150 }}>
+                    Chapter
+                  </TableCell>
+
+                  <TableCell sx={{ minWidth: 150 }}>
+                    Correct Answer
+                  </TableCell>
                 </TableRow>
               </TableHead>
 
               <TableBody>
-                {/* Selected first */}
-                {filteredQuestions
-                  .filter((q) => selectedIds.includes(q._id))
-                  .map((q) => (
-                    <TableRow
-                      key={q._id}
-                      sx={{ backgroundColor: selectedIds.includes(q._id) ? "#e3f2fd" : undefined }}
+
+                {/* LOADING */}
+
+                {isLoadingQuestions && (
+                  <TableRow>
+                    <TableCell
+                      colSpan={7}
+                      align="center"
+                      sx={{ py: 5 }}
                     >
-                      <TableCell padding="checkbox">
-                        <Checkbox checked onChange={() => toggleSelect(q._id)} />
-                      </TableCell>
+                      <CircularProgress size={28} />
 
-                      <TableCell>
-                        {q.questionType === "image" ? (
-                          <img src={q.question.imgUrl} style={{ maxWidth: 180 }} />
-                        ) : (
-                          <p style={{ wordBreak: "break-word" }}>
-                                          <RenderMath text={q.question.text} />
-                                         </p>
-                        )}
-                        {/* q.question?.text || "-" */}
-                      </TableCell>
+                      <Typography
+                        color="text.secondary"
+                        mt={1}
+                      >
+                        Loading questions...
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                )}
 
-                      <TableCell>{q.level}</TableCell>
-                      <TableCell>{q.course}</TableCell>
-                      <TableCell>{q.subject}</TableCell>
-                      <TableCell>{q.chapter}</TableCell>
-                      <TableCell>{q.answer}</TableCell>
+                {/* ERROR */}
+
+                {!isLoadingQuestions &&
+                  questionError && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        align="center"
+                        sx={{ py: 4 }}
+                      >
+                        <Typography color="error">
+                          {questionError}
+                        </Typography>
+
+                        <Button
+                          sx={{ mt: 1 }}
+                          onClick={() =>
+                            setPage((prev) => prev)
+                          }
+                        >
+                          Reload
+                        </Button>
+                      </TableCell>
                     </TableRow>
-                  ))}
+                  )}
 
-                {/* Not selected */}
-                {filteredQuestions
-                  .filter((q) => !selectedIds.includes(q._id))
-                  .map((q) => (
-                    <TableRow key={q._id}>
-                      <TableCell padding="checkbox">
-                        <Checkbox
-                          checked={selectedIds.includes(q._id)}
-                          onChange={() => toggleSelect(q._id)}
-                        />
+                {/* EMPTY */}
+
+                {!isLoadingQuestions &&
+                  !questionError &&
+                  questions.length === 0 && (
+                    <TableRow>
+                      <TableCell
+                        colSpan={7}
+                        align="center"
+                        sx={{ py: 5 }}
+                      >
+                        <Typography color="text.secondary">
+                          No questions found.
+                        </Typography>
                       </TableCell>
-
-                   <TableCell>
-  {q.questionType === "image" ? (
-    <img
-      src={q.question.imgUrl}
-      alt="question"
-      style={{ maxWidth: 180 }}
-    />
-  ) : (
-    <p style={{ wordBreak: "break-word", margin: 0 }}>
-      <RenderMath text={q.question.text} />
-    </p>
-  )}
-</TableCell>
-
-                      <TableCell>{q.level}</TableCell>
-                      <TableCell>{q.course}</TableCell>
-                      <TableCell>{q.subject}</TableCell>
-                      <TableCell>{q.chapter}</TableCell>
-                      <TableCell>{q.answer}</TableCell>
                     </TableRow>
-                  ))}
+                  )}
+
+                {/* SELECTED QUESTIONS FIRST */}
+
+                {!isLoadingQuestions &&
+                  questions
+                    .filter((q) =>
+                      selectedIds.includes(q._id)
+                    )
+                    .map((q) => (
+                      <TableRow
+                        key={q._id}
+                        sx={{
+                          backgroundColor: "#e3f2fd",
+                        }}
+                      >
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            checked={true}
+                            onChange={() =>
+                              toggleSelect(q._id)
+                            }
+                          />
+                        </TableCell>
+
+                        <TableCell>
+                          {q.questionType === "image" ? (
+                            <img
+                              src={q.question?.imgUrl}
+                              alt="Question"
+                              style={{
+                                maxWidth: 180,
+                                maxHeight: 140,
+                                objectFit: "contain",
+                              }}
+                            />
+                          ) : (
+                            <p
+                              style={{
+                                wordBreak: "break-word",
+                                margin: 0,
+                              }}
+                            >
+                              <RenderMath
+                                text={
+                                  q.question?.text || "-"
+                                }
+                              />
+                            </p>
+                          )}
+                        </TableCell>
+
+                        <TableCell>{q.level}</TableCell>
+                        <TableCell>{q.course}</TableCell>
+                        <TableCell>{q.subject}</TableCell>
+                        <TableCell>{q.chapter}</TableCell>
+                        <TableCell>{q.answer}</TableCell>
+                      </TableRow>
+                    ))}
+
+                {/* NOT SELECTED QUESTIONS */}
+
+                {!isLoadingQuestions &&
+                  questions
+                    .filter(
+                      (q) =>
+                        !selectedIds.includes(q._id)
+                    )
+                    .map((q) => (
+                      <TableRow key={q._id}>
+                        <TableCell padding="checkbox">
+                          <Checkbox
+                            checked={false}
+                            onChange={() =>
+                              toggleSelect(q._id)
+                            }
+                          />
+                        </TableCell>
+
+                        <TableCell>
+                          {q.questionType === "image" ? (
+                            <img
+                              src={q.question?.imgUrl}
+                              alt="Question"
+                              style={{
+                                maxWidth: 180,
+                                maxHeight: 140,
+                                objectFit: "contain",
+                              }}
+                            />
+                          ) : (
+                            <p
+                              style={{
+                                wordBreak: "break-word",
+                                margin: 0,
+                              }}
+                            >
+                              <RenderMath
+                                text={
+                                  q.question?.text || "-"
+                                }
+                              />
+                            </p>
+                          )}
+                        </TableCell>
+
+                        <TableCell>{q.level}</TableCell>
+                        <TableCell>{q.course}</TableCell>
+                        <TableCell>{q.subject}</TableCell>
+                        <TableCell>{q.chapter}</TableCell>
+                        <TableCell>{q.answer}</TableCell>
+                      </TableRow>
+                    ))}
+
               </TableBody>
             </Table>
           </TableContainer>
+
+          {/* =====================================
+              PAGINATION FOOTER
+          ===================================== */}
+
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            flexWrap="wrap"
+            gap={2}
+            py={2}
+          >
+
+            <Box>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+              >
+                Showing{" "}
+                {totalQuestions === 0
+                  ? 0
+                  : (page - 1) * PAGE_SIZE + 1}
+                {" - "}
+                {Math.min(
+                  page * PAGE_SIZE,
+                  totalQuestions
+                )}
+                {" of "}
+                {totalQuestions} questions
+              </Typography>
+
+              <Typography
+                variant="body2"
+                fontWeight={600}
+                color="primary"
+              >
+                {selectedIds.length} questions selected
+                across all pages
+              </Typography>
+            </Box>
+
+            <Pagination
+              count={Math.max(totalPages, 1)}
+              page={page}
+              onChange={(_, value) => setPage(value)}
+              color="primary"
+              disabled={
+                isLoadingQuestions ||
+                totalPages <= 1
+              }
+              showFirstButton
+              showLastButton
+            />
+
+          </Box>
         </Grid>
       </Grid>
 
-      {/* Modal */}
-      <Dialog open={showModal} onClose={() => setShowModal(false)} fullWidth maxWidth="sm">
-        <DialogTitle>Confirm Exam Schedule</DialogTitle>
+      {/* =====================================
+          EXAM SCHEDULE MODAL
+      ===================================== */}
+
+      <Dialog
+        open={showModal}
+        onClose={() => {
+          if (!IsScheduling) {
+            setShowModal(false);
+          }
+        }}
+        fullWidth
+        maxWidth="sm"
+      >
+
+        <DialogTitle>
+          Confirm Exam Schedule
+        </DialogTitle>
 
         <DialogContent dividers>
+
           <Grid container spacing={2}>
-            {/* Teacher */}
+
+            {/* TEACHER */}
+
             <Grid item xs={12}>
               <TextField
                 label="Teacher Name"
                 select
                 fullWidth
                 value={teacherName}
-                onChange={(e) => setTeacherName(e.target.value)}
+                onChange={(e) =>
+                  setTeacherName(e.target.value)
+                }
               >
                 {TeacherList.map((item) => (
-                  <MenuItem key={item} value={item}>
+                  <MenuItem
+                    key={item}
+                    value={item}
+                  >
                     {item}
                   </MenuItem>
                 ))}
               </TextField>
             </Grid>
 
-            {/* Exam Type */}
+            {/* EXAM TYPE */}
+
             <Grid item xs={12}>
               <TextField
                 label="Exam Type"
                 select
                 fullWidth
                 value={testType}
-                onChange={(e) => setTestType(e.target.value as any)}
+                onChange={(e) =>
+                  setTestType(
+                    e.target.value as TestType
+                  )
+                }
               >
-                <MenuItem value="weekly">Weekly</MenuItem>
-                <MenuItem value="monthly">Monthly</MenuItem>
-                <MenuItem value="quarterly">Quarterly</MenuItem>
+                <MenuItem value="weekly">
+                  Weekly
+                </MenuItem>
+
+                <MenuItem value="monthly">
+                  Monthly
+                </MenuItem>
+
+                <MenuItem value="quarterly">
+                  Quarterly
+                </MenuItem>
               </TextField>
             </Grid>
 
-            {/* ✅ Course asked in modal (stored) */}
+            {/* EXAM COURSE */}
+
             <Grid item xs={12}>
               <TextField
                 label="Course (for exam)"
                 select
                 fullWidth
                 value={examCourse}
-                onChange={(e) => setExamCourse(e.target.value)}
+                onChange={(e) =>
+                  setExamCourse(e.target.value)
+                }
               >
-                {coursesFromQuestions.map((c) => (
+                {allCourses.map((c) => (
                   <MenuItem key={c} value={c}>
                     {c}
                   </MenuItem>
@@ -368,80 +878,122 @@ export default function AddTestPaper() {
               </TextField>
             </Grid>
 
-            {/* Date */}
+            {/* DATE */}
+
             <Grid item xs={6}>
               <TextField
                 label="Date"
                 type="date"
-                value={typeof date === "string" ? date : new Date().toISOString().slice(0, 10)}
-                onChange={(e) => setDate(e.target.value)}
-                InputLabelProps={{ shrink: true }}
+                value={date}
+                onChange={(e) =>
+                  setDate(e.target.value)
+                }
+                InputLabelProps={{
+                  shrink: true,
+                }}
                 fullWidth
               />
             </Grid>
 
-            {/* Fixed Window */}
+            {/* EXAM WINDOW */}
+
             <Grid item xs={6}>
               <TextField
                 label="Exam Window"
                 value="09:00 AM - 09:00 PM"
-                InputProps={{ readOnly: true }}
+                InputProps={{
+                  readOnly: true,
+                }}
                 fullWidth
               />
             </Grid>
 
-            {/* Total Questions */}
+            {/* TOTAL QUESTIONS */}
+
             <Grid item xs={6}>
               <TextField
                 label="Total Questions"
                 value={selectedIds.length}
-                InputProps={{ readOnly: true }}
+                InputProps={{
+                  readOnly: true,
+                }}
                 fullWidth
               />
             </Grid>
 
-            {/* Time per Q */}
+            {/* AVERAGE TIME */}
+
             <Grid item xs={6}>
               <TextField
                 label="Average Time per Question"
-                value={`${Math.round(getAverageSecondsPerQuestion(secondsPerQuestion))} sec`}
-                InputProps={{ readOnly: true }}
+                value={`${Math.round(
+                  getAverageSecondsPerQuestion()
+                )} sec`}
+                InputProps={{
+                  readOnly: true,
+                }}
                 fullWidth
               />
             </Grid>
 
-            {/* Estimated total time */}
+            {/* ESTIMATED TIME */}
+
             <Grid item xs={6}>
               <TextField
                 label="Estimated Total Time"
                 value={formatDuration(
-                  Math.round(selectedIds.length * getAverageSecondsPerQuestion(secondsPerQuestion))
+                  Math.round(
+                    selectedIds.length *
+                      getAverageSecondsPerQuestion()
+                  )
                 )}
-                InputProps={{ readOnly: true }}
+                InputProps={{
+                  readOnly: true,
+                }}
                 fullWidth
               />
             </Grid>
 
-            {/* Total Marks */}
+            {/* TOTAL MARKS */}
+
             <Grid item xs={6}>
               <TextField
                 label="Total Marks"
-                value={selectedIds.length * marksPerQuestion}
-                InputProps={{ readOnly: true }}
+                value={
+                  selectedIds.length *
+                  MARKS_PER_QUESTION
+                }
+                InputProps={{
+                  readOnly: true,
+                }}
                 fullWidth
               />
             </Grid>
+
           </Grid>
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={() => setShowModal(false)} color="secondary">
+
+          <Button
+            onClick={() => setShowModal(false)}
+            color="secondary"
+            disabled={IsScheduling}
+          >
             Cancel
           </Button>
 
-          <Button onClick={handleScheduleExam} disabled={IsScheduling} color="primary" variant="contained">
-            Schedule Exam
+          <Button
+            onClick={handleScheduleExam}
+            disabled={IsScheduling}
+            color="primary"
+            variant="contained"
+          >
+            {IsScheduling
+              ? "Scheduling..."
+              : "Schedule Exam"}
           </Button>
+
         </DialogActions>
       </Dialog>
     </Box>

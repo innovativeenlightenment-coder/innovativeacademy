@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-export const dynamic = "force-dynamic";  import { connectDB } from "@/lib/mongoose";
+export const dynamic = "force-dynamic"; import { connectDB } from "@/lib/mongoose";
 import TeacherExamPaper from "@/model/TeacherExamSchema";
 import mongoose from "mongoose";
 import { unstable_noStore as noStore } from "next/cache";
@@ -29,14 +29,21 @@ export async function GET(req: Request) {
 
       return NextResponse.json({ success: true, exam });
     }
+    if (!course|| course.length > 1) {
+      const exams = await TeacherExamPaper.find()
+        .sort({ startTime: -1 })
+        .lean();
+      return NextResponse.json({ success: true, exams });
+    }
+    else {
+      // list
+      const exams = await TeacherExamPaper.find({ course: course })
+        .sort({ startTime: -1 })
+        
+        .lean();
 
-    // list
-    const exams = await TeacherExamPaper.find({course:course})
-      .sort({ startTime: -1 })
-      .limit(100)
-      .lean();
-
-    return NextResponse.json({ success: true, exams });
+      return NextResponse.json({ success: true, exams });
+    }
   } catch (err) {
     console.error(err);
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });

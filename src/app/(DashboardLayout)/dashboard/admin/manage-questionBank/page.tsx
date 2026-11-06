@@ -606,9 +606,9 @@ export default function ManageQuestionBank() {
             <Typography variant="body2" color="text.secondary">
               {totalQuestions
                 ? `${(page * rowsPerPage + 1).toLocaleString()}–${Math.min(
-                    (page + 1) * rowsPerPage,
-                    totalQuestions
-                  ).toLocaleString()} of ${totalQuestions.toLocaleString()}`
+                  (page + 1) * rowsPerPage,
+                  totalQuestions
+                ).toLocaleString()} of ${totalQuestions.toLocaleString()}`
                 : "No questions found"}
             </Typography>
           </Box>
@@ -625,15 +625,15 @@ export default function ManageQuestionBank() {
                         selectedOnPage.length > 0 && !allPageSelected
                       }
                       onChange={(event) => {
-                       if (event.target.checked) {
-  setSelectedQuestions((prev) =>
-    Array.from(
-      new Set([
-        ...prev,
-        ...questions.map((question) => question._id),
-      ])
-    )
-  );
+                        if (event.target.checked) {
+                          setSelectedQuestions((prev) =>
+                            Array.from(
+                              new Set([
+                                ...prev,
+                                ...questions.map((question) => question._id),
+                              ])
+                            )
+                          );
 
                         } else {
                           const currentIds = new Set(
