@@ -1,322 +1,252 @@
+
 "use client";
 
 import { useEffect, useState } from "react";
-import VideoCard from "../../components/learning/VideoCard";
+import Link from "next/link";
 
-interface Lecture {
+interface LearningVideo {
   _id: string;
   date: string;
   subject: string;
   title: string;
   description?: string;
   duration?: number;
+  youtubeVideoId?: string;
 }
-function formatDate(date: Date) {
+
+interface LiveSessionInfo {
+  _id: string;
+  title: string;
+  subject: string;
+  description?: string;
+  startedAt?: string;
+}
+
+function localDateString(date: Date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
   const day = String(date.getDate()).padStart(2, "0");
-
   return `${year}-${month}-${day}`;
 }
 
-function formatDisplayDate(dateString: string) {
-  return new Date(dateString + "T00:00:00").toLocaleDateString(
-    "en-IN",
-    {
-      weekday: "long",
-      day: "numeric",
-      month: "long",
-      year: "numeric",
-    }
-  );
-}
-
 export default function DailyLecturesPage() {
-  const today = new Date();
-
-  const [lectures, setLectures] = useState<Lecture[]>([]);
-  const [selectedDate, setSelectedDate] = useState(formatDate(today));
+  const [selectedDate, setSelectedDate] = useState(
+    localDateString(new Date())
+  );
+  const [lectures, setLectures] = useState<LearningVideo[]>([]);
+  const [liveSession, setLiveSession] = useState<LiveSessionInfo | null>(null);
   const [loading, setLoading] = useState(true);
+  const [liveLoading, setLiveLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  async function fetchLectures(date: string) {
+    try {
+      setLoading(true);
+      setError("");
+
+      const response = await fetch(
+        `/api/learning-videos?type=daily&date=${encodeURIComponent(date)}`,
+        { cache: "no-store" }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to load daily lectures.");
+      }
+
+      const items: LearningVideo[] = Array.isArray(data)
+        ? data
+        : data.videos || [];
+
+      // Only display recorded lectures here.
+      setLectures(items.filter((lecture) => Boolean(lecture.youtubeVideoId)));
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Unable to load daily lectures."
+      );
+      setLectures([]);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function fetchLiveStatus() {
+    try {
+      setLiveLoading(true);
+
+      const response = await fetch("/api/Live-Class/status", {
+        cache: "no-store",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Unable to check live class.");
+      }
+
+      setLiveSession(data.isLive ? data.session : null);
+    } catch (err) {
+      console.error("LIVE STATUS ERROR:", err);
+      setLiveSession(null);
+    } finally {
+      setLiveLoading(false);
+    }
+  }
 
   useEffect(() => {
-    async function fetchLectures() {
-      try {
-        setLoading(true);
-
-        const response = await fetch(
-          `/api/learning-videos?type=daily&date=${selectedDate}`
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch lectures");
-        }
-
-        const data = await response.json();
-
-        setLectures(data);
-      } catch (error) {
-        console.error(error);
-        setLectures([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchLectures();
+    fetchLectures(selectedDate);
   }, [selectedDate]);
 
-  // Small quick-access dates around selected date
-  const quickDates = Array.from({ length: 5 }, (_, index) => {
-    const date = new Date(selectedDate + "T00:00:00");
+  useEffect(() => {
+    fetchLiveStatus();
 
-    date.setDate(date.getDate() - 2 + index);
+    // Refresh the live status periodically while this page is open.
+    const interval = window.setInterval(fetchLiveStatus, 15000);
 
-    return date;
-  });
+    return () => window.clearInterval(interval);
+  }, []);
 
   return (
-    <main className="min-h-screen bg-[#f8f9fc]">
-      <div className="mx-auto max-w-6xl px-4 py-6 md:px-6 md:py-8">
+    <div className="mx-auto max-w-6xl space-y-7 p-4 md:p-8">
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
+          Daily Lectures
+        </h1>
+        <p className="mt-1 text-sm text-gray-500">
+          Watch your recorded classroom lectures date-wise.
+        </p>
+      </div>
 
-        {/* HEADER */}
-        <div className="mb-6">
-          <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-indigo-100 text-sm">
-              🎓
-            </span>
-
-            <p className="text-sm font-semibold tracking-wide text-indigo-600">
-              DAILY LEARNING
-            </p>
-          </div>
-
-          <h1 className="mt-2 text-3xl font-bold tracking-tight text-gray-900">
-            Daily Lectures
-          </h1>
-
-          <p className="mt-1 text-sm text-gray-500">
-            Learn something new every day.
-          </p>
-        </div>
-
-        {/* DATE CONTROLS */}
-        <div className="mb-7 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm">
-
-          <div className="flex items-center gap-2">
-
-            {/* Previous Day */}
-            <button
-              onClick={() => {
-                const date = new Date(
-                  selectedDate + "T00:00:00"
-                );
-
-                date.setDate(date.getDate() - 1);
-
-                setSelectedDate(formatDate(date));
-              }}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:bg-gray-50 hover:text-black"
-            >
-              ←
-            </button>
-
-            {/* Compact Dates */}
-            <div className="flex flex-1 gap-2 overflow-x-auto">
-
-              {quickDates.map((date) => {
-                const dateString = formatDate(date);
-                const active = selectedDate === dateString;
-                const isToday =
-                  dateString === formatDate(today);
-
-                return (
-                  <button
-                    key={dateString}
-                    onClick={() =>
-                      setSelectedDate(dateString)
-                    }
-                    className={`min-w-[68px] flex-1 rounded-xl px-2 py-2 transition ${
-                      active
-                        ? "bg-gray-900 text-white shadow-sm"
-                        : "text-gray-600 hover:bg-gray-100"
-                    }`}
-                  >
-                    <p
-                      className={`text-[10px] font-medium ${
-                        active
-                          ? "text-gray-400"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      {isToday
-                        ? "TODAY"
-                        : date.toLocaleDateString(
-                            "en-IN",
-                            {
-                              weekday: "short",
-                            }
-                          )}
-                    </p>
-
-                    <p className="mt-0.5 text-lg font-bold">
-                      {date.getDate()}
-                    </p>
-
-                    <p
-                      className={`text-[10px] ${
-                        active
-                          ? "text-gray-400"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      {date.toLocaleDateString(
-                        "en-IN",
-                        {
-                          month: "short",
-                        }
-                      )}
-                    </p>
-                  </button>
-                );
-              })}
-
-            </div>
-
-            {/* Next Day */}
-            <button
-              onClick={() => {
-                const date = new Date(
-                  selectedDate + "T00:00:00"
-                );
-
-                date.setDate(date.getDate() + 1);
-
-                setSelectedDate(formatDate(date));
-              }}
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-gray-200 text-gray-600 transition hover:bg-gray-50 hover:text-black"
-            >
-              →
-            </button>
-
-            {/* Calendar */}
-            <label className="relative flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-xl bg-indigo-50 text-indigo-600 transition hover:bg-indigo-100">
-
-              <span className="text-lg">
-                📅
-              </span>
-
-              <input
-                type="date"
-                value={selectedDate}
-                onChange={(e) => {
-                  if (e.target.value) {
-                    setSelectedDate(e.target.value);
-                  }
-                }}
-                className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
-              />
-
-            </label>
-
-          </div>
-        </div>
-
-        {/* SELECTED DATE */}
-        <div className="mb-5 flex items-center justify-between">
-
+      {/* Independent live class */}
+      <section className="overflow-hidden rounded-2xl border border-red-200 bg-white shadow-sm">
+        <div className="flex items-center justify-between gap-3 border-b border-red-100 bg-red-50 px-5 py-4">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-wider text-indigo-600">
-              Selected Day
+            <h2 className="font-bold text-gray-900">Live Classroom</h2>
+            <p className="text-sm text-gray-600">
+              Join the class currently running at Innovative Academy.
             </p>
-
-            <h2 className="mt-1 text-lg font-bold text-gray-900 md:text-xl">
-              {formatDisplayDate(selectedDate)}
-            </h2>
           </div>
 
-          {/* Back to Today */}
-          {selectedDate !== formatDate(today) && (
-            <button
-              onClick={() =>
-                setSelectedDate(formatDate(today))
-              }
-              className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 transition hover:bg-gray-50"
-            >
-              Today
-            </button>
-          )}
-
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-bold ${
+              liveSession
+                ? "bg-red-600 text-white"
+                : "bg-gray-200 text-gray-600"
+            }`}
+          >
+            {liveLoading ? "CHECKING" : liveSession ? "LIVE NOW" : "OFFLINE"}
+          </span>
         </div>
 
-        {/* LOADING */}
-        {loading && (
-          <div className="grid gap-5 md:grid-cols-2">
-
-            {[1, 2].map((item) => (
-              <div
-                key={item}
-                className="animate-pulse rounded-2xl border border-gray-200 bg-white p-5"
-              >
-                <div className="h-6 w-20 rounded-lg bg-gray-200" />
-
-                <div className="mt-5 h-6 w-3/4 rounded-lg bg-gray-200" />
-
-                <div className="mt-3 h-4 w-full rounded-lg bg-gray-100" />
-
-                <div className="mt-6 h-10 w-28 rounded-xl bg-gray-200" />
+        <div className="p-5">
+          {liveLoading ? (
+            <p className="text-sm text-gray-500">Checking live classroom...</p>
+          ) : liveSession ? (
+            <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">
+                  {liveSession.title}
+                </h3>
+                <p className="mt-1 text-sm text-gray-600">
+                  {liveSession.subject}
+                </p>
+                {liveSession.description && (
+                  <p className="mt-1 text-sm text-gray-500">
+                    {liveSession.description}
+                  </p>
+                )}
               </div>
-            ))}
 
+              <Link
+                href={`/dashboard/student/live/${liveSession._id}`}
+                className="inline-flex shrink-0 items-center justify-center rounded-xl bg-red-600 px-6 py-3 text-sm font-semibold text-white hover:bg-red-700"
+              >
+                Join Live Class
+              </Link>
+            </div>
+          ) : (
+            <p className="text-sm text-gray-500">
+              There is no live class right now. Check again later.
+            </p>
+          )}
+        </div>
+      </section>
+
+      {/* Date-wise recorded lectures */}
+      <section className="space-y-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-bold text-gray-900">
+              Recorded Lectures
+            </h2>
+            <p className="text-sm text-gray-500">
+              Select a date to see its recorded lectures.
+            </p>
           </div>
+
+          <input
+            type="date"
+            value={selectedDate}
+            onChange={(event) => setSelectedDate(event.target.value)}
+            className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 outline-none focus:border-purple-500"
+          />
+        </div>
+
+        {error && (
+          <p className="rounded-xl bg-red-50 p-4 text-sm text-red-700">
+            {error}
+          </p>
         )}
 
-        {/* LECTURES */}
-        {!loading && lectures.length > 0 && (
-          <div className="grid gap-5 md:grid-cols-2">
+        {loading ? (
+          <div className="py-12 text-center text-sm text-gray-500">
+            Loading recorded lectures...
+          </div>
+        ) : lectures.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-gray-300 px-6 py-12 text-center">
+            <h3 className="font-semibold text-gray-800">
+              No recorded lectures for this date
+            </h3>
+            <p className="mt-2 text-sm text-gray-500">
+              Choose another date or check again when the recording is uploaded.
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {lectures.map((lecture) => (
-              <VideoCard
+              <Link
                 key={lecture._id}
                 href={`/dashboard/student/daily-lectures/${lecture._id}`}
-                subject={lecture.subject}
-                title={lecture.title}
-                description={lecture.description}
-                duration={lecture.duration}
-                type="Lecture"
-              />
+                className="group rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-purple-200 hover:shadow-md"
+              >
+                <div className="mb-3 flex items-center justify-between gap-2">
+                  <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700">
+                    {lecture.subject}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {lecture.duration ? `${lecture.duration} min` : "Recorded"}
+                  </span>
+                </div>
+
+                <h3 className="font-bold text-gray-900 group-hover:text-purple-700">
+                  {lecture.title}
+                </h3>
+
+                {lecture.description && (
+                  <p className="mt-2 line-clamp-2 text-sm text-gray-500">
+                    {lecture.description}
+                  </p>
+                )}
+
+                <p className="mt-4 text-sm font-semibold text-purple-700">
+                  Watch recording →
+                </p>
+              </Link>
             ))}
           </div>
         )}
-
-        {/* EMPTY */}
-        {!loading && lectures.length === 0 && (
-          <div className="rounded-3xl border border-gray-200 bg-white px-6 py-14 text-center shadow-sm">
-
-            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-gray-100 text-3xl">
-              📚
-            </div>
-
-            <h3 className="mt-5 text-lg font-bold text-gray-900">
-              No lecture on this day
-            </h3>
-
-            <p className="mx-auto mt-2 max-w-md text-sm text-gray-500">
-              There are no daily lectures available for{" "}
-              {formatDisplayDate(selectedDate)}.
-            </p>
-
-            <button
-              onClick={() =>
-                setSelectedDate(formatDate(today))
-              }
-              className="mt-5 rounded-xl bg-gray-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-gray-800"
-            >
-              Go to Today
-            </button>
-
-          </div>
-        )}
-
-      </div>
-    </main>
+      </section>
+    </div>
   );
 }
