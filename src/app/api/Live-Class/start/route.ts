@@ -48,46 +48,6 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    console.log("LIVE MODEL NAME:", LiveSession.modelName);
-
-console.log(
-  "LIVE MODEL FIELDS:",
-  Object.keys(LiveSession.schema.paths)
-);
-
-console.log(
-  "LECTURE ID PATH:",
-  LiveSession.schema.path("lectureId")
-);
-
-
-    // Only one live class is allowed at a time.
-    const existing = await LiveSession.findOne({
-      status: "live",
-    });
-
-    if (existing) {
-      if (existing.startedBy.toString() === user._id.toString()) {
-        return NextResponse.json({
-          success: true,
-          alreadyLive: true,
-          session: {
-            _id: existing._id,
-            title: existing.title,
-            subject: existing.subject,
-            description: existing.description,
-            roomName: existing.roomName,
-            startedAt: existing.startedAt,
-          },
-        });
-      }
-
-      return NextResponse.json(
-        { message: "Another live class is already running." },
-        { status: 409 }
-      );
-    }
-
     const roomName = `ia-${new mongoose.Types.ObjectId().toString()}`;
 
     const session = await LiveSession.create({
@@ -117,7 +77,7 @@ console.log(
 
     if (error?.code === 11000) {
       return NextResponse.json(
-        { message: "A live class is already running." },
+        { message: "Unable to create a unique classroom." },
         { status: 409 }
       );
     }

@@ -69,6 +69,15 @@ export default function ManageLearningVideosPage() {
   const [message, setMessage] = useState("");
   const [liveMessage, setLiveMessage] = useState("");
 
+
+  // useEffect(() => {
+  //   if (showLiveRoom) {
+  //     sessionStorage.setItem("hideSidebar", "true");
+  //   } else {
+  //     sessionStorage.removeItem("hideSidebar");
+  //   }
+  // }, [showLiveRoom]);
+
   async function fetchVideos() {
     try {
       setLoading(true);
@@ -250,10 +259,12 @@ export default function ManageLearningVideosPage() {
           ? "Your live class is already running."
           : "Live class started."
       );
+      
     } catch (error) {
       setLiveMessage(
         error instanceof Error ? error.message : "Unable to start live class."
       );
+      
     } finally {
       setStartingLive(false);
     }
@@ -292,10 +303,12 @@ export default function ManageLearningVideosPage() {
       setMeetingApi(null);
       setLiveSession(null);
       setLiveMessage("Live class ended. Upload its recording as a daily lecture.");
+      
     } catch (error) {
       setLiveMessage(
         error instanceof Error ? error.message : "Unable to end live class."
       );
+      
     } finally {
       setEndingLive(false);
     }
@@ -411,6 +424,7 @@ export default function ManageLearningVideosPage() {
                     setMeetingApi(null);
                   }}
                 />
+                
               )}
             </div>
           ) : (

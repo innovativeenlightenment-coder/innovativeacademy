@@ -52,6 +52,7 @@ const Sidebar =  ({ isMobileSidebarOpen, onSidebarClose, isSidebarOpen }: ItemTy
     color: "text.primary",
     borderRight: "1px solid",
     borderColor: "divider",
+    zIndex: 1300, // Ensure the sidebar is above other content
   }}
 >
       {/* Logo */}

@@ -60,13 +60,7 @@ const LiveSessionSchema = new Schema<ILiveSession>(
 );
 
 // Only one live class can exist across the academy at a time.
-LiveSessionSchema.index(
-  { status: 1 },
-  {
-    unique: true,
-    partialFilterExpression: { status: "live" },
-  }
-);
+LiveSessionSchema.index({ status: 1, startedAt: -1 });
 
 const LiveSession =
   (mongoose.models.LiveSession as mongoose.Model<ILiveSession>) ||

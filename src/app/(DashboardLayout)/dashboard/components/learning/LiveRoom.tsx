@@ -113,12 +113,7 @@ export default function LiveRoom({
   }
 
   return (
-    <div  className={
-    isTeacher
-      ? "fixed inset-0 z-[99999] bg-black"
-      : "relative w-full overflow-hidden rounded-xl bg-black"
-  }>
-    
+    <div className="w-full overflow-hidden rounded-2xl bg-black" >
       <JaaSMeeting
         appId={meeting.appId}
         roomName={meeting.roomName}
@@ -156,10 +151,10 @@ export default function LiveRoom({
           displayName: meeting.displayName,
           email: meeting.email || "",
         }}
-     getIFrameRef={(parentNode: HTMLDivElement) => {
+      getIFrameRef={(parentNode: HTMLDivElement) => {
   parentNode.style.width = "100%";
-  parentNode.style.height = "100%";
-  parentNode.style.minHeight = "100vh";
+  parentNode.style.height = "min(78vh, 850px)";
+  parentNode.style.minHeight = "500px";
   parentNode.style.border = "0";
 }}
       />

@@ -47,6 +47,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // ✅ track screen width properly
   const [screenWidth, setScreenWidth] = useState<number>(1200);
 
+  // setTimeout(() => {
+  // if(sessionStorage.getItem("hideSidebar")=="true"){
+  //   setSidebarOpen(false)
+  // }
+  // else{
+  //   setSidebarOpen(true)
+  // }
+  // }, 100);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       setScreenWidth(window.innerWidth);
@@ -137,7 +146,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <MainWrapper className="mainwrapper">
       {/* Sidebar */}
-      {!shouldHideSidebar && (isSubscribed||isTrialActive) && (
+      {!shouldHideSidebar && (isSubscribed||isTrialActive) &&  (
         <Sidebar
           isSidebarOpen={isSidebarOpen}
           isMobileSidebarOpen={isMobileSidebarOpen}
