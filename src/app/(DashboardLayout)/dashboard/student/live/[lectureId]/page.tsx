@@ -16,9 +16,8 @@ interface LiveSessionInfo {
 }
 
 export default function StudentLivePage() {
-
   const params = useParams<{ lectureId: string }>();
-const sessionId = params.lectureId;
+  const sessionId = params.lectureId;
   const router = useRouter();
 
   const [session, setSession] = useState<LiveSessionInfo | null>(null);
@@ -34,36 +33,55 @@ const sessionId = params.lectureId;
         setError("");
 
         const response = await fetch("/api/Live-Class/status", {
+          method: "GET",
           cache: "no-store",
         });
 
         const data = await response.json();
 
-        if (!response.ok) {
-          throw new Error(data.message || "Unable to check live class.");
+        if (!response.ok || !data.success) {
+          throw new Error(
+            data.message || data.error || "Unable to check live class."
+          );
         }
 
-        if (!data.isLive || !data.session) {
-          throw new Error("This live class has ended or is no longer available.");
+        // Updated API supports multiple simultaneous live sessions.
+        const sessions: LiveSessionInfo[] = Array.isArray(data.sessions)
+          ? data.sessions
+          : [];
+
+        // Find the exact session requested by this student.
+        const currentSession = sessions.find(
+          (item) => String(item._id) === String(sessionId)
+        );
+
+        if (!currentSession) {
+          throw new Error(
+            "This live class is no longer available, or you are not authorized to join it."
+          );
         }
 
-        if (data.session._id !== sessionId) {
-          throw new Error("This live class is no longer the active class.");
+        if (!cancelled) {
+          setSession(currentSession);
         }
-
-        if (!cancelled) setSession(data.session);
       } catch (err) {
         if (!cancelled) {
           setError(
-            err instanceof Error ? err.message : "Unable to open live class."
+            err instanceof Error
+              ? err.message
+              : "Unable to open live class."
           );
         }
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
-    checkSession();
+    if (sessionId) {
+      checkSession();
+    }
 
     return () => {
       cancelled = true;
@@ -73,7 +91,9 @@ const sessionId = params.lectureId;
   if (loading) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center p-6">
-        <p className="text-sm text-gray-500">Checking live classroom...</p>
+        <p className="text-sm text-gray-500">
+          Checking live classroom...
+        </p>
       </div>
     );
   }
@@ -84,9 +104,11 @@ const sessionId = params.lectureId;
         <h1 className="text-xl font-bold text-gray-900">
           Live class unavailable
         </h1>
+
         <p className="mt-2 text-sm text-gray-500">
           {error || "This live class is not available."}
         </p>
+
         <Link
           href="/dashboard/student/daily-lectures"
           className="mt-6 rounded-xl bg-purple-600 px-5 py-3 text-sm font-semibold text-white"
@@ -110,7 +132,9 @@ const sessionId = params.lectureId;
             {session.title}
           </h1>
 
-          <p className="mt-1 text-sm text-gray-500">{session.subject}</p>
+          <p className="mt-1 text-sm text-gray-500">
+            {session.subject}
+          </p>
 
           {session.description && (
             <p className="mt-1 text-sm text-gray-500">
@@ -130,7 +154,9 @@ const sessionId = params.lectureId;
       <LiveRoom
         sessionId={session._id}
         isTeacher={false}
-        onLeave={() => router.push("/dashboard/student/daily-lectures")}
+        onLeave={() =>
+          router.push("/dashboard/student/daily-lectures")
+        }
       />
     </div>
   );

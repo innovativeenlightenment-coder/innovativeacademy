@@ -521,7 +521,7 @@ return (
             minWidth: 0,
           }}
         >
-          <Box
+          {/* <Box
             sx={{
               width: 34,
               height: 34,
@@ -536,7 +536,9 @@ return (
             }}
           >
             IA
-          </Box>
+          </Box> */}
+           <img src="/images/logos/Innovative_Academy_Logo_icon.png" className='w-8' />
+
 
           <Box sx={{ minWidth: 0 }}>
             <Typography

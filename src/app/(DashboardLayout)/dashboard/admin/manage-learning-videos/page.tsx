@@ -1,7 +1,7 @@
 
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import LiveRoom from "../../components/learning/LiveRoom";
 
 interface LearningVideo {
@@ -25,6 +25,20 @@ interface LiveSessionInfo {
   roomName: string;
   startedAt?: string;
   canEnd?: boolean;
+  startedBy?: {
+    _id?: string;
+    name?: string;
+    username?: string;
+  } | string;
+}
+
+interface Participant {
+  _id: string;
+  name: string;
+  username?: string;
+  email?: string;
+  avatar?: string;
+  courses: string[];
 }
 
 const inputClass =
@@ -32,7 +46,11 @@ const inputClass =
 
 const labelClass = "mb-1.5 block text-sm font-medium text-gray-700";
 
+const buttonClass =
+  "rounded-xl px-5 py-3 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50";
+
 export default function ManageLearningVideosPage() {
+  // Recorded videos
   const [videos, setVideos] = useState<LearningVideo[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -51,32 +69,39 @@ export default function ManageLearningVideosPage() {
     isPublished: true,
   });
 
+  // Live class form
   const [liveForm, setLiveForm] = useState({
     title: "",
     subject: "Physics",
     description: "",
   });
 
-  const [liveSession, setLiveSession] =
-    useState<LiveSessionInfo | null>(null);
-
+  // Live sessions
+  const [liveSessions, setLiveSessions] = useState<LiveSessionInfo[]>([]);
   const [liveLoading, setLiveLoading] = useState(true);
   const [startingLive, setStartingLive] = useState(false);
-  const [endingLive, setEndingLive] = useState(false);
+  const [endingId, setEndingId] = useState("");
+
+  // Currently opened meeting
+  const [activeSession, setActiveSession] =
+    useState<LiveSessionInfo | null>(null);
+
   const [showLiveRoom, setShowLiveRoom] = useState(false);
   const [meetingApi, setMeetingApi] = useState<any>(null);
 
+  // Participants
+  const [participants, setParticipants] = useState<Participant[]>([]);
+  const [participantsLoading, setParticipantsLoading] = useState(true);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [participantSearch, setParticipantSearch] = useState("");
+
+  // Messages
   const [message, setMessage] = useState("");
   const [liveMessage, setLiveMessage] = useState("");
 
-
-  // useEffect(() => {
-  //   if (showLiveRoom) {
-  //     sessionStorage.setItem("hideSidebar", "true");
-  //   } else {
-  //     sessionStorage.removeItem("hideSidebar");
-  //   }
-  // }, [showLiveRoom]);
+  // --------------------------------------------------
+  // FETCH RECORDED VIDEOS
+  // --------------------------------------------------
 
   async function fetchVideos() {
     try {
@@ -103,7 +128,11 @@ export default function ManageLearningVideosPage() {
     }
   }
 
-  async function checkLiveStatus() {
+  // --------------------------------------------------
+  // FETCH LIVE SESSIONS
+  // --------------------------------------------------
+
+  const checkLiveStatus = useCallback(async () => {
     try {
       setLiveLoading(true);
 
@@ -114,23 +143,129 @@ export default function ManageLearningVideosPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to check live status.");
+        throw new Error(
+          data.error || data.message || "Unable to check live status."
+        );
       }
 
-      setLiveSession(data.isLive ? data.session : null);
+      setLiveSessions(Array.isArray(data.sessions) ? data.sessions : []);
     } catch (error) {
       setLiveMessage(
-        error instanceof Error ? error.message : "Unable to check live status."
+        error instanceof Error
+          ? error.message
+          : "Unable to check live status."
       );
     } finally {
       setLiveLoading(false);
     }
-  }
+  }, []);
+
+  // --------------------------------------------------
+  // FETCH PARTICIPANTS
+  // --------------------------------------------------
+
+  const fetchParticipants = useCallback(async () => {
+    try {
+      setParticipantsLoading(true);
+
+      const response = await fetch("/api/Live-Class/participants", {
+        cache: "no-store",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.message || data.error || "Unable to load students."
+        );
+      }
+
+      setParticipants(Array.isArray(data.users) ? data.users : []);
+    } catch (error) {
+      setLiveMessage(
+        error instanceof Error
+          ? error.message
+          : "Unable to load students."
+      );
+    } finally {
+      setParticipantsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     fetchVideos();
     checkLiveStatus();
-  }, []);
+    fetchParticipants();
+  }, [checkLiveStatus, fetchParticipants]);
+
+  // --------------------------------------------------
+  // PARTICIPANT SELECTION
+  // --------------------------------------------------
+
+  const filteredParticipants = useMemo(() => {
+    const search = participantSearch.trim().toLowerCase();
+
+    if (!search) return participants;
+
+    return participants.filter((student) => {
+      return (
+        student.name?.toLowerCase().includes(search) ||
+        student.username?.toLowerCase().includes(search) ||
+        student.email?.toLowerCase().includes(search)
+      );
+    });
+  }, [participants, participantSearch]);
+
+  const foundation8Students = useMemo(
+    () =>
+      participants.filter((student) =>
+        student.courses?.includes("Foundation 8th")
+      ),
+    [participants]
+  );
+
+  const foundation9Students = useMemo(
+    () =>
+      participants.filter((student) =>
+        student.courses?.includes("Foundation 9th")
+      ),
+    [participants]
+  );
+
+  function toggleStudent(id: string) {
+    setSelectedIds((previous) =>
+      previous.includes(id)
+        ? previous.filter((selected) => selected !== id)
+        : [...previous, id]
+    );
+  }
+
+  function toggleGroup(groupStudents: Participant[]) {
+    const groupIds = groupStudents.map((student) => student._id);
+
+    const allSelected =
+      groupIds.length > 0 &&
+      groupIds.every((id) => selectedIds.includes(id));
+
+    setSelectedIds((previous) => {
+      if (allSelected) {
+        return previous.filter((id) => !groupIds.includes(id));
+      }
+
+      return Array.from(new Set([...previous, ...groupIds]));
+    });
+  }
+
+  function isGroupSelected(groupStudents: Participant[]) {
+    return (
+      groupStudents.length > 0 &&
+      groupStudents.every((student) => selectedIds.includes(student._id))
+    );
+  }
+
+  // --------------------------------------------------
+  // CREATE RECORDED VIDEO
+  // --------------------------------------------------
 
   async function createVideo(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -195,6 +330,10 @@ export default function ManageLearningVideosPage() {
     }
   }
 
+  // --------------------------------------------------
+  // DELETE RECORDED VIDEO
+  // --------------------------------------------------
+
   async function deleteVideo(id: string) {
     if (!window.confirm("Delete this learning video?")) return;
 
@@ -212,7 +351,10 @@ export default function ManageLearningVideosPage() {
         throw new Error(data.message || "Unable to delete video.");
       }
 
-      setVideos((previous) => previous.filter((video) => video._id !== id));
+      setVideos((previous) =>
+        previous.filter((video) => video._id !== id)
+      );
+
       setMessage("Video deleted successfully.");
     } catch (error) {
       setMessage(
@@ -222,6 +364,10 @@ export default function ManageLearningVideosPage() {
       setDeletingId("");
     }
   }
+
+  // --------------------------------------------------
+  // START LIVE CLASS
+  // --------------------------------------------------
 
   async function startLiveClass(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -239,93 +385,172 @@ export default function ManageLearningVideosPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: liveForm.title,
+          title: liveForm.title.trim(),
           subject: liveForm.subject,
-          description: liveForm.description,
+          description: liveForm.description.trim(),
+          participantIds: selectedIds,
         }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to start live class.");
+        throw new Error(
+          data.error || data.message || "Unable to start live class."
+        );
       }
 
-      setLiveSession(data.session);
+      if (!data.session) {
+        throw new Error("The server did not return the new live session.");
+      }
+
+      setLiveForm({
+        title: "",
+        subject: "Physics",
+        description: "",
+      });
+
+      setSelectedIds([]);
+      setParticipantSearch("");
+
+      setActiveSession(data.session);
       setShowLiveRoom(true);
-      setLiveForm({ title: "", subject: "Physics", description: "" });
-      setLiveMessage(
-        data.alreadyLive
-          ? "Your live class is already running."
-          : "Live class started."
-      );
-      
+      setMeetingApi(null);
+
+      setLiveMessage("Live class started successfully.");
+
+      await checkLiveStatus();
     } catch (error) {
       setLiveMessage(
-        error instanceof Error ? error.message : "Unable to start live class."
+        error instanceof Error
+          ? error.message
+          : "Unable to start live class."
       );
-      
     } finally {
       setStartingLive(false);
     }
   }
 
-  async function endLiveClass() {
-    if (!liveSession) return;
+  // --------------------------------------------------
+  // JOIN LIVE CLASS
+  // --------------------------------------------------
 
-    if (!window.confirm("Are you sure you want to end this live class?")) {
+  function joinLiveClass(session: LiveSessionInfo) {
+    setActiveSession(session);
+    setMeetingApi(null);
+    setShowLiveRoom(true);
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  }
+
+  // --------------------------------------------------
+  // CLOSE LIVE ROOM VIEW
+  // --------------------------------------------------
+
+  function closeLiveRoom() {
+    try {
+      meetingApi?.executeCommand("hangup");
+    } catch (error) {
+      console.error("Unable to leave meeting:", error);
+    }
+
+    setShowLiveRoom(false);
+    setActiveSession(null);
+    setMeetingApi(null);
+  }
+
+  // --------------------------------------------------
+  // END A PARTICULAR LIVE CLASS
+  // --------------------------------------------------
+
+  async function endLiveClass(session: LiveSessionInfo) {
+    if (
+      !window.confirm(
+        `Are you sure you want to end "${session.title}"?`
+      )
+    ) {
       return;
     }
 
-    setEndingLive(true);
+    setEndingId(session._id);
     setLiveMessage("");
 
     try {
       const response = await fetch("/api/Live-Class/end", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ sessionId: liveSession._id }),
+        body: JSON.stringify({
+          sessionId: session._id,
+        }),
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.message || "Unable to end live class.");
+        throw new Error(
+          data.error || data.message || "Unable to end live class."
+        );
       }
 
-      try {
-        meetingApi?.executeCommand("endConference");
-      } catch (error) {
-        console.error("Unable to close meeting iframe:", error);
+      if (activeSession?._id === session._id) {
+        try {
+          meetingApi?.executeCommand("endConference");
+        } catch (error) {
+          console.error("Unable to close meeting iframe:", error);
+        }
+
+        setShowLiveRoom(false);
+        setActiveSession(null);
+        setMeetingApi(null);
       }
 
-      setShowLiveRoom(false);
-      setMeetingApi(null);
-      setLiveSession(null);
-      setLiveMessage("Live class ended. Upload its recording as a daily lecture.");
-      
+      setLiveSessions((previous) =>
+        previous.filter((item) => item._id !== session._id)
+      );
+
+      setLiveMessage(
+        "Live class ended. Upload its recording as a daily lecture."
+      );
+
+      await checkLiveStatus();
     } catch (error) {
       setLiveMessage(
-        error instanceof Error ? error.message : "Unable to end live class."
+        error instanceof Error
+          ? error.message
+          : "Unable to end live class."
       );
-      
     } finally {
-      setEndingLive(false);
+      setEndingId("");
     }
   }
 
-  const dailyCount = videos.filter((video) => video.type === "daily").length;
-  const oneShotCount = videos.filter((video) => video.type === "oneShot").length;
+  const dailyCount = videos.filter(
+    (video) => video.type === "daily"
+  ).length;
+
+  const oneShotCount = videos.filter(
+    (video) => video.type === "oneShot"
+  ).length;
+
+  // --------------------------------------------------
+  // UI
+  // --------------------------------------------------
 
   return (
     <div className="mx-auto max-w-7xl space-y-8 p-4 md:p-8">
+      {/* PAGE HEADER */}
+
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 md:text-3xl">
             Manage Learning Videos
           </h1>
+
           <p className="mt-1 text-sm text-gray-500">
-            Manage recorded daily lectures and one-shot videos.
+            Manage live classrooms, recorded lectures and one-shot videos.
           </p>
         </div>
 
@@ -334,174 +559,461 @@ export default function ManageLearningVideosPage() {
         </div>
       </div>
 
-      {/* Independent Live Classroom */}
+      {/* LIVE CLASSROOM */}
+
       <section className="overflow-hidden rounded-2xl border border-purple-200 bg-white shadow-sm">
-        <div className="flex flex-wrap items-center justify-between gap-3 bg-purple-50 px-5 py-4">
+        <div className="flex flex-wrap items-center justify-between gap-3 bg-gradient-to-r from-purple-50 to-white px-5 py-5">
           <div>
-            <h2 className="text-lg font-bold text-gray-900">
+            <h2 className="text-xl font-bold text-gray-900">
               Live Classroom
             </h2>
-            <p className="text-sm text-gray-600">
-              Start a live class independently of recorded lectures.
+
+            <p className="mt-1 text-sm text-gray-600">
+              Start and manage multiple live classes simultaneously.
             </p>
           </div>
 
-          <span
-            className={`rounded-full px-3 py-1 text-xs font-semibold ${
-              liveSession
-                ? "bg-red-100 text-red-700"
-                : "bg-gray-100 text-gray-600"
-            }`}
-          >
-            {liveLoading ? "Checking..." : liveSession ? "LIVE NOW" : "NOT LIVE"}
-          </span>
+          <div className="flex items-center gap-2 rounded-full bg-white px-3 py-2 text-sm font-semibold text-gray-700 shadow-sm">
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-red-500" />
+            {liveLoading
+              ? "Checking..."
+              : `${liveSessions.length} Active`}
+          </div>
         </div>
 
-        <div className="space-y-5 p-5">
+        <div className="space-y-6 p-5">
           {liveMessage && (
-            <p className="rounded-lg bg-gray-50 p-3 text-sm text-gray-700">
+            <div className="rounded-xl border border-purple-100 bg-purple-50 p-3 text-sm text-purple-800">
               {liveMessage}
-            </p>
+            </div>
           )}
 
-          {liveLoading ? (
-            <p className="text-sm text-gray-500">Checking live classroom...</p>
-          ) : liveSession ? (
-            <div className="space-y-4">
-              <div className="rounded-xl border border-red-100 bg-red-50 p-4">
-                <p className="text-xs font-semibold uppercase tracking-wide text-red-600">
-                  Current live class
-                </p>
-                <h3 className="mt-1 text-xl font-bold text-gray-900">
-                  {liveSession.title}
-                </h3>
-                <p className="mt-1 text-sm text-gray-600">
-                  {liveSession.subject}
-                </p>
-                {liveSession.description && (
-                  <p className="mt-2 text-sm text-gray-600">
-                    {liveSession.description}
+          {/* ACTIVE MEETING ROOM */}
+
+          {showLiveRoom && activeSession && (
+            <div className="space-y-4 rounded-2xl border border-purple-200 bg-gray-50 p-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                    <span className="text-xs font-bold uppercase tracking-wide text-red-600">
+                      Classroom Open
+                    </span>
+                  </div>
+
+                  <h3 className="text-lg font-bold text-gray-900">
+                    {activeSession.title}
+                  </h3>
+
+                  <p className="text-sm text-gray-500">
+                    {activeSession.subject}
                   </p>
-                )}
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowLiveRoom((value) => !value)}
-                  className="rounded-xl bg-purple-600 px-5 py-3 text-sm font-semibold text-white hover:bg-purple-700"
-                >
-                  {showLiveRoom ? "Hide Classroom" : "Enter Classroom"}
-                </button>
-
-                {liveSession.canEnd && (
-                  <button
-                    type="button"
-                    onClick={endLiveClass}
-                    disabled={endingLive}
-                    className="rounded-xl bg-red-600 px-5 py-3 text-sm font-semibold text-white hover:bg-red-700 disabled:opacity-50"
-                  >
-                    {endingLive ? "Ending..." : "End Live Class"}
-                  </button>
-                )}
+                </div>
 
                 <button
                   type="button"
-                  onClick={checkLiveStatus}
-                  className="rounded-xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                  onClick={closeLiveRoom}
+                  className={`${buttonClass} border border-gray-200 bg-white text-gray-700 hover:bg-gray-100`}
                 >
-                  Refresh Status
+                  Leave Classroom
                 </button>
               </div>
 
-              {showLiveRoom && (
-                <LiveRoom
-                  sessionId={liveSession._id}
-                  isTeacher
-                  onApiReady={setMeetingApi}
-                  onLeave={() => {
-                    setShowLiveRoom(false);
-                    setMeetingApi(null);
-                  }}
-                />
-                
-              )}
+              <LiveRoom
+                sessionId={activeSession._id}
+                isTeacher
+                onApiReady={setMeetingApi}
+                onLeave={() => {
+                  setShowLiveRoom(false);
+                  setActiveSession(null);
+                  setMeetingApi(null);
+                }}
+              />
             </div>
-          ) : (
-            <form onSubmit={startLiveClass} className="grid gap-4 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <label className={labelClass}>Live Class Title</label>
-                <input
-                  className={inputClass}
-                  placeholder="Example: Introduction to Motion"
-                  value={liveForm.title}
-                  onChange={(event) =>
-                    setLiveForm({
-                      ...liveForm,
-                      title: event.target.value,
-                    })
-                  }
-                  required
-                />
+          )}
+
+          {/* ACTIVE SESSIONS LIST */}
+
+          <div className="space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <h3 className="font-bold text-gray-900">
+                  Active Live Classes
+                </h3>
+
+                <p className="text-xs text-gray-500">
+                  Join or manage your available classrooms.
+                </p>
               </div>
 
-              <div>
-                <label className={labelClass}>Subject</label>
-                <select
-                  className={inputClass}
-                  value={liveForm.subject}
-                  onChange={(event) =>
-                    setLiveForm({
-                      ...liveForm,
-                      subject: event.target.value,
-                    })
-                  }
-                >
-                  {["Physics", "Chemistry", "Biology", "Mathematics", "Other"].map(
-                    (subject) => (
+              <button
+                type="button"
+                onClick={checkLiveStatus}
+                disabled={liveLoading}
+                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50"
+              >
+                {liveLoading ? "Refreshing..." : "↻ Refresh"}
+              </button>
+            </div>
+
+            {liveLoading && liveSessions.length === 0 ? (
+              <div className="rounded-xl border border-gray-200 p-6 text-center text-sm text-gray-500">
+                Loading active classrooms...
+              </div>
+            ) : liveSessions.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-gray-300 bg-gray-50 p-8 text-center">
+                <div className="mb-2 text-3xl">🎓</div>
+
+                <h4 className="font-semibold text-gray-800">
+                  No active live classes
+                </h4>
+
+                <p className="mt-1 text-sm text-gray-500">
+                  Start a classroom below. It will appear here immediately.
+                </p>
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2">
+                {liveSessions.map((session) => (
+                  <article
+                    key={session._id}
+                    className="rounded-xl border border-gray-200 bg-white p-4 transition hover:border-purple-300 hover:shadow-sm"
+                  >
+                    <div className="mb-3 flex items-center justify-between gap-2">
+                      <span className="inline-flex items-center gap-2 rounded-full bg-red-50 px-3 py-1 text-xs font-bold text-red-600">
+                        <span className="h-2 w-2 animate-pulse rounded-full bg-red-500" />
+                        LIVE NOW
+                      </span>
+
+                      <span className="text-xs text-gray-500">
+                        {session.subject}
+                      </span>
+                    </div>
+
+                    <h4 className="text-lg font-bold text-gray-900">
+                      {session.title}
+                    </h4>
+
+                    {session.description && (
+                      <p className="mt-1 line-clamp-2 text-sm text-gray-500">
+                        {session.description}
+                      </p>
+                    )}
+
+                    {session.startedBy &&
+                      typeof session.startedBy === "object" && (
+                        <p className="mt-2 text-xs text-gray-400">
+                          Started by{" "}
+                          {session.startedBy.name ||
+                            session.startedBy.username ||
+                            "Teacher"}
+                        </p>
+                      )}
+
+                    {session.startedAt && (
+                      <p className="mt-1 text-xs text-gray-400">
+                        Started{" "}
+                        {new Date(session.startedAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    )}
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => joinLiveClass(session)}
+                        className={`${buttonClass} flex-1 bg-purple-600 text-white hover:bg-purple-700`}
+                      >
+                        {activeSession?._id === session._id &&
+                        showLiveRoom
+                          ? "Classroom Open"
+                          : "Join Classroom"}
+                      </button>
+
+                      {session.canEnd && (
+                        <button
+                          type="button"
+                          onClick={() => endLiveClass(session)}
+                          disabled={endingId === session._id}
+                          className={`${buttonClass} border border-red-200 bg-white text-red-600 hover:bg-red-50`}
+                        >
+                          {endingId === session._id
+                            ? "Ending..."
+                            : "End"}
+                        </button>
+                      )}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* START NEW CLASS */}
+
+          <div className="border-t border-gray-100 pt-6">
+            <div className="mb-5">
+              <h3 className="text-lg font-bold text-gray-900">
+                Start a New Live Class
+              </h3>
+
+              <p className="mt-1 text-sm text-gray-500">
+                Choose the students who should have access to this classroom.
+              </p>
+            </div>
+
+            <form onSubmit={startLiveClass} className="space-y-5">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <label className={labelClass}>
+                    Live Class Title
+                  </label>
+
+                  <input
+                    className={inputClass}
+                    placeholder="Example: Introduction to Motion"
+                    value={liveForm.title}
+                    onChange={(event) =>
+                      setLiveForm((previous) => ({
+                        ...previous,
+                        title: event.target.value,
+                      }))
+                    }
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className={labelClass}>Subject</label>
+
+                  <select
+                    className={inputClass}
+                    value={liveForm.subject}
+                    onChange={(event) =>
+                      setLiveForm((previous) => ({
+                        ...previous,
+                        subject: event.target.value,
+                      }))
+                    }
+                  >
+                    {[
+                      "Physics",
+                      "Chemistry",
+                      "Biology",
+                      "Mathematics",
+                      "Other",
+                    ].map((subject) => (
                       <option key={subject} value={subject}>
                         {subject}
                       </option>
-                    )
-                  )}
-                </select>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className={labelClass}>
+                    Description (optional)
+                  </label>
+
+                  <input
+                    className={inputClass}
+                    placeholder="Class 9 - Motion chapter"
+                    value={liveForm.description}
+                    onChange={(event) =>
+                      setLiveForm((previous) => ({
+                        ...previous,
+                        description: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className={labelClass}>Description (optional)</label>
-                <input
-                  className={inputClass}
-                  placeholder="Class 9 - Motion chapter"
-                  value={liveForm.description}
-                  onChange={(event) =>
-                    setLiveForm({
-                      ...liveForm,
-                      description: event.target.value,
-                    })
-                  }
-                />
+              {/* STUDENT SELECTION */}
+
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <h4 className="font-bold text-gray-900">
+                      Select Participants
+                    </h4>
+
+                    <p className="mt-1 text-xs text-gray-500">
+                      Select a complete class or choose individual students.
+                    </p>
+                  </div>
+
+                  <span className="rounded-full bg-purple-100 px-3 py-1.5 text-xs font-bold text-purple-700">
+                    {selectedIds.length} Selected
+                  </span>
+                </div>
+
+                {/* CLASS GROUPS */}
+
+                <div className="mb-4 grid gap-3 sm:grid-cols-2">
+                  <label className="flex cursor-pointer items-center justify-between rounded-xl border border-purple-200 bg-white p-4 transition hover:bg-purple-50">
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        Foundation 8th
+                      </p>
+
+                      <p className="text-xs text-gray-500">
+                        {foundation8Students.length} students
+                      </p>
+                    </div>
+
+                    <input
+                      type="checkbox"
+                      checked={isGroupSelected(foundation8Students)}
+                      disabled={foundation8Students.length === 0}
+                      onChange={() => toggleGroup(foundation8Students)}
+                      className="h-5 w-5 accent-purple-600"
+                    />
+                  </label>
+
+                  <label className="flex cursor-pointer items-center justify-between rounded-xl border border-purple-200 bg-white p-4 transition hover:bg-purple-50">
+                    <div>
+                      <p className="font-semibold text-gray-900">
+                        Foundation 9th
+                      </p>
+
+                      <p className="text-xs text-gray-500">
+                        {foundation9Students.length} students
+                      </p>
+                    </div>
+
+                    <input
+                      type="checkbox"
+                      checked={isGroupSelected(foundation9Students)}
+                      disabled={foundation9Students.length === 0}
+                      onChange={() => toggleGroup(foundation9Students)}
+                      className="h-5 w-5 accent-purple-600"
+                    />
+                  </label>
+                </div>
+
+                {/* SEARCH */}
+
+                <div className="mb-3">
+                  <input
+                    className={inputClass}
+                    placeholder="Search students by name, username or email..."
+                    value={participantSearch}
+                    onChange={(event) =>
+                      setParticipantSearch(event.target.value)
+                    }
+                  />
+                </div>
+
+                {/* STUDENT LIST */}
+
+                {participantsLoading ? (
+                  <div className="rounded-lg bg-white p-6 text-center text-sm text-gray-500">
+                    Loading students...
+                  </div>
+                ) : filteredParticipants.length === 0 ? (
+                  <div className="rounded-lg bg-white p-6 text-center text-sm text-gray-500">
+                    No matching students found.
+                  </div>
+                ) : (
+                  <div className="max-h-72 overflow-y-auto rounded-xl border border-gray-200 bg-white">
+                    {filteredParticipants.map((student) => (
+                      <label
+                        key={student._id}
+                        className="flex cursor-pointer items-center gap-3 border-b border-gray-100 p-3 last:border-b-0 hover:bg-purple-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedIds.includes(student._id)}
+                          onChange={() => toggleStudent(student._id)}
+                          className="h-4 w-4 shrink-0 accent-purple-600"
+                        />
+
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-purple-100 text-sm font-bold text-purple-700">
+                          {student.avatar ? (
+                            <img
+                              src={student.avatar}
+                              alt=""
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            student.name?.charAt(0)?.toUpperCase() || "S"
+                          )}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-gray-900">
+                            {student.name}
+                          </p>
+
+                          <p className="truncate text-xs text-gray-500">
+                            {student.username || student.email || "Student"}
+                          </p>
+                        </div>
+
+                        <div className="hidden flex-wrap justify-end gap-1 sm:flex">
+                          {student.courses.map((course) => (
+                            <span
+                              key={course}
+                              className="rounded-full bg-purple-50 px-2 py-1 text-[10px] font-medium text-purple-700"
+                            >
+                              {course.replace("Foundation ", "")}
+                            </span>
+                          ))}
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {/* SELECTED STUDENTS */}
+
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+                  <p className="text-xs text-gray-500">
+                    {selectedIds.length} participant(s) will be allowed to join.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedIds([])}
+                    disabled={selectedIds.length === 0}
+                    className="text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-40"
+                  >
+                    Clear Selection
+                  </button>
+                </div>
               </div>
 
-              <div className="md:col-span-2">
-                <button
-                  type="submit"
-                  disabled={startingLive || !liveForm.title.trim()}
-                  className="rounded-xl bg-purple-600 px-6 py-3 text-sm font-semibold text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {startingLive ? "Starting..." : "Start Live Class"}
-                </button>
-              </div>
+              {/* START BUTTON */}
+
+              <button
+                type="submit"
+                disabled={
+                  startingLive ||
+                  !liveForm.title.trim() ||
+                  participantsLoading
+                }
+                className={`${buttonClass} w-full bg-purple-600 text-white shadow-sm hover:bg-purple-700 sm:w-auto`}
+              >
+                {startingLive
+                  ? "Creating Classroom..."
+                  : "Start New Live Class →"}
+              </button>
             </form>
-          )}
+          </div>
         </div>
       </section>
 
-      {/* Recorded video form */}
+      {/* RECORDED VIDEO FORM */}
+
       <section className="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
         <div className="mb-5">
           <h2 className="text-lg font-bold text-gray-900">
             Add Learning Video
           </h2>
+
           <p className="text-sm text-gray-500">
             Add a recorded daily lecture or one-shot video.
           </p>
@@ -538,6 +1050,7 @@ export default function ManageLearningVideosPage() {
             {type === "daily" && (
               <div>
                 <label className={labelClass}>Lecture Date</label>
+
                 <input
                   type="date"
                   className={inputClass}
@@ -552,6 +1065,7 @@ export default function ManageLearningVideosPage() {
 
             <div>
               <label className={labelClass}>Subject</label>
+
               <select
                 className={inputClass}
                 value={form.subject}
@@ -559,19 +1073,24 @@ export default function ManageLearningVideosPage() {
                   setForm({ ...form, subject: event.target.value })
                 }
               >
-                {["Physics", "Chemistry", "Biology", "Mathematics", "Other"].map(
-                  (subject) => (
-                    <option key={subject} value={subject}>
-                      {subject}
-                    </option>
-                  )
-                )}
+                {[
+                  "Physics",
+                  "Chemistry",
+                  "Biology",
+                  "Mathematics",
+                  "Other",
+                ].map((subject) => (
+                  <option key={subject} value={subject}>
+                    {subject}
+                  </option>
+                ))}
               </select>
             </div>
 
             {type === "oneShot" && (
               <div>
                 <label className={labelClass}>Chapter</label>
+
                 <input
                   className={inputClass}
                   value={form.chapter}
@@ -586,6 +1105,7 @@ export default function ManageLearningVideosPage() {
 
             <div className="md:col-span-2">
               <label className={labelClass}>Video Title</label>
+
               <input
                 className={inputClass}
                 value={form.title}
@@ -599,6 +1119,7 @@ export default function ManageLearningVideosPage() {
 
             <div className="md:col-span-2">
               <label className={labelClass}>Description</label>
+
               <textarea
                 className={inputClass}
                 rows={3}
@@ -612,6 +1133,7 @@ export default function ManageLearningVideosPage() {
 
             <div>
               <label className={labelClass}>Duration (minutes)</label>
+
               <input
                 type="number"
                 min="1"
@@ -626,8 +1148,10 @@ export default function ManageLearningVideosPage() {
 
             <div>
               <label className={labelClass}>
-                YouTube Video ID {type === "oneShot" ? "(required)" : "(optional)"}
+                YouTube Video ID{" "}
+                {type === "oneShot" ? "(required)" : "(optional)"}
               </label>
+
               <input
                 className={inputClass}
                 value={form.youtubeVideoId}
@@ -649,13 +1173,14 @@ export default function ManageLearningVideosPage() {
               }
               className="h-4 w-4 accent-purple-600"
             />
+
             Publish this video
           </label>
 
           <button
             type="submit"
             disabled={creating}
-            className="rounded-xl bg-purple-600 px-6 py-3 text-sm font-semibold text-white hover:bg-purple-700 disabled:opacity-50"
+            className={`${buttonClass} bg-purple-600 text-white hover:bg-purple-700`}
           >
             {creating ? "Adding..." : "Add Learning Video"}
           </button>
@@ -666,13 +1191,15 @@ export default function ManageLearningVideosPage() {
         </form>
       </section>
 
-      {/* Existing recorded videos */}
+      {/* EXISTING RECORDED VIDEOS */}
+
       <section className="space-y-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-bold text-gray-900">
               All Learning Videos
             </h2>
+
             <p className="text-sm text-gray-500">
               {dailyCount} daily lectures · {oneShotCount} one-shot videos
             </p>
@@ -706,7 +1233,9 @@ export default function ManageLearningVideosPage() {
                   <div className="min-w-0">
                     <div className="mb-2 flex flex-wrap gap-2">
                       <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-semibold text-purple-700">
-                        {video.type === "daily" ? "Daily Lecture" : "One-Shot"}
+                        {video.type === "daily"
+                          ? "Daily Lecture"
+                          : "One-Shot"}
                       </span>
 
                       <span
@@ -719,11 +1248,12 @@ export default function ManageLearningVideosPage() {
                         {video.isPublished ? "Published" : "Draft"}
                       </span>
 
-                      {video.type === "daily" && !video.youtubeVideoId && (
-                        <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
-                          Recording Pending
-                        </span>
-                      )}
+                      {video.type === "daily" &&
+                        !video.youtubeVideoId && (
+                          <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700">
+                            Recording Pending
+                          </span>
+                        )}
                     </div>
 
                     <h3 className="text-base font-bold text-gray-900">
@@ -750,7 +1280,9 @@ export default function ManageLearningVideosPage() {
                     disabled={deletingId === video._id}
                     className="rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
                   >
-                    {deletingId === video._id ? "Deleting..." : "Delete"}
+                    {deletingId === video._id
+                      ? "Deleting..."
+                      : "Delete"}
                   </button>
                 </div>
               </article>

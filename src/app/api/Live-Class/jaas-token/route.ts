@@ -1,6 +1,7 @@
+
 import { NextResponse } from "next/server";
-import mongoose from "mongoose";
 import { SignJWT, importPKCS8 } from "jose";
+import mongoose from "mongoose";
 
 import { connectDB } from "@/lib/mongoose";
 import { getLiveUser } from "@/lib/liveAuth";
@@ -10,32 +11,29 @@ export const dynamic = "force-dynamic";
 
 export async function POST(req: Request) {
   try {
+    await connectDB();
+
     const user = await getLiveUser();
 
     if (!user) {
       return NextResponse.json(
-        { message: "Please log in first." },
+        { success: false, error: "Unauthorized" },
         { status: 401 }
       );
     }
 
-    if (!["teacher", "admin", "student"].includes(user.role)) {
-      return NextResponse.json(
-        { message: "You cannot join this class." },
-        { status: 403 }
-      );
-    }
+    const body = await req.json();
+    const sessionId = body.sessionId;
 
-    const { sessionId } = await req.json();
-
-    if (!mongoose.Types.ObjectId.isValid(sessionId)) {
+    if (
+      typeof sessionId !== "string" ||
+      !mongoose.Types.ObjectId.isValid(sessionId)
+    ) {
       return NextResponse.json(
-        { message: "Invalid session ID." },
+        { success: false, error: "Invalid session ID" },
         { status: 400 }
       );
     }
-
-    await connectDB();
 
     const session = await LiveSession.findOne({
       _id: sessionId,
@@ -44,77 +42,85 @@ export async function POST(req: Request) {
 
     if (!session) {
       return NextResponse.json(
-        { message: "This live class has ended." },
+        { success: false, error: "Class not found or already ended" },
         { status: 404 }
       );
     }
 
-    const appId = process.env.NEXT_PUBLIC_JAAS_APP_ID;
-    const kid = process.env.JAAS_API_KEY_ID;
-    const privateKeyValue = process.env.JAAS_PRIVATE_KEY;
+    const userId = String(user._id);
+    const creatorId = String(session.startedBy);
 
-    if (!appId || !kid || !privateKeyValue) {
-      console.error("JaaS environment variables are missing.");
+    const isAdmin = user.role === "admin";
+    const isCreator = userId === creatorId;
+
+    const isSelectedParticipant = (session.participantIds || []).some(
+      (id) => String(id) === userId
+    );
+
+    // Reject anyone who is neither admin, creator, nor selected.
+    if (!isAdmin && !isCreator && !isSelectedParticipant) {
+      return NextResponse.json(
+        { success: false, error: "You are not allowed to join this class" },
+        { status: 403 }
+      );
+    }
+
+    // Only the creator and admin are moderators.
+    const isModerator = isAdmin || isCreator;
+
+    const appId = process.env.NEXT_PUBLIC_JAAS_APP_ID;
+    const keyId = process.env.JAAS_API_KEY_ID;
+    const privateKey = process.env.JAAS_PRIVATE_KEY;
+
+    if (!appId || !keyId || !privateKey) {
+      console.error("Missing JaaS environment configuration");
 
       return NextResponse.json(
-        { message: "Live classroom is not configured." },
+        { success: false, error: "JaaS configuration is incomplete" },
         { status: 500 }
       );
     }
 
-    const privateKey = privateKeyValue.replace(/\\n/g, "\n");
-
-    const signingKey = await importPKCS8(
-      privateKey,
-      "RS256"
-    );
-
-    const isModerator =
-      ["teacher", "admin"].includes(user.role) &&
-      session.startedBy.toString() === user._id.toString();
+    const formattedPrivateKey = privateKey.replace(/\\n/g, "\n");
+    const signingKey = await importPKCS8(formattedPrivateKey, "RS256");
 
     const now = Math.floor(Date.now() / 1000);
 
-    const jwt = await new SignJWT({
+    const token = await new SignJWT({
       aud: "jitsi",
+      iss: "chat",
+      sub: appId,
+      room: session.roomName,
       context: {
         user: {
-          id: user._id.toString(),
-          name: user.name || user.username,
-          email: user.email,
-          moderator: isModerator ? "true" : "false",
+          id: userId,
+          name: user.name || user.username || "Innovative Academy User",
+          email: user.email || "",
+          moderator: isModerator,
         },
       },
-      room: session.roomName,
     })
       .setProtectedHeader({
         alg: "RS256",
-        kid,
+        kid: keyId,
         typ: "JWT",
       })
-      .setIssuer("chat")
-      .setSubject(appId)
-      .setNotBefore(now - 5)
       .setIssuedAt(now)
-      .setExpirationTime(now + 6 * 60 * 60)
+      .setNotBefore(now - 5)
+      .setExpirationTime(now + 60 * 60)
       .sign(signingKey);
 
- 
     return NextResponse.json({
-  jwt,
-  appId,
-  roomName: session.roomName,
-  isModerator,
-  displayName: user.name || user.username,
-  email: user.email,
-}, {
-  headers: { "Cache-Control": "no-store" },
-});
+      success: true,
+      token,
+      roomName: session.roomName,
+      isModerator,
+    });
   } catch (error) {
-    console.error("JAAS TOKEN ERROR:", error);
+    console.error("JaaS token error:", error);
 
     return NextResponse.json(
-      { message: "Unable to authenticate with JaaS." },
+      { success: false, error: "Unable to generate meeting token" },
       { status: 500 }
     );
   }
