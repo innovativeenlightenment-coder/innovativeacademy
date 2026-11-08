@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { getCurrentUser } from '@/lib/getCurrentUser';
 import EnquiryModal from './components/EnquiryModal';
 import ReviveSlider from "./ReviveSlider";
+import AppShowcase from './AppShowcase';
 
 const managementMembers: any[] = [
   {
@@ -311,7 +312,9 @@ const mentors = [
                 {/* <a href="#about" className="text-slate-700 hover:text-purple-600 transition-colors text-sm font-medium">
                 About
               </a> */}
-             
+             <a href="#app-download" className="text-slate-700 hover:text-purple-600 transition-colors text-sm font-medium">
+                Download App
+              </a>
               <a href="#founder" className="text-slate-700 hover:text-purple-600 transition-colors text-sm font-medium">
                 Team
               </a>
@@ -357,7 +360,9 @@ const mentors = [
              {/* <a href="#about" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="block px-4 py-2 text-slate-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition-colors">
                 About
               </a> */}
-             
+             <a href="#app-download" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="block px-4 py-2 text-slate-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition-colors">
+                Download App
+              </a>
               <a href="#founder" onClick={() => setMobileMenuOpen(!mobileMenuOpen)} className="block px-4 py-2 text-slate-700 hover:text-purple-600 hover:bg-gray-50 rounded-lg transition-colors">
                 Team
               </a>
@@ -479,8 +484,12 @@ const mentors = [
           </div>
         </div>
       </section>
+
+       <section  id="app-download"  className="bg-white py-6 lg:py-8">
+<AppShowcase />
+</section>
 {/* About Us Section */}
-{/* <section  id="about"  className="bg-white py-20 lg:py-24"
+{/* <section  id="about"  className="bg-white py-16 lg:py-20"
 >
   <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -586,7 +595,7 @@ const mentors = [
   </div>
 </section> */}
 {/* Vision Section */}
-<section className="bg-[#faf8ff] py-20 lg:py-24" id="vision">
+<section className="bg-[#faf8ff] py-16 lg:py-20" id="vision">
   <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
     {/* Heading */}
@@ -669,7 +678,7 @@ const mentors = [
 </section>
 
       {/* CEO/Founder Section */}
-     <section className="bg-[#faf8ff] py-20 lg:py-24" id="founder">
+     <section className="bg-[#faf8ff] py-16 lg:py-20" id="founder">
        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
 
@@ -798,7 +807,7 @@ Our founder has 20+ years of experience in the field of education and technology
 <UnderGuidance mentors={mentors} />
 
 
-<section id="team" className="bg-white py-20 lg:py-24">
+<section id="team" className="bg-white py-16 lg:py-20">
 <div className="space-y-16 lg:space-y-20">
 
 <TeamSliderSection
@@ -821,7 +830,7 @@ Our founder has 20+ years of experience in the field of education and technology
 
    
 {/* Why Choose Us Section */}
-<section  id="why-choose-us"   className="bg-white py-20 lg:py-24"
+<section  id="why-choose-us"   className="bg-white py-16 lg:py-20"
 >
   <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
@@ -1118,7 +1127,7 @@ Our founder has 20+ years of experience in the field of education and technology
 
 
 {/* Pricing Section */}
-<section id="pricing"  className="bg-white py-20 lg:py-24"
+<section id="pricing"  className="bg-white py-16 lg:py-20"
 >
   <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
@@ -1375,7 +1384,7 @@ Our founder has 20+ years of experience in the field of education and technology
   </div>
 </section>
 {/* Contact Section */}
-<section  id="contact"  className="bg-[#faf8ff] py-20 lg:py-24"
+<section  id="contact"  className="bg-[#faf8ff] py-16 lg:py-20"
 >
   <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
