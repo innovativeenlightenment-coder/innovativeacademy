@@ -2216,7 +2216,7 @@ export default function MyResultsPage() {
               mt={0.7}
             >
               Welcome back, {data?.student?.name || "Student"}.
-              Here's your learning progress.
+              Here&apos;s your learning progress.
             </Typography>
 
             <Stack

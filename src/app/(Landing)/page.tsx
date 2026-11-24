@@ -1312,7 +1312,7 @@ Our founder has 20+ years of experience in the field of education and technology
         <div className="my-7 h-px bg-slate-100" />
 
         <p className="mb-5 text-xs font-bold tracking-widest text-slate-400">
-          WHAT'S INCLUDED
+          WHAT&apos;S INCLUDED
         </p>
 
         <div className="flex-1 space-y-3">
