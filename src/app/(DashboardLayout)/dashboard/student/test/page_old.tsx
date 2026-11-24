@@ -1016,7 +1016,7 @@ console.log(payload)
 
     // ✅ redirect URL
     const redirectUrl = isExamMode
-      ? "/dashboard/student/exam?examSubmitted=1"
+      ? "/dashboard/student/start-exam?examSubmitted=1"
       : "/dashboard/student/result";
 
     // ✅ if tab is hidden, redirect may be blocked → delay redirect until visible

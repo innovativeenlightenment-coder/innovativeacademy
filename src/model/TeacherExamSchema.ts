@@ -1,90 +1,161 @@
-// import mongoose, { Schema, Types } from "mongoose";
+import mongoose, { Schema, Model } from "mongoose";
 
-// type TestType = "monthly" | "quarterly";
-
-// const TeacherExamPaperSchema = new Schema(
-//   {
-//     testType: {
-//       type: String,
-//       enum: ["monthly", "quarterly"],
-//       required: true,
-//     },
-
-//     teacherName: {
-//       type: String,
-//       required: true,
-//       trim: true,
-//     },
-
-//     // Store full date-time range (best for scheduling)
-//     startTime: { type: Date, required: true },
-//     endTime: { type: Date, required: true },
-
-//     // total questions in paper
-//     totalQuestions: { type: Number, required: true, min: 1 },
-
-//     // 20 sec per question (store for future change)
-//     secondsPerQuestion: { type: Number, required: true, default: 20, min: 5 },
-
-//     // selected questions (manual)
-//     questionIds: [{ type: Schema.Types.ObjectId, ref: "QuestionBank", required: true }],
-
-//     // optional: store filter context (helpful for UI listing)
-//     course: { type: String, required: false, trim: true },
-//     subject: { type: String, required: false, trim: true },
-//     chapter: { type: String, required: false, trim: true },
-//   },
-//   { timestamps: true }
-// );
-
-// export default mongoose.models.TeacherExamPaper ||
-//   mongoose.model("TeacherExamPaper", TeacherExamPaperSchema);
-
-import mongoose, { Schema } from "mongoose";
-
-const TeacherExamPaperSchema = new Schema(
+const ExamQuestionSchema = new Schema(
   {
+    questionDocumentId: {
+      type: Schema.Types.ObjectId,
+      ref: "QuestionBankV2",
+      required: true,
+    },
+    questionId: {
+      type: String,
+      required: true,
+    },
+    version: {
+      type: Number,
+      required: true,
+    },
+    setId: {
+      type: String,
+      default: "A",
+    },
+    marks: {
+      type: Number,
+      required: true,
+      min: 0.5,
+    },
+    order: {
+      type: Number,
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
+const ExamSetSchema = new Schema(
+  {
+    setId: {
+      type: String,
+      required: true,
+    },
+    name: {
+      type: String,
+      required: true,
+    },
+  },
+  { _id: false }
+);
+
+const TeacherExamSchema = new Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     testType: {
       type: String,
-      enum: ["weekly", "monthly", "quarterly"],
+      enum: ["weekly", "monthly", "quarterly", "chapter"],
       required: true,
     },
 
     teacherName: {
       type: String,
       required: true,
-      trim: true,
     },
 
-    startTime: { type: Date, required: true },
-    endTime: { type: Date, required: true },
-
-    totalQuestions: { type: Number, required: true, min: 1 },
-
-    // ✅ auto calculated = totalQuestions * 4
-    totalMarks: { type: Number, required: true },
-
-    secondsPerQuestion: {
-      type: {
-        easy: { type: Number, required: true, min: 5 },
-        moderate: { type: Number, required: true, min: 5 },
-        difficult: { type: Number, required: true, min: 5 },
-        extreme: { type: Number, required: true, min: 5 },
-      },
+    course: {
+      type: String,
       required: true,
-      default: { easy: 10, moderate: 20, difficult: 45, extreme: 60 },
     },
 
-    questionIds: [
-      { type: Schema.Types.ObjectId, ref: "QuestionBank", required: true },
-    ],
+    subject: {
+      type: String,
+      required: true,
+    },
 
-    course: { type: String, trim: true },
-    subject: { type: String, trim: true },
-    chapter: { type: String, trim: true },
+    chapters: {
+      type: [String],
+      required: true,
+      validate: {
+        validator: (value: string[]) => value.length > 0,
+        message: "At least one chapter is required.",
+      },
+    },
+
+    schedule: {
+      startTime: {
+        type: Date,
+        required: true,
+      },
+      endTime: {
+        type: Date,
+        required: true,
+      },
+      durationMinutes: {
+        type: Number,
+        required: true,
+        min: 1,
+      },
+    },
+
+    distribution: {
+      mode: {
+        type: String,
+        enum: ["same", "sets"],
+        default: "same",
+      },
+      shuffleQuestions: {
+        type: Boolean,
+        default: true,
+      },
+      shuffleOptions: {
+        type: Boolean,
+        default: false,
+      },
+    },
+
+    questions: {
+      type: [ExamQuestionSchema],
+      required: true,
+    },
+
+    sets: {
+      type: [ExamSetSchema],
+      default: [],
+    },
+
+    totalQuestions: {
+      type: Number,
+      required: true,
+    },
+
+    totalMarks: {
+      type: Number,
+      required: true,
+    },
+
+    status: {
+      type: String,
+      enum: ["scheduled", "active", "completed", "cancelled"],
+      default: "scheduled",
+    },
+
+    createdBy: {
+      type: String,
+      default: "",
+    },
   },
   { timestamps: true }
 );
 
-export default mongoose.models.TeacherExamPaper ||
-  mongoose.model("TeacherExamPaper", TeacherExamPaperSchema);
+TeacherExamSchema.index({ "schedule.startTime": 1 });
+TeacherExamSchema.index({ course: 1, subject: 1 });
+TeacherExamSchema.index({ status: 1 });
+
+const TeacherExam: Model<any> =
+  mongoose.models.TeacherExam ||
+  mongoose.model("TeacherExam", TeacherExamSchema);
+
+export default TeacherExam;

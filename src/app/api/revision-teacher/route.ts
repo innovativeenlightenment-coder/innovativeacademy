@@ -7,7 +7,7 @@ import {
 } from "@/lib/teacherAttendanceAuth_old";
 import User from "@/model/UserSchema";
 import RevisionAssignment from "@/model/RevisionAssignmentSchema";
-import QuestionBank from "@/model/QuestionBankSchema";
+import QuestionBankV2 from "@/model/QuestionBankV2";
 import cloudinary from "@/lib/cloudinary";
 import Explain from "@/model/Explain";
 import Flashcard from "@/model/Flashcard";
@@ -1058,7 +1058,7 @@ for (const [key, value] of entries) {
         "[Revision Publish] 8. Inserting Question Bank questions"
       );
 
-      await QuestionBank.insertMany(
+      await QuestionBankV2.insertMany(
         questionBankDocuments
       );
 
@@ -1145,7 +1145,7 @@ for (const activity of activities) {
       );
     } catch (error) {
       if (questionBankIds.length) {
-        await QuestionBank.deleteMany({
+        await QuestionBankV2.deleteMany({
           _id: {
             $in: questionBankIds,
           },
@@ -1161,7 +1161,7 @@ for (const activity of activities) {
     }
   } catch (error) {
     if (questionBankIds.length) {
-      await QuestionBank.deleteMany({
+      await QuestionBankV2.deleteMany({
         _id: {
           $in: questionBankIds,
         },

@@ -3,8 +3,6 @@ import mongoose, { Schema, Document, Types } from "mongoose";
 
 export interface ILiveSession extends Document {
   title: string;
-  subject: string;
-  description?: string;
   roomName: string;
   status: "live" | "ended";
   startedBy: Types.ObjectId;
@@ -21,18 +19,6 @@ const LiveSessionSchema = new Schema<ILiveSession>(
       type: String,
       required: true,
       trim: true,
-    },
-
-    subject: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    description: {
-      type: String,
-      trim: true,
-      default: "",
     },
 
     roomName: {
@@ -71,13 +57,14 @@ const LiveSessionSchema = new Schema<ILiveSession>(
       default: null,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+  }
 );
 
-// This index is deliberately NOT unique.
-// Multiple live classes can run simultaneously.
 LiveSessionSchema.index({ status: 1, startedAt: -1 });
 LiveSessionSchema.index({ participantIds: 1, status: 1 });
+LiveSessionSchema.index({ startedBy: 1, status: 1 });
 
 const LiveSession =
   (mongoose.models.LiveSession as mongoose.Model<ILiveSession>) ||

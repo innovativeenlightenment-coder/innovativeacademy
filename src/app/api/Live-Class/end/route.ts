@@ -51,25 +51,50 @@ export async function POST(req: Request) {
     }
 
     const isAdmin = user.role === "admin";
-    const isCreator = String(session.startedBy) === String(user._id);
+    const isCreator =
+      String(session.startedBy) === String(user._id);
 
     if (!isAdmin && !isCreator) {
       return NextResponse.json(
-        { success: false, error: "Only the creator or admin can end this class" },
+        {
+          success: false,
+          error: "Only the creator or admin can end this class",
+        },
         { status: 403 }
       );
     }
 
-    session.status = "ended";
-    session.endedAt = new Date();
+    const endedAt = new Date();
 
-    await session.save();
+    const updatedSession = await LiveSession.findOneAndUpdate(
+      {
+        _id: sessionId,
+        status: "live",
+      },
+      {
+        $set: {
+          status: "ended",
+          endedAt,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedSession) {
+      return NextResponse.json(
+        { success: false, error: "This class has already ended." },
+        { status: 409 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
       message: "Live class ended successfully",
-      sessionId: session._id,
-      endedAt: session.endedAt,
+      sessionId: updatedSession._id,
+      endedAt: updatedSession.endedAt,
     });
   } catch (error) {
     console.error("End live class error:", error);

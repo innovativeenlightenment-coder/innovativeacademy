@@ -1,470 +1,552 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+
 import {
+  Alert,
   Box,
   Button,
-  Grid,
-  TextField,
-  Typography,
-  ToggleButtonGroup,
-  ToggleButton,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   CircularProgress,
+  Paper,
+  Stack,
+  Typography,
 } from "@mui/material";
-import QuestionTypeSelector from "../../../components/questionTypeSelector";
-import {unstable_noStore as noStore} from 'next/cache';
-import Loading from "@/app/(DashboardLayout)/dashboard/loading";
+
+import ArrowBackRoundedIcon from "@mui/icons-material/ArrowBackRounded";
+import SaveRoundedIcon from "@mui/icons-material/SaveRounded";
+import EditRoundedIcon from "@mui/icons-material/EditRounded";
+
+import SetQuestion, {
+  createEmptyQuestion,
+  QuestionData,
+} from "../../set-question-bank/question";
+
+import { getCurrentUser } from "@/lib/getCurrentUser";
+
+import {
+  isLearningSkillId,
+  type LearningSkillId,
+} from "@/utils/learningSkills";
+
+/* =========================================================
+   TYPES
+========================================================= */
+
+type AcademicData = {
+  course: string;
+  subject: string;
+  chapter: string;
+  subtopic: string;
+};
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function normalizeSkills(value: unknown): LearningSkillId[] {
+  if (!Array.isArray(value)) {
+    return [];
+  }
+
+  const validSkills: LearningSkillId[] = [];
+
+  for (const skill of value) {
+    if (
+      typeof skill === "string" &&
+      isLearningSkillId(skill) &&
+      !validSkills.includes(skill)
+    ) {
+      validSkills.push(skill);
+    }
+  }
+
+  return validSkills;
+}
+
+/* =========================================================
+   MAIN PAGE
+========================================================= */
 
 export default function EditQuestionPage() {
-noStore()
-
-  const { id } = useParams();
+  const params = useParams();
   const router = useRouter();
 
+  const id = params.id as string;
+
+  const [question, setQuestion] = useState<QuestionData>(
+    createEmptyQuestion()
+  );
+
+  const [academic, setAcademic] = useState<AcademicData>({
+    course: "",
+    subject: "",
+    chapter: "",
+    subtopic: "",
+  });
+
   const [loading, setLoading] = useState(true);
-  const [questionType, setQuestionType] = useState<"text" | "image">("text");
-  const [optionType, setOptionType] = useState<"text" | "image">("text");
-  
-  const [hintType, setHintType] = useState<"text" | "image">("text");
-  const [question, setQuestion] = useState<{ text: string | null; imgUrl: string | null }>({ text: "", imgUrl: null });
-  const [hint, setHint] = useState<{ text: string | null; imgUrl: string | null }>({ text: "", imgUrl: null });
-  const [options, setOptions] = useState<{ text: string | null; imgUrl: string | null }[]>([
-    { text: "", imgUrl: null },
-    { text: "", imgUrl: null },
-    { text: "", imgUrl: null },
-    { text: "", imgUrl: null },
-  ]);
-  const [answer, setAnswer] = useState<string>("");
-  const [level, setLevel] = useState<string>('Easy');
-  const [course, setCourse] = useState<string>('');
-  const [subject, setSubject] = useState<string>('');
-  const [chapter, setChapter] = useState<string>('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
 
-  const [initialLevel, setInitialLevel] = useState<string>('Easy');
-  const [initialCourse, setInitialCourse] = useState<string>('');
-  const [initialSubject, setInitialSubject] = useState<string>('');
-  const [initialChapter, setInitialChapter] = useState<string>('');
+  /* =========================================================
+     FETCH QUESTION
+  ========================================================= */
 
-  const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
-
-  // Handlers to update the state
-  const handleLevelChange = (newLevel: string) => {
-    setLevel(newLevel);
-  };
-
-
-   const handleCourseChange = (newCourse: string) => {
-    setCourse(newCourse);
-  };
-
-  const handleSubjectChange = (newSubject: string) => {
-    setSubject(newSubject);
-  };
-
-  const handleChapterChange = (newChapter: string) => {
-    setChapter(newChapter);
-  };
-
-
-
-  const questionImageRef = useRef<HTMLInputElement>(null);
-  
-  const hintImageRef = useRef<HTMLInputElement>(null);
-  const optionImageRefs = [
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-    useRef<HTMLInputElement>(null),
-  ];
-
-  const convertToBase64 = (file: File, callback: (base64: string) => void) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onloadend = () => {
-      callback(reader.result as string);
-    };
-  };
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        const res = await fetch(`/api/Get-Question/${id}`,{ cache:"no-store"});
-        const data = await res.json();
-
-        if (data) {
-          setQuestionType(data.questionType);
-          setQuestion(data.question); 
-           setHintType(data.hintType);
-          setHint(data.hint);
-          setOptionType(data.optionType);
-          setOptions(data.options||[
-            { text: "", imgUrl: null },
-  { text: "", imgUrl: null },
-  { text: "", imgUrl: null },
-  { text: "", imgUrl: null },
-          ]); // Set options with text or imgUrl
-          setAnswer(data.answer);
-          setInitialLevel(data.level);
-          setInitialCourse(data.course);
-          setInitialSubject(data.subject);
-          setInitialChapter(data.chapter);
-        }
-      } catch (error) {
-        console.error("Error fetching question:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    if (id) fetchData();
-  }, [id]);
-
-  const handleSave = async () => {
+  const fetchQuestion = useCallback(async () => {
     try {
-      // Prepare data to send to backend
-      const updatedData = {
-        questionType,
-        question,
-        hint,
-        hintType,
-        optionType,
-        options,
-        answer,
-        level: level !== "" ? level : initialLevel,
-         course: course !== "" ? course : initialCourse,
-        subject: subject !== "" ? subject : initialSubject,
-        chapter: chapter !== "" ? chapter : initialChapter,
-      };
+      setLoading(true);
+      setError("");
 
-      const res = await fetch(`/api/Edit-Question/${id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        cache:"no-store",
-        body: JSON.stringify(updatedData),
+      const response = await fetch(
+        `/api/Get-Question/${id}`,
+        {
+          method: "GET",
+          cache: "no-store",
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        throw new Error(
+          result.message || "Unable to load question."
+        );
+      }
+
+      const fetchedQuestion = result.question;
+
+      if (!fetchedQuestion) {
+        throw new Error("Question data not found.");
+      }
+
+      /* -----------------------------------------
+         ACADEMIC DETAILS
+      ----------------------------------------- */
+
+      setAcademic({
+        course:
+          fetchedQuestion.academic?.course ??
+          fetchedQuestion.course ??
+          "",
+
+        subject:
+          fetchedQuestion.academic?.subject ??
+          fetchedQuestion.subject ??
+          "",
+
+        chapter:
+          fetchedQuestion.academic?.chapter ??
+          fetchedQuestion.chapter ??
+          "",
+
+        subtopic:
+          fetchedQuestion.academic?.subtopic ??
+          fetchedQuestion.subtopic ??
+          "",
       });
 
-      if (res.ok) {
-        alert("Question updated successfully!");
-        setIsSubmitted(true);
-        router.push("/dashboard/admin/manage-questionBank");
-      } else {
-        alert("Failed to update question.");
+      /* -----------------------------------------
+         REMOVE DATABASE FIELDS
+      ----------------------------------------- */
+
+      const {
+        _id,
+        questionId,
+        version,
+        academic: questionAcademic,
+        difficulty,
+        status,
+        uploadedBy,
+        createdAt,
+        updatedAt,
+        category,
+        ...questionData
+      } = fetchedQuestion;
+
+      /* -----------------------------------------
+         NORMALIZE QUESTION-LEVEL SKILLS
+      ----------------------------------------- */
+
+      const normalizedSkills = normalizeSkills(
+        questionData.skills
+      );
+
+      /* -----------------------------------------
+         NORMALIZE STEP-LEVEL SKILLS
+      ----------------------------------------- */
+
+      const normalizedSteps = Array.isArray(
+        questionData.steps
+      )
+        ? questionData.steps.map((step: any) => ({
+            ...step,
+            skills: normalizeSkills(step.skills),
+          }))
+        : [];
+
+      /* -----------------------------------------
+         FINAL QUESTION DATA
+      ----------------------------------------- */
+
+      const normalizedQuestion: QuestionData = {
+        ...createEmptyQuestion(),
+        ...questionData,
+
+        skills: normalizedSkills,
+
+        steps: normalizedSteps,
+      };
+
+      setQuestion(normalizedQuestion);
+    } catch (err: any) {
+      console.error("Fetch question error:", err);
+
+      setError(
+        err.message ||
+          "Something went wrong while loading."
+      );
+    } finally {
+      setLoading(false);
+    }
+  }, [id]);
+
+  useEffect(() => {
+    if (id) {
+      fetchQuestion();
+    }
+  }, [id, fetchQuestion]);
+
+  /* =========================================================
+     UPDATE QUESTION
+  ========================================================= */
+
+  const handleQuestionChange = (
+    _qNo: number,
+    updated: QuestionData
+  ) => {
+    setQuestion(updated);
+    setSuccess("");
+    setError("");
+  };
+
+  /* =========================================================
+     SAVE QUESTION
+  ========================================================= */
+
+  const handleSave = async () => {
+    if (saving) return;
+
+    try {
+      setSaving(true);
+      setError("");
+      setSuccess("");
+
+      const data = await getCurrentUser();
+      const userId = data.user?._id;
+
+      if (!userId) {
+        throw new Error(
+          "Unable to identify the current user. Please log in again."
+        );
       }
-    } catch (error) {
-      console.error("Error saving question:", error);
+
+      // Normalize skills again before sending.
+      const payload: QuestionData = {
+        ...question,
+
+        skills: normalizeSkills(question.skills),
+
+        steps: (question.steps || []).map((step) => ({
+          ...step,
+          skills: normalizeSkills(step.skills),
+        })),
+      };
+
+      const response = await fetch(
+        `/api/Edit-Question/${id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            userId,
+
+            data: {
+              ...payload,
+              academic,
+            },
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (!response.ok || !result.ok) {
+        throw new Error(
+          result.message || "Failed to update question."
+        );
+      }
+
+      setSuccess("Question updated successfully.");
+
+      router.push(
+        "/dashboard/admin/manage-questionBank"
+      );
+    } catch (err: any) {
+      console.error("Save question error:", err);
+
+      setError(
+        err.message ||
+          "Something went wrong while saving."
+      );
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleBack = () => {
-    router.push("/dashboard/admin/manage-questionBank");
-  };
-
-  const handleOptionChange = (index: number, value: string) => {
-    const newOptions = [...options];
-    newOptions[index].text = value;
-    setOptions(newOptions);
-  };
-
-  const handleOptionImageChange = (index: number, file: File) => {
-    convertToBase64(file, (base64) => {
-      const newOptions = [...options];
-      newOptions[index].imgUrl = base64;
-      setOptions(newOptions);
-    });
-  };
-
-  const handleQuestionImageChange = (file: File) => {
-    convertToBase64(file, (base64) => {
-      setQuestion({ ...question, imgUrl: base64 });
-    });
-  };
-
-   const handleHintImageChange = (file: File) => {
-    convertToBase64(file, (base64) => {
-      setHint({ ...hint, imgUrl: base64 });
-    });
-  };
+  /* =========================================================
+     LOADING SCREEN
+  ========================================================= */
 
   if (loading) {
     return (
-    <Loading />
+      <Box
+        sx={{
+          minHeight: "70vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Stack alignItems="center" spacing={2}>
+          <CircularProgress />
+
+          <Typography color="text.secondary">
+            Loading question...
+          </Typography>
+        </Stack>
+      </Box>
     );
   }
 
+  /* =========================================================
+     ERROR SCREEN
+  ========================================================= */
+
+  if (error && !question.prompt?.length) {
+    return (
+      <Box sx={{ maxWidth: 700, mx: "auto", p: 3 }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+
+        <Stack direction="row" spacing={1}>
+          <Button
+            startIcon={<ArrowBackRoundedIcon />}
+            onClick={() => router.back()}
+          >
+            Go Back
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={fetchQuestion}
+          >
+            Retry
+          </Button>
+        </Stack>
+      </Box>
+    );
+  }
+
+  /* =========================================================
+     MAIN PAGE
+  ========================================================= */
+
   return (
-    <Box mt={0} p={2}>
-      <Typography variant="h4" mb={4}>
-        Edit Question
-      </Typography>
-      <Grid container spacing={2}>
-        <Grid item xs={12}>
-               <QuestionTypeSelector
-                  onLevelChange={handleLevelChange}
-                  onCourseChange={handleCourseChange}
-                  onSubjectChange={handleSubjectChange}
-                  onChapterChange={handleChapterChange}
-                  initialLevel={initialLevel}
-                  initialCourse={initialCourse}
-                  initialSubject={initialSubject}
-                  initialChapter={initialChapter}
-                  title={null}
-                  new={true}
-                  isSubmitted={isSubmitted}
-                />
-        </Grid>
-        {/* Question Type */}
-        <Grid item xs={12}>
-          <ToggleButtonGroup
-            value={questionType}
-            exclusive
-            onChange={(e, val) => {
-              if (val) {
-                setQuestionType(val);
-                setQuestion({ text: "", imgUrl: null }); // Reset question if type changes
-              }
-            }}
-          >
-            <ToggleButton value="text">Text</ToggleButton>
-            <ToggleButton value="image">Image</ToggleButton>
-          </ToggleButtonGroup>
-        </Grid>
+    <Box
+      sx={{
+        maxWidth: 1050,
+        mx: "auto",
+        px: { xs: 1.5, sm: 3 },
+        py: { xs: 2, sm: 4 },
+        pb: 12,
+      }}
+    >
+      {/* HEADER */}
 
-        {/* Question Input */}
-        <Grid item xs={12}>
-          {questionType === "text" ? (
-            <TextField
-              label="Enter Question"
-              fullWidth
-              multiline
-              rows={3}
-              value={question.text || ""}
-              onChange={(e) => setQuestion({ ...question, text: e.target.value })}
+      <Stack
+        direction="row"
+        alignItems="center"
+        spacing={1.5}
+        sx={{ mb: 3 }}
+      >
+        <Button
+          onClick={() => router.back()}
+          color="inherit"
+          sx={{
+            minWidth: 40,
+            px: 1,
+          }}
+        >
+          <ArrowBackRoundedIcon />
+        </Button>
+
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Stack
+            direction="row"
+            alignItems="center"
+            spacing={1}
+          >
+            <EditRoundedIcon
+              color="primary"
+              fontSize="small"
             />
-          ) : (
-            <>
-              <Button variant="outlined" component="label">
-                Upload Question Image
-                <input
-                  hidden
-                  type="file"
-                  accept="image/*"
-                  ref={questionImageRef}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      handleQuestionImageChange(file); // Handling image change
-                    }
-                  }}
-                />
-              </Button>
-              {question?.imgUrl && (
-  <Box mt={1}>
-    <img
-      src={question?.imgUrl || undefined}
-      alt="question"
-      style={{ maxWidth: "250px" }}
-    />
-  </Box>
-)}
 
-            </>
-          )}
-        </Grid>
+            <Typography
+              variant="h5"
+              fontWeight={800}
+            >
+              Edit Question
+            </Typography>
+          </Stack>
 
-        {/* Option Type */}
-        <Grid item xs={12}>
-          <ToggleButtonGroup
-            value={optionType}
-            exclusive
-            onChange={(e, val) => {
-              if (val) {
-                setOptionType(val);
-                setOptions([
-                  { text: "", imgUrl: null },
-                  { text: "", imgUrl: null },
-                  { text: "", imgUrl: null },
-                  { text: "", imgUrl: null },
-                ]);
-              }
-            }}
+          <Typography
+            variant="body2"
+            color="text.secondary"
           >
-            <ToggleButton value="text">Text</ToggleButton>
-            <ToggleButton value="image">Image</ToggleButton>
-          </ToggleButtonGroup>
-        </Grid>
+            Update the question and save your changes.
+          </Typography>
+        </Box>
+      </Stack>
 
-        {/* Options */}
-        {[0, 1, 2, 3].map((index) => (
-          <Grid item xs={12} md={6} key={index}>
-            {optionType === "text" ? (
-              <TextField
-                label={`Option ${index + 1}`}
-                fullWidth
-                value={options[index].text || ""}
-                onChange={(e) => handleOptionChange(index, e.target.value)}
+      {/* ACADEMIC DETAILS */}
+
+      <Paper
+        variant="outlined"
+        sx={{
+          p: { xs: 2, sm: 2.5 },
+          mb: 3,
+          borderRadius: 3,
+        }}
+      >
+        <Typography
+          variant="overline"
+          color="text.secondary"
+          fontWeight={700}
+        >
+          QUESTION LOCATION
+        </Typography>
+
+        <Typography fontWeight={700} sx={{ mt: 0.5 }}>
+          {academic.course}
+        </Typography>
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+        >
+          {academic.subject} / {academic.chapter}
+        </Typography>
+
+        <Typography
+          variant="body2"
+          color="text.secondary"
+        >
+          Subtopic: {academic.subtopic || "Not specified"}
+        </Typography>
+      </Paper>
+
+      {/* STATUS MESSAGES */}
+
+      {error && (
+        <Alert
+          severity="error"
+          sx={{ mb: 2, borderRadius: 2 }}
+          onClose={() => setError("")}
+        >
+          {error}
+        </Alert>
+      )}
+
+      {success && (
+        <Alert
+          severity="success"
+          sx={{ mb: 2, borderRadius: 2 }}
+          onClose={() => setSuccess("")}
+        >
+          {success}
+        </Alert>
+      )}
+
+      {/* QUESTION EDITOR */}
+
+      <SetQuestion
+        qNo={1}
+        data={question}
+        onChange={handleQuestionChange}
+      />
+
+      {/* STICKY SAVE PANEL */}
+
+      <Box
+        sx={{
+          maxWidth: 1050,
+          mx: "auto",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 2,
+          backgroundColor: "#fff",
+          borderTop: "1px solid",
+          borderColor: "divider",
+          borderRadius: 4,
+          mt: 2,
+          py: 1.5,
+          px: { xs: 2, sm: 3 },
+        }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <Typography fontWeight={700} fontSize={14}>
+            Save your changes
+          </Typography>
+
+          <Typography
+            variant="caption"
+            color="text.secondary"
+          >
+            Existing question will be updated.
+          </Typography>
+        </Box>
+
+        <Button
+          variant="contained"
+          size="large"
+          startIcon={
+            saving ? (
+              <CircularProgress
+                size={18}
+                color="inherit"
               />
             ) : (
-              <>
-                <Button variant="outlined" component="label" fullWidth>
-                  Upload Option {index + 1} Image
-                  <input
-                    hidden
-                    type="file"
-                    accept="image/*"
-                    ref={optionImageRefs[index]}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      if (file) {
-                        handleOptionImageChange(index, file); // Handling image change for options
-                      }
-                    }}
-                  />
-                </Button>
-                {options?.[index]?.imgUrl && (
-  <Box mt={1}>
-    <img
-      src={options[index].imgUrl || undefined}
-      alt={`option-${index}`}
-      style={{ maxWidth: "250px" }}
-    />
-  </Box>
-)}
-
-
-              </>
-            )}
-          </Grid>
-        ))}
-
-         {/* Hint Type */}
-        <Grid item xs={12}>
-          <ToggleButtonGroup
-            value={hintType}
-            exclusive
-            onChange={(e, val) => {
-              if (val) {
-                setHintType(val);
-                setHint({ text: "", imgUrl: null }); // Reset Hint if type changes
-              }
-            }}
-          >
-            <ToggleButton value="text">Text</ToggleButton>
-            <ToggleButton value="image">Image</ToggleButton>
-          </ToggleButtonGroup>
-        </Grid>
-
-        {/* Question Input */}
-        <Grid item xs={12}>
-          {hintType === "text" ? (
-            <TextField
-              label="Enter Hint"
-              fullWidth
-              multiline
-              rows={3}
-              value={hint.text || ""}
-              onChange={(e) => setHint({ ...hint, text: e.target.value })}
-            />
-          ) : (
-            <>
-              <Button variant="outlined" component="label">
-                Upload Hint Image
-                <input
-                  hidden
-                  type="file"
-                  accept="image/*"
-                  ref={hintImageRef}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    if (file) {
-                      handleHintImageChange(file); // Handling image change
-                    }
-                  }}
-                />
-              </Button>
-              {hint?.imgUrl && (
-  <Box mt={1}>
-    <img
-      src={hint?.imgUrl || undefined}
-      alt="hint"
-      style={{ maxWidth: "250px" }}
-    />
-  </Box>
-)}
-
-            </>
-          )}
-        </Grid>
-
-{/* <Grid item xs={6}>
-  <FormControl fullWidth>
-            <InputLabel id="ancourseswer-label">Select Course (JEE/NEET/CET)</InputLabel>
-            <Select
-              labelId="course-label"
-              value={course}
-              label="Select Course"
-              onChange={(e) => setCourse(e.target.value)}
-            >
-              <MenuItem value="JEE">JEE</MenuItem>
-              <MenuItem value="NEET">NEET</MenuItem>
-              <MenuItem value="CET">CET</MenuItem>
-              
-            </Select>
-          </FormControl>
-            </Grid> */}
-
-        {/* Correct Answer */}
-        <Grid item xs={6}>
-          <FormControl fullWidth>
-            <InputLabel id="answer-label">Correct Option (A/B/C/D)</InputLabel>
-            <Select
-              labelId="answer-label"
-              value={answer}
-              label="Correct Option"
-              onChange={(e) => setAnswer(e.target.value)}
-            >
-              <MenuItem value="A">A</MenuItem>
-              <MenuItem value="B">B</MenuItem>
-              <MenuItem value="C">C</MenuItem>
-              <MenuItem value="D">D</MenuItem>
-            </Select>
-          </FormControl>
-        </Grid>
-<Grid item xs={6}>
-         
-         
-
-          <FormControl fullWidth>
-  <InputLabel id="level-label">Level</InputLabel>
-  <Select
-    labelId="level-label"
-    id="level"
-    value={level}
-    label="Level"
-    onChange={(e) => setLevel(e.target.value)}
-  >
-    <MenuItem value="Easy">Easy</MenuItem>
-    <MenuItem value="Moderate">Moderate</MenuItem>
-    <MenuItem value="Difficult">Difficult</MenuItem>
-    <MenuItem value="Extreme">Extreme</MenuItem>
-  </Select>
-</FormControl>
-        </Grid>
-        {/* Buttons */}
-        <Grid item xs={12} display="flex" justifyContent="space-between" mt={4}>
-          <Button variant="outlined" onClick={handleBack}>
-            Back
-          </Button>
-          <Button variant="contained" onClick={handleSave}>
-            Save
-          </Button>
-        </Grid>
-      </Grid>
+              <SaveRoundedIcon />
+            )
+          }
+          disabled={saving || loading}
+          onClick={handleSave}
+          sx={{
+            borderRadius: 2,
+            px: { xs: 2, sm: 4 },
+            fontWeight: 700,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {saving ? "Saving..." : "Save Changes"}
+        </Button>
+      </Box>
     </Box>
   );
 }

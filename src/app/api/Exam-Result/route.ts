@@ -1,164 +1,1111 @@
-import { NextResponse } from "next/server";
-export const dynamic = "force-dynamic";  import { connectDB } from "@/lib/mongoose";
-import TeacherExamPaper from "@/model/TeacherExamSchema";
-import ExamRecords from "@/model/ExamRecordSchema";
-import QuestionBank from "@/model/QuestionBankSchema";
-import mongoose from "mongoose";
+import { NextRequest, NextResponse } from "next/server";
 import { unstable_noStore as noStore } from "next/cache";
+import mongoose from "mongoose";
 
+import { connectDB } from "@/lib/mongoose";
+import ExamRecords from "@/model/ExamRecordSchema";
+import QuestionAttempt from "@/model/QuestionAttempt";
+import StudentSkillMastery from "@/model/StudentSkillMastery";
+import { publishEligibleExamResults } from "@/utils/publishEligibleExamResults";
 
+export const dynamic = "force-dynamic";
 
+type AnyRecord = Record<string, any>;
 
-noStore();
+type Outcome =
+  | "correct"
+  | "incorrect"
+  | "partially_correct"
+  | "skipped"
+  | "pending";
 
-type QuestionInfo = {
-  _id: string;
-  subject: string;
-  chapter: string;
-};
-
-type ExamLean = {
-  _id: string;
-  testType: string;
-  course?: string;
-  subject?: string;
-  chapter?: string;
-  questionIds: string[];
-  startTime: Date;
-  endTime: Date;
-  totalQuestions: number;
+type SkillEvidence = {
+  skillId: string;
+  total: number;
+  correct: number;
+  incorrect: number;
+  skipped: number;
+  partiallyCorrect: number;
+  pending: number;
+  marksAwarded: number;
   totalMarks: number;
 };
 
-export async function GET(req: Request) {
-  await connectDB();
+function round(value: number, digits = 2) {
+  return Number(value.toFixed(digits));
+}
 
-  try {
-    const email = String(new URL(req.url).searchParams.get("email") || "").trim().toLowerCase();
-    if (!email) return NextResponse.json({ success: false, error: "Email required" }, { status: 400 });
+function numberValue(value: any): number {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : 0;
+}
 
-    const now = new Date();
+function average(values: number[]) {
+  if (!values.length) return 0;
 
-    // Fetch all teacher exams
-    const examsRaw = await TeacherExamPaper.find().lean();
-    const exams: ExamLean[] = examsRaw.map((e: any) => ({
-      _id: e._id.toString(),
-      testType: e.testType,
-      course: e.course,
-      subject: e.subject,
-      chapter: e.chapter,
-      questionIds: (e.questionIds || []).map((id: any) => id.toString()),
-      startTime: new Date(e.startTime),
-      endTime: new Date(e.endTime),
-      totalQuestions: e.totalQuestions,
-      totalMarks: e.totalMarks,
-    }));
+  return round(
+    values.reduce((sum, value) => sum + value, 0) /
+      values.length
+  );
+}
 
-    // Fetch all exam records for this student
-    
-    // Fetch all exam records for this student
-    const studentRecordsRaw = await ExamRecords.find({ email }).lean();
+function cleanString(value: any) {
+  return typeof value === "string" ? value.trim() : "";
+}
 
-    const studentRecords = await Promise.all(
-      studentRecordsRaw.map(async (r: any) => {
-        const record = {
-          ...r,
-          examId: r.examId?.toString(),
-        };
+function formatSkillName(skillId: string) {
+  return skillId
+    .split("_")
+    .filter(Boolean)
+    .map(
+      (word) =>
+        word.charAt(0).toUpperCase() + word.slice(1)
+    )
+    .join(" ");
+}
 
-        // Automatically publish when publishAt is reached
-        if (
-          record.resultStatus === "pending" &&
-          record.publishAt &&
-          new Date(record.publishAt) <= now
-        ) {
-          await ExamRecords.updateOne(
-            { _id: record._id, resultStatus: "pending" },
-            { $set: { resultStatus: "published" } }
-          );
+function getSkillIds(value: any): string[] {
+  if (!Array.isArray(value)) return [];
 
-          record.resultStatus = "published";
-        }
+  return Array.from(
+    new Set(
+      value
+        .filter(
+          (id: any) =>
+            typeof id === "string" &&
+            id.trim().length > 0
+        )
+        .map((id: string) => id.trim())
+    )
+  );
+}
 
-        return record;
-      })
+function getOutcome(value: any): Outcome {
+  const outcome = cleanString(value);
+
+  if (
+    [
+      "correct",
+      "incorrect",
+      "partially_correct",
+      "skipped",
+      "pending",
+    ].includes(outcome)
+  ) {
+    return outcome as Outcome;
+  }
+
+  return "pending";
+}
+
+function isPublished(record: AnyRecord, now: Date) {
+  return (
+    record.resultStatus === "published" &&
+    record.evaluationStatus === "completed" &&
+    (
+      !record.publishAt ||
+      new Date(record.publishAt) <= now
+    )
+  );
+}
+
+function createSkillEvidence(
+  skillId: string
+): SkillEvidence {
+  return {
+    skillId,
+    total: 0,
+    correct: 0,
+    incorrect: 0,
+    skipped: 0,
+    partiallyCorrect: 0,
+    pending: 0,
+    marksAwarded: 0,
+    totalMarks: 0,
+  };
+}
+
+function applyOutcome(
+  evidence: SkillEvidence,
+  outcome: Outcome
+) {
+  switch (outcome) {
+    case "correct":
+      evidence.correct++;
+      break;
+
+    case "incorrect":
+      evidence.incorrect++;
+      break;
+
+    case "skipped":
+      evidence.skipped++;
+      break;
+
+    case "partially_correct":
+      evidence.partiallyCorrect++;
+      break;
+
+    default:
+      evidence.pending++;
+      break;
+  }
+}
+
+function findResult(
+  results: any[],
+  id: string,
+  keys: string[]
+) {
+  return results.find((result) =>
+    keys.some(
+      (key) =>
+        result?.[key] !== undefined &&
+        String(result[key]) === id
+    )
+  );
+}
+
+function getResultOutcome(
+  result: any,
+  fallback: Outcome
+): Outcome {
+  if (!result) return fallback;
+
+  const directOutcome = getOutcome(result.outcome);
+
+  if (directOutcome !== "pending") {
+    return directOutcome;
+  }
+
+  if (result.isCorrect === true) {
+    return "correct";
+  }
+
+  if (result.isCorrect === false) {
+    return "incorrect";
+  }
+
+  return fallback;
+}
+
+/* =========================================================
+   SKILL ANALYSIS
+
+   Exam-specific evidence:
+   - Step-level mappings
+   - Part-level mappings
+   - Question-level fallback
+
+   Cumulative mastery:
+   - Read from StudentSkillMastery
+========================================================= */
+
+function buildSkillAnalysis(
+  attempts: AnyRecord[],
+  masteryRecords: AnyRecord[]
+) {
+  const skillMap = new Map<string, SkillEvidence>();
+
+  const masteryMap = new Map<string, AnyRecord>();
+
+  for (const mastery of masteryRecords) {
+    const skillId = cleanString(mastery.skillId);
+
+    if (skillId) {
+      masteryMap.set(skillId, mastery);
+    }
+  }
+
+  function addEvidence(
+    skillId: string,
+    outcome: Outcome,
+    marksAwarded: number,
+    totalMarks: number
+  ) {
+    if (!skillId) return;
+
+    if (!skillMap.has(skillId)) {
+      skillMap.set(
+        skillId,
+        createSkillEvidence(skillId)
+      );
+    }
+
+    const item = skillMap.get(skillId)!;
+
+    item.total++;
+
+    applyOutcome(item, outcome);
+
+    item.marksAwarded += marksAwarded;
+    item.totalMarks += totalMarks;
+  }
+
+  for (const attempt of attempts) {
+    const performance = attempt.performance || {};
+
+    const questionOutcome = getOutcome(
+      performance.outcome
     );
 
-    const questionIdsAll = exams.flatMap((e) => e.questionIds);
-    const questionsRaw = await QuestionBank.find({ _id: { $in: questionIdsAll } })
-      .select("_id subject chapter")
-      .lean();
-    const questions: QuestionInfo[] = questionsRaw.map((q: any) => ({
-      _id: q._id.toString(),
-      subject: q.subject,
-      chapter: q.chapter,
-    }));
+    const questionMarksAwarded = numberValue(
+      performance.marksAwarded
+    );
 
-    // Map questionId -> {subject, chapter}
-    const questionMap = new Map<string, { subject: string; chapter: string }>();
-    for (const q of questions) {
-      if (q._id && q.subject && q.chapter) {
-        questionMap.set(q._id, { subject: q.subject, chapter: q.chapter });
+    const questionTotalMarks = numberValue(
+      performance.totalMarks
+    );
+
+    const stepMappings = Array.isArray(
+      attempt.stepSkillMappings
+    )
+      ? attempt.stepSkillMappings
+      : [];
+
+    const partMappings = Array.isArray(
+      attempt.partSkillMappings
+    )
+      ? attempt.partSkillMappings
+      : [];
+
+    const stepResults = Array.isArray(
+      attempt.evaluation?.stepResults
+    )
+      ? attempt.evaluation.stepResults
+      : [];
+
+    const partResults = Array.isArray(
+      attempt.evaluation?.partResults
+    )
+      ? attempt.evaluation.partResults
+      : [];
+
+    const perQuestion = new Map<
+      string,
+      {
+        marks: number;
+        awarded: number;
+        outcomes: Outcome[];
+      }
+    >();
+
+const collect = (
+  skillIds: string[],
+  outcome: Outcome,
+  marks: number,
+  awarded: number
+) => {
+  for (const skillId of skillIds) {
+    if (!perQuestion.has(skillId)) {
+      perQuestion.set(skillId, {
+        marks: 0,
+        awarded: 0,
+        outcomes: [],
+      });
+    }
+
+    const current = perQuestion.get(skillId)!;
+
+    current.marks += marks;
+    current.awarded += awarded;
+    current.outcomes.push(outcome);
+  }
+};
+
+    // -----------------------------------------------------
+    // STEP-LEVEL EVIDENCE
+    // -----------------------------------------------------
+
+    for (const mapping of stepMappings) {
+      const stepId = cleanString(mapping.stepId);
+
+      if (!stepId) continue;
+
+      const skills = getSkillIds(mapping.skillIds);
+
+      if (!skills.length) continue;
+
+      const result = findResult(
+        stepResults,
+        stepId,
+        ["stepId", "id"]
+      );
+
+      const marks = numberValue(
+        result?.totalMarks ??
+          result?.marks ??
+          result?.maxMarks
+      );
+
+      const awarded = numberValue(
+        result?.marksAwarded ??
+          result?.awardedMarks
+      );
+
+      const outcome = getResultOutcome(
+        result,
+        questionOutcome
+      );
+
+      collect(skills, outcome, marks, awarded);
+    }
+
+    // -----------------------------------------------------
+    // PART-LEVEL EVIDENCE
+    // -----------------------------------------------------
+
+    for (const mapping of partMappings) {
+      const partId = cleanString(mapping.partId);
+
+      if (!partId) continue;
+
+      const nestedSteps = Array.isArray(mapping.steps)
+        ? mapping.steps
+        : [];
+
+      /*
+       * If the part has nested step mappings, those steps
+       * provide the more specific evidence.
+       *
+       * Avoid counting parent part skills again.
+       */
+      if (nestedSteps.length > 0) {
+        continue;
+      }
+
+      const skills = getSkillIds(mapping.skillIds);
+
+      if (!skills.length) continue;
+
+      const result = findResult(
+        partResults,
+        partId,
+        ["partId", "id"]
+      );
+
+      const marks = numberValue(
+        result?.totalMarks ??
+          result?.marks ??
+          result?.maxMarks
+      );
+
+      const awarded = numberValue(
+        result?.marksAwarded ??
+          result?.awardedMarks
+      );
+
+      const outcome = getResultOutcome(
+        result,
+        questionOutcome
+      );
+
+      collect(skills, outcome, marks, awarded);
+    }
+
+    // -----------------------------------------------------
+    // QUESTION-LEVEL FALLBACK
+    // -----------------------------------------------------
+
+    if (perQuestion.size === 0) {
+      const questionSkills = getSkillIds(
+        attempt.skillIds
+      );
+
+      for (const skillId of questionSkills) {
+        collect(
+          [skillId],
+          questionOutcome,
+          questionTotalMarks,
+          questionMarksAwarded
+        );
       }
     }
 
-    // Build final response
-    
-    // Build final response
-    const results = exams
-      .map((exam) => {
-        const record = studentRecords.find(
-          (r: any) => r.examId === exam._id
-        );
+    // -----------------------------------------------------
+    // FINALIZE EACH SKILL FOR THIS QUESTION
+    // -----------------------------------------------------
 
-        // Only return results that are published
-        if (!record || record.resultStatus !== "published") {
-          return null;
-        }
+    for (const [skillId, evidence] of Array.from(
+      perQuestion.entries()
+    )) {
+      const outcomes = evidence.outcomes;
 
-        // Build per-question subject/chapter counts
-        const subjectChapterCounts: Record<string, number> = {};
+      let finalOutcome: Outcome;
 
-        exam.questionIds.forEach((qid) => {
-          const info = questionMap.get(qid);
-          if (info) {
-            const key = `${info.subject} - ${info.chapter}`;
-            subjectChapterCounts[key] =
-              (subjectChapterCounts[key] || 0) + 1;
-          }
-        });
+      if (outcomes.includes("pending")) {
+        finalOutcome = "pending";
+      } else if (outcomes.includes("incorrect")) {
+        finalOutcome = "incorrect";
+      } else if (
+        outcomes.includes("partially_correct")
+      ) {
+        finalOutcome = "partially_correct";
+      } else if (outcomes.includes("skipped")) {
+        finalOutcome = "skipped";
+      } else {
+        finalOutcome = "correct";
+      }
 
-        return {
-          examId: exam._id,
-          testType: exam.testType,
-          course: exam.course,
-          subject: exam.subject,
-          chapter: exam.chapter,
-          startTime: exam.startTime,
-          endTime: exam.endTime,
-          totalQuestions: exam.totalQuestions,
-          totalMarks: exam.totalMarks,
-          attended: Boolean(record),
-          record: {
-            correct: record.correct,
-            incorrect: record.incorrect,
-            unansweredCount: record.unansweredCount,
-            score: record.score,
-            percentage: record.percentage,
-            resultStatus: record.resultStatus,
-            questionIds: record.questionIds,
-            Answers: record.Answers,
-            unanswered: record.unanswered,
-          },
-          subjectChapterCounts,
-        };
+      addEvidence(
+        skillId,
+        finalOutcome,
+        evidence.marks > 0
+          ? evidence.awarded
+          : questionMarksAwarded,
+        evidence.marks > 0
+          ? evidence.marks
+          : questionTotalMarks
+      );
+    }
+  }
+
+  // -------------------------------------------------------
+  // FINAL SKILL RESPONSE
+  // -------------------------------------------------------
+
+  return Array.from(skillMap.values())
+    .map((item) => {
+      const evaluated =
+        item.correct + item.incorrect;
+
+      const mastery = masteryMap.get(item.skillId);
+
+      return {
+        skillId: item.skillId,
+
+        name: formatSkillName(item.skillId),
+
+        attempts: item.total,
+
+        correct: item.correct,
+
+        incorrect: item.incorrect,
+
+        skipped: item.skipped,
+
+        partiallyCorrect: item.partiallyCorrect,
+
+        pending: item.pending,
+
+        accuracy: evaluated
+          ? round(
+              (item.correct / evaluated) * 100
+            )
+          : null,
+
+        marksAwarded: round(item.marksAwarded),
+
+        totalMarks: round(item.totalMarks),
+
+        // Cumulative mastery from StudentSkillMastery.
+        masteryScore: mastery
+          ? round(
+              numberValue(mastery.masteryScore) * 100
+            )
+          : null,
+
+        masteryStatus:
+          mastery?.status || "not_started",
+
+        lastPracticedAt:
+          mastery?.lastPracticedAt || null,
+      };
+    })
+    .sort((a, b) => {
+      if (a.accuracy === null) return 1;
+
+      if (b.accuracy === null) return -1;
+
+      return a.accuracy - b.accuracy;
+    });
+}
+
+/* =========================================================
+   CHAPTER ANALYSIS
+========================================================= */
+
+function buildChapterAnalysis(
+  attempts: AnyRecord[]
+) {
+  const chapterMap = new Map<
+    string,
+    {
+      chapter: string;
+      total: number;
+      correct: number;
+      incorrect: number;
+      skipped: number;
+      partiallyCorrect: number;
+      pending: number;
+      marksAwarded: number;
+      totalMarks: number;
+    }
+  >();
+
+  for (const attempt of attempts) {
+    const chapter =
+      cleanString(attempt.chapter) || "Other";
+
+    const performance = attempt.performance || {};
+
+    const outcome = getOutcome(performance.outcome);
+
+    let item = chapterMap.get(chapter);
+
+    if (!item) {
+      item = {
+        chapter,
+        total: 0,
+        correct: 0,
+        incorrect: 0,
+        skipped: 0,
+        partiallyCorrect: 0,
+        pending: 0,
+        marksAwarded: 0,
+        totalMarks: 0,
+      };
+
+      chapterMap.set(chapter, item);
+    }
+
+    item.total++;
+
+    switch (outcome) {
+      case "correct":
+        item.correct++;
+        break;
+
+      case "incorrect":
+        item.incorrect++;
+        break;
+
+      case "skipped":
+        item.skipped++;
+        break;
+
+      case "partially_correct":
+        item.partiallyCorrect++;
+        break;
+
+      default:
+        item.pending++;
+        break;
+    }
+
+    item.marksAwarded += numberValue(
+      performance.marksAwarded
+    );
+
+    item.totalMarks += numberValue(
+      performance.totalMarks
+    );
+  }
+
+  return Array.from(chapterMap.values())
+    .map((item) => {
+      const evaluated =
+        item.correct + item.incorrect;
+
+      return {
+        ...item,
+
+        accuracy: evaluated
+          ? round(
+              (item.correct / evaluated) * 100
+            )
+          : null,
+
+        marksAwarded: round(item.marksAwarded),
+
+        totalMarks: round(item.totalMarks),
+      };
+    })
+    .sort((a, b) => {
+      if (a.accuracy === null) return 1;
+
+      if (b.accuracy === null) return -1;
+
+      return a.accuracy - b.accuracy;
+    });
+}
+
+/* =========================================================
+   MAIN GET API
+========================================================= */
+
+export async function GET(request: NextRequest) {
+  noStore();
+
+  try {
+    await connectDB();
+
+    // =====================================================
+    // 1. AUTHENTICATION
+    // =====================================================
+
+    const authResponse = await fetch(
+      `${request.nextUrl.origin}/api/auth/Get-Current-User`,
+      {
+        method: "GET",
+        headers: {
+          cookie: request.headers.get("cookie") || "",
+        },
+        cache: "no-store",
+      }
+    );
+
+    if (!authResponse.ok) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Authentication failed.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const authData = await authResponse.json();
+
+    const user = authData?.user || authData;
+
+    const studentEmail = cleanString(
+      user?.email
+    ).toLowerCase();
+
+    if (!studentEmail) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Student account not found.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const rawStudentId =
+      user._id || user.id || user.userId;
+
+    if (
+      !rawStudentId ||
+      !mongoose.Types.ObjectId.isValid(
+        String(rawStudentId)
+      )
+    ) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Invalid student account.",
+        },
+        { status: 401 }
+      );
+    }
+
+    const studentId = new mongoose.Types.ObjectId(
+      String(rawStudentId)
+    );
+
+
+    await publishEligibleExamResults(studentEmail);
+
+    // =====================================================
+    // 2. FETCH STUDENT EXAM RECORDS
+    // =====================================================
+
+    const records: AnyRecord[] =
+      await ExamRecords.find({
+        "student.email": studentEmail,
+        submissionStatus: "submitted",
       })
-      .filter((result) => result !== null);
+        .sort({ submittedAt: -1 })
+        .lean();
 
+    const now = new Date();
 
-    return NextResponse.json({ success: true, results });
-  } catch (err) {
-    console.error("Error fetching results:", err);
-    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 });
+    const publishedRecords = records.filter(
+      (record) => isPublished(record, now)
+    );
+
+    // =====================================================
+    // 3. FETCH CUMULATIVE SKILL MASTERY
+    // =====================================================
+
+    const masteryRecords: AnyRecord[] =
+      await StudentSkillMastery.find({
+        studentId,
+      })
+        .select(
+          "skillId masteryScore status evidence recentEvidence performance trends lastPracticedAt nextReviewAt course subject"
+        )
+        .lean();
+
+    const masteryAnalysis = masteryRecords
+      .map((item) => ({
+        skillId: cleanString(item.skillId),
+
+        name: formatSkillName(
+          cleanString(item.skillId)
+        ),
+
+        masteryScore: round(
+          numberValue(item.masteryScore) * 100
+        ),
+
+        masteryStatus:
+          item.status || "not_started",
+
+        evidence: item.evidence || {},
+
+        recentEvidence: item.recentEvidence || {},
+
+        performance: item.performance || {},
+
+        trends: item.trends || {},
+
+        lastPracticedAt:
+          item.lastPracticedAt || null,
+
+        nextReviewAt:
+          item.nextReviewAt || null,
+
+        course: item.course || null,
+
+        subject: item.subject || null,
+      }))
+      .sort(
+        (a, b) =>
+          a.masteryScore - b.masteryScore
+      );
+
+    // =====================================================
+    // 4. NO EXAM RECORDS
+    // =====================================================
+
+    if (!records.length) {
+      return NextResponse.json({
+        success: true,
+
+        student: {
+          name:
+            cleanString(user.name) ||
+            cleanString(user.username) ||
+            "Student",
+        },
+
+        summary: {
+          totalExams: 0,
+          publishedExams: 0,
+          pendingExams: 0,
+          averagePercentage: 0,
+          bestPercentage: 0,
+          totalCorrect: 0,
+          totalIncorrect: 0,
+        },
+
+        results: [],
+
+        skillAnalysis: [],
+
+        masteryAnalysis,
+
+        chapterAnalysis: [],
+
+        growth: [],
+      });
+    }
+
+    // =====================================================
+    // 5. FETCH QUESTION ATTEMPTS
+    // =====================================================
+
+    const recordIds = records.map(
+      (record) => record._id
+    );
+
+    const attempts: AnyRecord[] =
+      await QuestionAttempt.find({
+        studentId,
+        examRecordId: { $in: recordIds },
+        source: "exam",
+      }).lean();
+
+    const attemptsByRecord = new Map<
+      string,
+      AnyRecord[]
+    >();
+
+    for (const attempt of attempts) {
+      const recordId = String(
+        attempt.examRecordId
+      );
+
+      const existing =
+        attemptsByRecord.get(recordId) || [];
+
+      existing.push(attempt);
+
+      attemptsByRecord.set(recordId, existing);
+    }
+
+    // =====================================================
+    // 6. PREPARE RESULT LIST
+    // =====================================================
+
+    const results = records.map((record) => {
+      const recordId = String(record._id);
+
+      const published = isPublished(
+        record,
+        now
+      );
+
+      const recordAttempts =
+        attemptsByRecord.get(recordId) || [];
+
+      const totalMarks = numberValue(
+        record.totalMarks
+      );
+
+      const obtainedMarks = numberValue(
+        record.obtainedMarks
+      );
+
+      return {
+        recordId,
+
+        examId: String(record.examId),
+
+        title:
+          cleanString(record.exam?.title) ||
+          "Examination",
+
+        testType: cleanString(
+          record.exam?.testType
+        ),
+
+        course: cleanString(
+          record.exam?.course
+        ),
+
+        subject: cleanString(
+          record.exam?.subject
+        ),
+
+        chapters: Array.isArray(
+          record.exam?.chapters
+        )
+          ? record.exam.chapters
+          : [],
+
+        teacherName: cleanString(
+          record.exam?.teacherName
+        ),
+
+        submittedAt: record.submittedAt || null,
+
+        publishedAt: record.publishedAt || null,
+
+        publishAt: record.publishAt || null,
+
+        resultStatus: record.resultStatus,
+
+        evaluationStatus:
+          record.evaluationStatus,
+
+        published,
+
+        totalQuestions: numberValue(
+          record.totalQuestions
+        ),
+
+        answeredCount: numberValue(
+          record.answeredCount
+        ),
+
+        unansweredCount: numberValue(
+          record.unansweredCount
+        ),
+
+        correctCount: numberValue(
+          record.correctCount
+        ),
+
+        incorrectCount: numberValue(
+          record.incorrectCount
+        ),
+
+        totalMarks,
+
+        obtainedMarks,
+
+        percentage: published
+          ? numberValue(record.percentage)
+          : null,
+
+        allowedSeconds: numberValue(
+          record.allowedSeconds
+        ),
+
+        timeSpentSeconds: numberValue(
+          record.timeSpentSeconds
+        ),
+
+        questionAttemptCount:
+          recordAttempts.length,
+      };
+    });
+
+    // =====================================================
+    // 7. ONLY PUBLISHED RESULTS FOR EXAM ANALYTICS
+    // =====================================================
+
+    const publishedIds = new Set(
+      publishedRecords.map(
+        (record) => String(record._id)
+      )
+    );
+
+    const publishedAttempts = attempts.filter(
+      (attempt) =>
+        publishedIds.has(
+          String(attempt.examRecordId)
+        )
+    );
+
+    // =====================================================
+    // 8. SUMMARY
+    // =====================================================
+
+    const percentages = publishedRecords.map(
+      (record) =>
+        numberValue(record.percentage)
+    );
+
+    const averagePercentage =
+      average(percentages);
+
+    const bestPercentage = percentages.length
+      ? Math.max(...percentages)
+      : 0;
+
+    const totalCorrect =
+      publishedRecords.reduce(
+        (sum, record) =>
+          sum + numberValue(record.correctCount),
+        0
+      );
+
+    const totalIncorrect =
+      publishedRecords.reduce(
+        (sum, record) =>
+          sum + numberValue(record.incorrectCount),
+        0
+      );
+
+    // =====================================================
+    // 9. SKILL AND CHAPTER ANALYSIS
+    // =====================================================
+
+    const skillAnalysis = buildSkillAnalysis(
+      publishedAttempts,
+      masteryRecords
+    );
+
+    const chapterAnalysis =
+      buildChapterAnalysis(publishedAttempts);
+
+    // =====================================================
+    // 10. GROWTH ANALYSIS
+    // =====================================================
+
+    const growth = [...publishedRecords]
+      .sort(
+        (a, b) =>
+          new Date(
+            a.submittedAt || 0
+          ).getTime() -
+          new Date(
+            b.submittedAt || 0
+          ).getTime()
+      )
+      .map((record, index) => ({
+        examNumber: index + 1,
+
+        title:
+          cleanString(record.exam?.title) ||
+          `Exam ${index + 1}`,
+
+        date: record.submittedAt || null,
+
+        percentage: numberValue(
+          record.percentage
+        ),
+      }));
+
+    // =====================================================
+    // 11. FINAL RESPONSE
+    // =====================================================
+
+    return NextResponse.json({
+      success: true,
+
+      student: {
+        name:
+          cleanString(user.name) ||
+          cleanString(user.username) ||
+          "Student",
+      },
+
+      summary: {
+        totalExams: records.length,
+
+        publishedExams:
+          publishedRecords.length,
+
+        pendingExams:
+          records.length -
+          publishedRecords.length,
+
+        averagePercentage,
+
+        bestPercentage,
+
+        totalCorrect,
+
+        totalIncorrect,
+      },
+
+      results,
+
+      // Exam-specific skill evidence + cumulative mastery.
+      skillAnalysis,
+
+      // Full cumulative StudentSkillMastery information.
+      masteryAnalysis,
+
+      chapterAnalysis,
+
+      growth,
+    });
+  } catch (error: any) {
+    console.error(
+      "EXAM RESULT API ERROR:",
+      error
+    );
+
+    return NextResponse.json(
+      {
+        success: false,
+
+        message:
+          "Unable to load exam results.",
+
+        error:
+          process.env.NODE_ENV === "development"
+            ? error.message
+            : undefined,
+      },
+      { status: 500 }
+    );
   }
 }

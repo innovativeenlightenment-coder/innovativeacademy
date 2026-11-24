@@ -1,5 +1,5 @@
 export const dynamic = "force-dynamic";  import { connectDB } from "@/lib/mongoose";
-import QuestionBank from "@/model/QuestionBankSchema";
+import QuestionBankV2 from "@/model/QuestionBankV2";
 import QuestionStructure from "@/model/QuestionStructure";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -17,7 +17,7 @@ export async function GET(req: NextRequest) {
     }
 
     if (type === "filtered") {
-      const distinctCombos = await QuestionBank.aggregate([
+      const distinctCombos = await QuestionBankV2.aggregate([
         {
           $group: {
             _id: {

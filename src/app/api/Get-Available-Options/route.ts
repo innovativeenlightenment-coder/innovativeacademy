@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";  import { connectDB } from "@/lib/mongoose";
-import QuestionBankSchema from "@/model/QuestionBankSchema";
+import QuestionBankV2 from "@/model/QuestionBankV2";
 import TestRecords from "@/model/TestRecordSchema";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -33,7 +33,7 @@ export async function GET(req: Request) {
     }
 
     // 1️⃣ Chapter counts
-    const chapterCounts = await QuestionBankSchema.aggregate([
+    const chapterCounts = await QuestionBankV2.aggregate([
       {
         $group: {
           _id: { course: "$course", subject: "$subject", chapter: "$chapter" },

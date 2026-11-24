@@ -1,6 +1,6 @@
 // import { NextResponse } from "next/server";
 // export const dynamic = "force-dynamic";  import { connectDB } from "@/lib/mongoose";
-// import QuestionBank from "@/model/QuestionBankSchema";
+// import QuestionBankV2 from "@/model/QuestionBankV2Schema";
 // import TestRecords from "@/model/TestRecordSchema";
 // import { unstable_noStore as noStore } from "next/cache";
 
@@ -161,7 +161,7 @@
 //       const count = Math.round(TOTAL_QUESTIONS * ratio);
 //       if (count <= 0) continue;
 
-//       const qs = await QuestionBank.aggregate([
+//       const qs = await QuestionBankV2.aggregate([
 //         {
 //           $match: {
 //             course,
@@ -203,7 +203,7 @@
 
 import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";  import { connectDB } from "@/lib/mongoose";
-import QuestionBank from "@/model/QuestionBankSchema";
+import QuestionBankV2 from "@/model/QuestionBankV2";
 import TestRecords from "@/model/TestRecordSchema";
 import { unstable_noStore as noStore } from "next/cache";
 
@@ -365,7 +365,7 @@ console.log(eligibleForLevelUp, avgScore)
       const count = Math.round(TOTAL_QUESTIONS * ratio);
       if (count <= 0) continue;
 
-      const qs = await QuestionBank.aggregate([
+      const qs = await QuestionBankV2.aggregate([
         {
           $match: {
             course,

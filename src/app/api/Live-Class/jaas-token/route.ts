@@ -39,7 +39,15 @@ export async function POST(req: Request) {
       _id: sessionId,
       status: "live",
     });
-
+if (!session || session.status !== "live") {
+  return NextResponse.json(
+    {
+      success: false,
+      error: "This classroom has ended.",
+    },
+    { status: 403 }
+  );
+}
     if (!session) {
       return NextResponse.json(
         { success: false, error: "Class not found or already ended" },

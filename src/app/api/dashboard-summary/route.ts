@@ -5,7 +5,7 @@ import User from "@/model/UserSchema";
 import TestRecords from "@/model/TestRecordSchema";
 import ExamRecords from "@/model/ExamRecordSchema";
 import TeacherExamPaper from "@/model/TeacherExamSchema";
-import QuestionBankSchema from "@/model/QuestionBankSchema";
+import QuestionBankV2 from "@/model/QuestionBankV2";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -134,7 +134,7 @@ export async function GET(req: NextRequest) {
         User.countDocuments({ role: "teacher" }),
         User.countDocuments({ role: "school" }),
         User.countDocuments({ role: "college" }),
-        QuestionBankSchema.countDocuments({}),
+        QuestionBankV2.countDocuments({}),
         TestRecords.countDocuments({}),
         TeacherExamPaper.countDocuments({}),
         ExamRecords.countDocuments({}),

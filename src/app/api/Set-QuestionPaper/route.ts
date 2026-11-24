@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";  import { connectDB } from "@/lib/mongoo
 import { QuestionPaper } from "@/model/QuestionPaper";
 import { NextRequest, NextResponse } from "next/server";
 import mongoose from "mongoose";
-import QuestionBankSchema from "@/model/QuestionBankSchema";
+import QuestionBankV2 from "@/model/QuestionBankV2";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
     const objectIds = questionIds.map((id: string) => new mongoose.Types.ObjectId(id));
 
     // Fetch the question documents
-    const questions = await QuestionBankSchema.find({ _id: { $in: objectIds } });
+    const questions = await QuestionBankV2.find({ _id: { $in: objectIds } });
 
     if (questions.length !== questionIds.length) {
       return NextResponse.json({ success: false, message: "Some questions not found." }, { status: 404 });

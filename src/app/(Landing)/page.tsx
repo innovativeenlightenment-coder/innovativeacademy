@@ -828,561 +828,841 @@ Our founder has 20+ years of experience in the field of education and technology
 </div>
     </section>
 
-   
-{/* Why Choose Us Section */}
-<section  id="why-choose-us"   className="bg-white py-16 lg:py-20"
->
-  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+ 
+ {/* =====================================================
+    1. WHY CHOOSE US
+===================================================== */}
 
-    {/* Heading */}
-    <div className="mb-16 text-center">
+<section id="why-choose-us" className="relative overflow-hidden bg-white py-20 lg:py-28">
 
-      <div className="mx-auto mb-4 h-1 w-16 rounded-full bg-gradient-to-r from-purple-600 to-pink-500"></div>
+  <div className="pointer-events-none absolute -right-40 top-10 h-96 w-96 rounded-full bg-purple-100/60 blur-3xl" />
+  <div className="pointer-events-none absolute -left-40 bottom-0 h-96 w-96 rounded-full bg-pink-100/40 blur-3xl" />
 
-      <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-        Why Choose Innovative Academy?
+  <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+    <div className="mx-auto mb-14 max-w-3xl text-center">
+      <span className="inline-flex items-center gap-2 rounded-full border border-purple-100 bg-purple-50 px-4 py-2 text-xs font-bold tracking-wider text-purple-700">
+        ✨ THE INNOVATIVE DIFFERENCE
+      </span>
+
+      <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+        More Than Tuition.
+        <br />
+        <span className="text-purple-600">A Better Way to Learn.</span>
       </h2>
 
-      <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-slate-600">
-        A learning ecosystem designed to help students understand deeply,
-        practice consistently, and achieve confidently.
+      <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-500 sm:text-lg">
+        Great education is not just about completing a syllabus.
+        It is about developing the person behind the marks.
       </p>
+    </div>
+
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+
+      {[
+        {
+          icon: "🎓",
+          number: "01",
+          title: "Teachers Who Care",
+          desc: "Experienced educators, personal attention and guidance that makes a difference.",
+          tag: "Human Guidance",
+          color: "bg-blue-50"
+        },
+        {
+          icon: "🧠",
+          number: "02",
+          title: "Understanding First",
+          desc: "Go beyond memorising. Understand concepts, ask questions and think independently.",
+          tag: "Deep Learning",
+          color: "bg-purple-50"
+        },
+        {
+          icon: "🎯",
+          number: "03",
+          title: "Growth for Everyone",
+          desc: "A learning journey that helps every student identify gaps and improve.",
+          tag: "Personal Progress",
+          color: "bg-emerald-50"
+        },
+        {
+          icon: "🏆",
+          number: "04",
+          title: "Future-Ready Foundation",
+          desc: "Build the reasoning and fundamentals needed for future challenges.",
+          tag: "Strong Foundations",
+          color: "bg-amber-50"
+        },
+        {
+          icon: "💡",
+          number: "05",
+          title: "Learning by Doing",
+          desc: "Explore experiments, projects, challenges and real-world applications.",
+          tag: "Practical Thinking",
+          color: "bg-orange-50"
+        },
+        {
+          icon: "🚀",
+          number: "06",
+          title: "Beyond the Classroom",
+          desc: "Develop communication, creativity, confidence and problem-solving skills.",
+          tag: "Complete Growth",
+          color: "bg-pink-50"
+        }
+      ].map((item, i) => (
+        <div
+          key={i}
+          className="group relative overflow-hidden rounded-[26px] border border-slate-200 bg-white p-6 transition-all duration-300 hover:-translate-y-1 hover:border-purple-200 hover:shadow-xl hover:shadow-purple-100/60 sm:p-7"
+        >
+          <div className="flex items-start justify-between">
+            <div className={`flex h-14 w-14 items-center justify-center rounded-2xl ${item.color} text-3xl transition-transform duration-300 group-hover:scale-110`}>
+              {item.icon}
+            </div>
+
+            <span className="text-xs font-bold tracking-widest text-slate-300">
+              {item.number}
+            </span>
+          </div>
+
+          <h3 className="mt-6 text-xl font-bold text-slate-900">
+            {item.title}
+          </h3>
+
+          <p className="mt-3 text-sm leading-7 text-slate-500">
+            {item.desc}
+          </p>
+
+          <div className="mt-6 flex items-center gap-2">
+            <span className="h-1.5 w-1.5 rounded-full bg-purple-600" />
+            <span className="text-xs font-bold text-purple-700">
+              {item.tag}
+            </span>
+          </div>
+        </div>
+      ))}
 
     </div>
 
-    {/* Features */}
-    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-
-      {/* Feature */}
-      <div className="group rounded-[28px] border border-slate-200 bg-white p-7 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-        <div className="flex items-start gap-5">
-
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-purple-700 text-2xl shadow-md transition-transform duration-300 group-hover:scale-105">
-            📚
-          </div>
-
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">
-              Offline Classes
-            </h3>
-
-            <p className="mt-2 leading-7 text-slate-600">
-              Our main focus is offline learning with dedicated in-person sessions.
-            </p>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Feature */}
-      <div className="group rounded-[28px] border border-slate-200 bg-white p-7 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-        <div className="flex items-start gap-5">
-
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-purple-700 text-2xl shadow-md transition-transform duration-300 group-hover:scale-105">
-            🎓
-          </div>
-
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">
-              Expert Teachers
-            </h3>
-
-            <p className="mt-2 leading-7 text-slate-600">
-              Each subject has specialized teachers passionate about helping every student grow.
-            </p>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Feature */}
-      <div className="group rounded-[28px] border border-slate-200 bg-white p-7 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-        <div className="flex items-start gap-5">
-
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-purple-700 text-2xl shadow-md transition-transform duration-300 group-hover:scale-105">
-            💬
-          </div>
-
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">
-              Doubt Resolution
-            </h3>
-
-            <p className="mt-2 leading-7 text-slate-600">
-              Direct interaction with subject experts for personalized doubt solving.
-            </p>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Feature */}
-      <div className="group rounded-[28px] border border-slate-200 bg-white p-7 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-        <div className="flex items-start gap-5">
-
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-purple-700 text-2xl shadow-md transition-transform duration-300 group-hover:scale-105">
-            🎯
-          </div>
-
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">
-              All Exam Coverage
-            </h3>
-
-            <p className="mt-2 leading-7 text-slate-600">
-              CBSE, State Board, Olympiad and Competitive exam preparation under one roof.
-            </p>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Feature */}
-      <div className="group rounded-[28px] border border-slate-200 bg-white p-7 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-        <div className="flex items-start gap-5">
-
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-purple-700 text-2xl shadow-md transition-transform duration-300 group-hover:scale-105">
-            👥
-          </div>
-
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">
-              Limited Batch Size
-            </h3>
-
-            <p className="mt-2 leading-7 text-slate-600">
-              Small batches ensure personalized attention and better learning outcomes.
-            </p>
-          </div>
-
-        </div>
-      </div>
-
-      {/* Feature */}
-      <div className="group rounded-[28px] border border-slate-200 bg-white p-7 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-        <div className="flex items-start gap-5">
-
-          <div className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-purple-600 to-purple-700 text-2xl shadow-md transition-transform duration-300 group-hover:scale-105">
-            💰
-          </div>
-
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">
-              Affordable Premium
-            </h3>
-
-            <p className="mt-2 leading-7 text-slate-600">
-              Premium-quality education at an affordable fee for every learner.
-            </p>
-          </div>
-
-        </div>
-      </div>
-
+    <div className="mt-12 flex flex-col items-center justify-center gap-3 text-center sm:flex-row">
+      <span className="text-xl">💜</span>
+      <p className="text-sm font-semibold text-slate-700 sm:text-base">
+        Every student has potential. Our job is to help them discover it.
+      </p>
     </div>
+
   </div>
 </section>
-     
-{/* Learning Ecosystem Section */}
-<section id="ecosystem" className="bg-[#faf8ff] py-12 sm:py-16 lg:py-20">
-  <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
 
-    {/* Heading */}
-    <div className="mb-10 text-center">
-      <div className="mx-auto mb-3 h-1 w-14 rounded-full bg-gradient-to-r from-purple-600 to-pink-500"></div>
 
-      <h2 className="text-2xl sm:text-3xl font-bold text-slate-900">
-        Our Learning Ecosystem
+{/* =====================================================
+    2. LEARNING ECOSYSTEM
+===================================================== */}
+
+<section id="ecosystem" className="relative overflow-hidden bg-[#F8F7FC] py-20 lg:py-28">
+
+  <div className="pointer-events-none absolute -left-40 top-20 h-96 w-96 rounded-full bg-purple-100/70 blur-3xl" />
+  <div className="pointer-events-none absolute -right-40 bottom-10 h-96 w-96 rounded-full bg-blue-100/50 blur-3xl" />
+
+  <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+
+    <div className="mx-auto mb-14 max-w-3xl text-center">
+      <span className="inline-flex items-center gap-2 rounded-full border border-purple-100 bg-white px-4 py-2 text-xs font-bold tracking-wider text-purple-700 shadow-sm">
+        ✨ ONE CONNECTED LEARNING ECOSYSTEM
+      </span>
+
+      <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+        Learn. Practise.
+        <br />
+        <span className="text-purple-600">Improve. Grow.</span>
       </h2>
 
-      <p className="mx-auto mt-3 max-w-xl text-sm sm:text-base text-slate-600 leading-6 sm:leading-7">
-        A complete system for learning, practice, testing and performance tracking.
+      <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-500 sm:text-lg">
+        A connected journey where every lesson, activity and challenge
+        moves students forward.
       </p>
     </div>
 
-    <div className="grid gap-8 lg:grid-cols-2 lg:items-start">
+    {/* Learning Journey */}
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
 
-      {/* LEFT SIDE */}
-      <div className="space-y-3 sm:space-y-4">
-
-        {[
-          {
-            title: "5000–10000+ Question Bank",
-            desc: "Chapter-wise structured practice with different difficulty levels."
-          },
-          {
-            title: "Live + Offline Classes",
-            desc: "Balanced classroom teaching with digital learning support."
-          },
-          {
-            title: "Regular Exams System",
-            desc: "Weekly, monthly and quarterly tests for continuous evaluation."
-          },
-          {
-            title: "Mastery Tracking",
-            desc: "Clear chapter-wise progress tracking system."
-          },
-          {
-            title: "Gamified Learning",
-            desc: "Points, levels and rewards to increase motivation."
-          },
-          {
-            title: "Doubt Support",
-            desc: "Quick and personalized teacher guidance system."
-          }
-        ].map((item, i) => (
-          <div
-            key={i}
-            className="flex gap-3 sm:gap-4 rounded-xl border border-slate-200 bg-white p-3 sm:p-4 shadow-sm hover:shadow-md transition"
-          >
-            <div className="mt-0.5 flex h-8 w-8 sm:h-9 sm:w-9 flex-shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-purple-600 to-purple-700">
-              <Check size={16} className="text-white" />
-            </div>
-
-            <div>
-              <h3 className="text-sm sm:text-base font-semibold text-slate-900">
-                {item.title}
-              </h3>
-
-              <p className="text-xs sm:text-sm leading-5 sm:leading-6 text-slate-600 mt-0.5 sm:mt-1">
-                {item.desc}
-              </p>
-            </div>
+      {[
+        {
+          step: "01",
+          icon: "📖",
+          title: "Learn",
+          subtitle: "Understand concepts",
+          color: "border-blue-200 bg-blue-50"
+        },
+        {
+          step: "02",
+          icon: "✍️",
+          title: "Practice",
+          subtitle: "Build your skills",
+          color: "border-violet-200 bg-violet-50"
+        },
+        {
+          step: "03",
+          icon: "📈",
+          title: "Improve",
+          subtitle: "Learn from mistakes",
+          color: "border-emerald-200 bg-emerald-50"
+        },
+        {
+          step: "04",
+          icon: "🏆",
+          title: "Master",
+          subtitle: "Strengthen knowledge",
+          color: "border-amber-200 bg-amber-50"
+        },
+        {
+          step: "05",
+          icon: "🚀",
+          title: "Grow",
+          subtitle: "Develop beyond books",
+          color: "border-pink-200 bg-pink-50"
+        }
+      ].map((item, i) => (
+        <div
+          key={i}
+          className={`rounded-2xl border p-5 transition-all hover:-translate-y-1 hover:shadow-lg ${item.color}`}
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold tracking-widest text-slate-400">
+              STEP {item.step}
+            </span>
+            <span className="text-3xl">{item.icon}</span>
           </div>
-        ))}
 
+          <h3 className="mt-5 text-xl font-extrabold text-slate-900">
+            {item.title}
+          </h3>
+
+          <p className="mt-1 text-sm text-slate-500">
+            {item.subtitle}
+          </p>
+        </div>
+      ))}
+
+    </div>
+
+    {/* Detailed Learning Experiences */}
+    <div className="mt-10 grid gap-6 lg:grid-cols-2">
+
+      {/* Left: Learning experience */}
+      <div className="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+
+        <div className="mb-7">
+          <span className="text-xs font-bold tracking-widest text-purple-600">
+            THE STUDENT EXPERIENCE
+          </span>
+
+          <h3 className="mt-2 text-2xl font-extrabold text-slate-900">
+            Everything has a purpose.
+          </h3>
+
+          <p className="mt-2 text-sm leading-6 text-slate-500">
+            Explore how students learn, practise and develop mastery.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+
+          {[
+            {
+              icon: "📚",
+              title: "Structured Learning",
+              desc: "Chapter-wise lessons, micro-topics, notes, videos and teacher guidance."
+            },
+            {
+              icon: "✍️",
+              title: "Intelligent Practice",
+              desc: "MCQs, numericals, explanations, stepwise problems and rapid-fire."
+            },
+            {
+              icon: "🧠",
+              title: "Memory Gym",
+              desc: "Interactive recall of formulas, tables, squares, cubes and essential facts."
+            },
+            {
+              icon: "📐",
+              title: "Strong Fundamentals",
+              desc: "Build essential mathematical, scientific and logical foundations."
+            },
+            {
+              icon: "🔄",
+              title: "Smart Revision",
+              desc: "Revisit concepts, reinforce memory and practise difficult questions."
+            },
+            {
+              icon: "📒",
+              title: "Mistake Notebook",
+              desc: "Understand errors, revisit weak areas and improve continuously."
+            },
+            {
+              icon: "🎮",
+              title: "Chapter Mastery",
+              desc: "Progressive challenges, levels, Hill Climb competitions and leaderboards."
+            },
+            {
+              icon: "🚀",
+              title: "Beyond Academics",
+              desc: "Weekly speeches, projects, experiments and creative activities."
+            }
+          ].map((item, i) => (
+            <details
+              key={i}
+              className="group rounded-2xl border border-slate-100 bg-slate-50 transition-all open:border-purple-200 open:bg-purple-50/50"
+            >
+              <summary className="flex cursor-pointer list-none items-center gap-4 p-4">
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm">
+                  {item.icon}
+                </div>
+
+                <span className="flex-1 text-sm font-bold text-slate-800 sm:text-base">
+                  {item.title}
+                </span>
+
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-white text-purple-600 transition-transform group-open:rotate-180">
+                  <span className="text-lg">⌄</span>
+                </span>
+              </summary>
+
+              <div className="px-4 pb-4 pl-[72px]">
+                <p className="text-sm leading-6 text-slate-500">
+                  {item.desc}
+                </p>
+              </div>
+            </details>
+          ))}
+
+        </div>
       </div>
 
-      {/* RIGHT SIDE */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-purple-700 via-purple-600 to-indigo-700 p-6 sm:p-7 lg:p-8 text-white shadow-lg">
+      {/* Right: Technology */}
+      <div className="relative overflow-hidden rounded-[28px] bg-gradient-to-br from-[#5420B8] via-[#6D28D9] to-[#813CE5] p-6 text-white shadow-xl shadow-purple-200 sm:p-8">
 
-        <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-white/10"></div>
-        <div className="absolute -bottom-20 -left-20 h-60 w-60 rounded-full bg-white/5"></div>
+        <div className="absolute -right-20 -top-20 h-64 w-64 rounded-full border-[35px] border-white/5" />
+        <div className="absolute -bottom-20 -left-20 h-64 w-64 rounded-full bg-white/5 blur-2xl" />
 
         <div className="relative">
 
-          <span className="inline-flex rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
-            Complete Platform
+          <span className="rounded-full border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold text-purple-100">
+            POWERED BY TECHNOLOGY
           </span>
 
-          <h3 className="mt-4 text-xl sm:text-2xl font-bold leading-snug">
-            Learn. Practice. Improve.
+          <h3 className="mt-7 text-3xl font-extrabold">
+            One Platform.
+            <br />
+            Three Connected Experiences.
           </h3>
 
-          <p className="mt-3 text-sm sm:text-base text-purple-100 leading-6 sm:leading-7">
-            Unified system combining teaching, practice, analytics and revision tools for better results.
+          <p className="mt-4 text-sm leading-7 text-purple-100">
+            Technology connects students, teachers and academy management
+            into one organised learning system.
           </p>
 
-          <div className="mt-6 space-y-3">
+          <div className="mt-8 space-y-4">
 
             {[
               {
-                title: "📱 Student App",
-                desc: "All learning tools in one place anytime."
+                icon: "📱",
+                title: "Student Dashboard",
+                desc: "Daily tasks, progress, achievements and notifications."
               },
               {
-                title: "📊 Analytics",
-                desc: "Track strengths, weaknesses and progress."
+                icon: "🤖",
+                title: "AI Learning Guide",
+                desc: "Interactive avatar, guided assistance and learning suggestions."
               },
               {
-                title: "🎯 Revision Tools",
-                desc: "MCQs, notes and previous papers."
+                icon: "🎙️",
+                title: "Voice & Live Learning",
+                desc: "Voice explanations, interactive classes and recorded lectures."
               },
               {
-                title: "🧠 AI Support",
-                desc: "Smart suggestions and guided learning."
+                icon: "📊",
+                title: "Smart Analytics",
+                desc: "Chapter mastery, strengths, weaknesses and learning history."
+              },
+              {
+                icon: "👩‍🏫",
+                title: "Teacher Workspace",
+                desc: "Lesson planning, question creation, assignments and student monitoring."
+              },
+              {
+                icon: "⚙️",
+                title: "Academy Management",
+                desc: "Teacher coordination, scheduling, activities and notifications."
               }
             ].map((item, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-white/20 bg-white/10 p-3 sm:p-4 backdrop-blur"
+                className="flex gap-4 rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm transition hover:bg-white/15"
               >
-                <div className="text-sm sm:text-base font-semibold">
-                  {item.title}
+                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/15 text-xl">
+                  {item.icon}
                 </div>
 
-                <p className="text-xs sm:text-sm text-purple-100 mt-1 leading-5 sm:leading-6">
-                  {item.desc}
-                </p>
+                <div>
+                  <h4 className="text-sm font-bold sm:text-base">
+                    {item.title}
+                  </h4>
+
+                  <p className="mt-1 text-xs leading-5 text-purple-100 sm:text-sm">
+                    {item.desc}
+                  </p>
+                </div>
               </div>
             ))}
 
           </div>
 
+          <div className="mt-8 rounded-2xl border border-white/20 bg-white/10 p-5">
+            <p className="text-xs font-bold tracking-widest text-purple-200">
+              OUR MISSION
+            </p>
+
+            <p className="mt-3 text-lg font-bold leading-7">
+              Not just better marks. Better thinkers.
+            </p>
+
+            <p className="mt-2 text-sm leading-6 text-purple-100">
+              Stronger fundamentals, deeper understanding and the confidence
+              to take on tomorrow.
+            </p>
+          </div>
+
         </div>
       </div>
-
     </div>
+
   </div>
 </section>
 
-     
-       {/* Revive - Student Success Stories Section */}
-     
-{/* <section
-  id="revive"
->
-  <ReviveSlider reviews={reviveReviews} />  
-</section> */}
 
+{/* =====================================================
+    3. PRICING
+===================================================== */}
 
-{/* Pricing Section */}
-<section id="pricing"  className="bg-white py-16 lg:py-20"
->
-  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+<section id="pricing" className="relative overflow-hidden bg-white py-20 lg:py-28">
 
-    {/* Heading */}
-    <div className="mb-16 text-center">
+  <div className="pointer-events-none absolute -right-40 top-0 h-96 w-96 rounded-full bg-purple-100/60 blur-3xl" />
 
-      <div className="mx-auto mb-4 h-1 w-16 rounded-full bg-gradient-to-r from-purple-600 to-pink-500"></div>
+  <div className="relative mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-      <h2 className="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
-        Simple, Transparent Pricing
+    <div className="mx-auto mb-14 max-w-3xl text-center">
+
+      <span className="inline-flex items-center gap-2 rounded-full border border-purple-100 bg-purple-50 px-4 py-2 text-xs font-bold tracking-wider text-purple-700">
+        ✨ SIMPLE & TRANSPARENT
+      </span>
+
+      <h2 className="mt-6 text-3xl font-extrabold tracking-tight text-slate-900 sm:text-5xl">
+        Choose How You
+        <br />
+        <span className="text-purple-600">Want to Grow.</span>
       </h2>
 
-      <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-slate-600">
-        Choose what works best for you
+      <p className="mx-auto mt-5 max-w-2xl text-base leading-7 text-slate-500 sm:text-lg">
+        Start with digital learning or experience the complete
+        teacher-led academy system.
       </p>
 
     </div>
 
-    {/* Pricing Cards */}
-    <div className="grid gap-8 lg:grid-cols-3 md:grid-cols-2">
+    <div className="grid items-stretch gap-6 lg:grid-cols-3">
 
-      {/* App Only Plan */}
-      <div className="group rounded-[28px] border border-slate-200 bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
+      {/* APP ONLY */}
+      <div className="flex flex-col rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm transition-all hover:-translate-y-1 hover:shadow-xl sm:p-8">
 
-        <h3 className="text-xl font-bold text-slate-900">
-          App Only Plan
-        </h3>
-
-        <p className="mt-2 text-sm text-slate-600">
-          Full App Access + Doubt Help
-        </p>
-
-        {/* Price */}
-        <div className="mt-6">
-          <div className="text-5xl font-bold text-slate-900">
-            ₹2999<sup className="text-lg">*</sup>
-          </div>
-          <p className="mt-1 text-sm text-slate-600">per year</p>
-          <p className="mt-2 text-sm font-semibold text-purple-600">
-            Only ₹250/month
-          </p>
-        </div>
-
-        {/* Features */}
-        <div className="mt-8 space-y-4">
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">Complete app access</p>
+        <div className="flex items-center justify-between">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-50 text-2xl">
+            📱
           </div>
 
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">10000+ question bank</p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">Multiple practice tests</p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">Online teacher doubt help</p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">Smart dashboard + analysis</p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">Study material</p>
-          </div>
-        </div>
-
-      </div>
-
-      {/* Monthly Plan */}
-      <div className="group rounded-[28px] border border-slate-200 bg-white p-8 shadow-md transition-all duration-300 hover:-translate-y-2 hover:shadow-xl">
-
-        <h3 className="text-xl font-bold text-slate-900">
-          Monthly Plan
-        </h3>
-
-        <p className="mt-2 text-sm text-slate-600">
-          Classes + App Access
-        </p>
-
-        {/* Price */}
-        <div className="mt-6">
-          <div className="text-5xl font-bold text-slate-900">
-            ₹1299<sup className="text-lg">*</sup>
-          </div>
-          <p className="mt-1 text-sm text-slate-600">per month</p>
-        </div>
-
-        {/* Features */}
-        <div className="mt-8 space-y-4">
-
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">Daily classes</p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">Online + Offline</p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">1 on 1 mentorship and teaching</p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">Full app access</p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">Study material</p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">10000+ question bank</p>
-          </div>
-
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-purple-600 mt-0.5" />
-            <p className="text-sm text-slate-700">All exams covered</p>
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* Yearly Plan (Featured) */}
-      <div className="relative group rounded-[28px] bg-gradient-to-br from-purple-600 to-purple-800 p-8 text-white shadow-xl transition-all duration-300 hover:-translate-y-2">
-
-        {/* Badge */}
-        <div className="absolute -top-4 left-1/2 -translate-x-1/2">
-          <span className="rounded-full bg-yellow-400 px-4 py-1 text-xs font-bold text-slate-900">
-            Best Offer
+          <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-500">
+            DIGITAL
           </span>
         </div>
 
-        <h3 className="text-xl font-bold">
-          Yearly Plan
+        <h3 className="mt-6 text-xl font-extrabold text-slate-900">
+          App Only
+        </h3>
+
+        <p className="mt-2 text-sm text-slate-500">
+          Independent digital learning.
+        </p>
+
+        <div className="mt-7">
+          <div className="flex items-baseline gap-1">
+            <span className="text-4xl font-extrabold tracking-tight text-slate-900">
+              ₹499
+            </span>
+            <span className="text-sm text-slate-500">/ month</span>
+          </div>
+
+          <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-purple-50 px-3 py-2">
+            <span className="text-sm font-bold text-purple-700">
+              ₹4,999 / year
+            </span>
+            <span className="text-xs font-bold text-emerald-600">
+              Save ₹989
+            </span>
+          </div>
+        </div>
+
+        <div className="my-7 h-px bg-slate-100" />
+
+        <p className="mb-5 text-xs font-bold tracking-widest text-slate-400">
+          WHAT'S INCLUDED
+        </p>
+
+        <div className="flex-1 space-y-3">
+
+          {[
+            "Complete digital learning platform",
+            "Chapter-wise lessons and resources",
+            "Live and recorded learning",
+            "Structured question bank and practice",
+            "Chapter mastery challenges"
+          ].map((feature, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <Check size={17} className="mt-0.5 shrink-0 text-purple-600" />
+              <p className="text-sm leading-5 text-slate-600">{feature}</p>
+            </div>
+          ))}
+
+          <details className="group pt-1">
+            <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold text-purple-700">
+              See all inclusions
+              <span className="transition-transform group-open:rotate-180">⌄</span>
+            </summary>
+
+            <div className="mt-4 space-y-3 border-l-2 border-purple-100 pl-4">
+              {[
+                "Memory Gym and Fundamentals",
+                "Smart revision and daily challenges",
+                "Mistake Notebook",
+                "Gamified learning and competitions",
+                "AI learning guide",
+                "Personal learning analytics"
+              ].map((feature, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <Check size={15} className="mt-0.5 shrink-0 text-purple-600" />
+                  <p className="text-sm text-slate-600">{feature}</p>
+                </div>
+              ))}
+            </div>
+          </details>
+
+        </div>
+
+        <div className="mt-8 rounded-2xl bg-slate-50 p-4">
+          <p className="text-xs font-bold text-slate-700">IDEAL FOR</p>
+          <p className="mt-1 text-sm leading-6 text-slate-500">
+            Students who want structured learning and practice from anywhere.
+          </p>
+        </div>
+
+      </div>
+
+
+      {/* MONTHLY ACADEMY */}
+      <div className="relative flex flex-col rounded-[28px] border-2 border-purple-200 bg-white p-6 shadow-lg shadow-purple-100 transition-all hover:-translate-y-1 hover:shadow-xl sm:p-8">
+
+        <div className="flex items-center justify-between">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-purple-100 text-2xl">
+            👩‍🏫
+          </div>
+
+          <span className="rounded-full bg-purple-50 px-3 py-1 text-xs font-bold text-purple-700">
+            CLASSROOM + APP
+          </span>
+        </div>
+
+        <h3 className="mt-6 text-xl font-extrabold text-slate-900">
+          Monthly Academy
+        </h3>
+
+        <p className="mt-2 text-sm text-slate-500">
+          Teacher-led learning with digital support.
+        </p>
+
+        <div className="mt-7">
+          <div className="flex items-baseline gap-1">
+            <span className="text-4xl font-extrabold tracking-tight text-slate-900">
+              ₹1,499
+            </span>
+            <span className="text-sm text-slate-500">/ month</span>
+          </div>
+
+          <p className="mt-3 text-sm font-semibold text-purple-700">
+            Complete learning experience.
+          </p>
+        </div>
+
+        <div className="my-7 h-px bg-slate-100" />
+
+        <p className="mb-5 text-xs font-bold tracking-widest text-slate-400">
+          EVERYTHING INCLUDED
+        </p>
+
+        <div className="flex-1 space-y-3">
+
+          {[
+            "Everything in the App Plan",
+            "Regular offline classroom teaching",
+            "Experienced subject teachers",
+            "Personal academic guidance",
+            "Teacher-led doubt resolution"
+          ].map((feature, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <Check size={17} className="mt-0.5 shrink-0 text-purple-600" />
+              <p className="text-sm leading-5 text-slate-600">{feature}</p>
+            </div>
+          ))}
+
+          <details className="group pt-1">
+            <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold text-purple-700">
+              See all inclusions
+              <span className="transition-transform group-open:rotate-180">⌄</span>
+            </summary>
+
+            <div className="mt-4 space-y-3 border-l-2 border-purple-100 pl-4">
+              {[
+                "Classroom practice and discussions",
+                "Homework and assignments",
+                "Continuous progress monitoring",
+                "Academic and competitive foundation",
+                "Beyond-academics activities"
+              ].map((feature, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <Check size={15} className="mt-0.5 shrink-0 text-purple-600" />
+                  <p className="text-sm text-slate-600">{feature}</p>
+                </div>
+              ))}
+            </div>
+          </details>
+
+        </div>
+
+        <div className="mt-8 rounded-2xl bg-purple-50 p-4">
+          <p className="text-xs font-bold text-purple-800">IDEAL FOR</p>
+          <p className="mt-1 text-sm leading-6 text-purple-700">
+            Students who want regular classroom teaching and personal guidance.
+          </p>
+        </div>
+
+      </div>
+
+
+      {/* YEARLY ACADEMY */}
+      <div className="relative flex flex-col rounded-[28px] bg-gradient-to-br from-[#5420B8] via-[#6D28D9] to-[#813CE5] p-6 text-white shadow-xl shadow-purple-200 transition-all hover:-translate-y-1 hover:shadow-2xl sm:p-8">
+
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+          <span className="whitespace-nowrap rounded-full bg-yellow-400 px-4 py-1.5 text-xs font-extrabold text-slate-900 shadow-lg">
+            ⭐ BEST VALUE
+          </span>
+        </div>
+
+        <div className="mt-2 flex items-center justify-between">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-2xl">
+            🏆
+          </div>
+
+          <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1 text-xs font-bold text-purple-100">
+            FULL YEAR
+          </span>
+        </div>
+
+        <h3 className="mt-6 text-xl font-extrabold">
+          Yearly Academy
         </h3>
 
         <p className="mt-2 text-sm text-purple-100">
-          Classes + App (Save ₹2598)
+          A complete academic year of growth.
         </p>
 
-        {/* Price */}
-        <div className="mt-6">
-          <div className="text-5xl font-bold">
-            ₹12999<sup className="text-lg">*</sup>
+        <div className="mt-7">
+          <div className="flex items-baseline gap-1">
+            <span className="text-4xl font-extrabold tracking-tight">
+              ₹14,999
+            </span>
+            <span className="text-sm text-purple-200">/ year</span>
           </div>
-          <p className="mt-1 text-sm text-purple-100">per year</p>
-          <p className="mt-2 text-sm text-purple-200">
-            Only ₹1083/month
+
+          <p className="mt-2 text-sm text-purple-100">
+            Approximately ₹1,250 per month
           </p>
+
+          <div className="mt-3 inline-flex items-center gap-2 rounded-lg bg-white/15 px-3 py-2">
+            ✓
+            <span className="text-xs font-bold">
+              Save ₹2,989
+            </span>
+          </div>
         </div>
 
-        {/* Features */}
-        <div className="mt-8 space-y-4">
+        <div className="my-7 h-px bg-white/20" />
 
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-white mt-0.5" />
-            <p className="text-sm text-white/90">Daily classes</p>
-          </div>
+        <p className="mb-5 text-xs font-bold tracking-widest text-purple-200">
+          EVERYTHING INCLUDED
+        </p>
 
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-white mt-0.5" />
-            <p className="text-sm text-white/90">1 on 1 mentorship and teaching</p>
-          </div>
+        <div className="flex-1 space-y-3">
 
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-white mt-0.5" />
-            <p className="text-sm text-white/90">Full app access</p>
-          </div>
+          {[
+            "Everything in the App Plan",
+            "Regular offline classroom teaching",
+            "Experienced subject teachers",
+            "Personal academic guidance",
+            "Teacher-led doubt resolution"
+          ].map((feature, i) => (
+            <div key={i} className="flex items-start gap-3">
+              <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/15">
+                <Check size={13} />
+              </div>
+              <p className="text-sm leading-5 text-purple-50">{feature}</p>
+            </div>
+          ))}
 
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-white mt-0.5" />
-            <p className="text-sm text-white/90">Study material</p>
-          </div>
+          <details className="group pt-1">
+            <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-bold text-white">
+              See all inclusions
+              <span className="transition-transform group-open:rotate-180">⌄</span>
+            </summary>
 
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-white mt-0.5" />
-            <p className="text-sm text-white/90">10000+ question bank</p>
-          </div>
+            <div className="mt-4 space-y-3 border-l-2 border-white/30 pl-4">
+              {[
+                "Classroom practice and discussions",
+                "Homework and assignments",
+                "Continuous progress monitoring",
+                "Academic and competitive foundation",
+                "Beyond-academics activities"
+              ].map((feature, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <Check size={15} className="mt-0.5 shrink-0 text-white" />
+                  <p className="text-sm text-purple-100">{feature}</p>
+                </div>
+              ))}
+            </div>
+          </details>
 
-          <div className="flex items-start gap-3">
-            <Check size={18} className="text-white mt-0.5" />
-            <p className="text-sm text-white/90">All exams covered</p>
-          </div>
+        </div>
 
+        <div className="mt-8 rounded-2xl border border-white/15 bg-white/10 p-4">
+          <p className="text-xs font-bold text-white">IDEAL FOR</p>
+          <p className="mt-1 text-sm leading-6 text-purple-100">
+            Families choosing consistent learning throughout the academic year.
+          </p>
         </div>
 
       </div>
 
     </div>
 
-    {/* School Plans */}
-    <div className="mt-16 bg-white border border-purple-200 rounded-[28px] p-8">
 
-      <h3 className="text-2xl font-bold text-slate-900">
-        For Schools & Institutions
-      </h3>
-
-      <p className="mt-3 text-slate-600 mb-8">
-        We offer specialized plans for educational institutions.
-      </p>
-
-      <div className="grid md:grid-cols-2 gap-6">
-
-        <div className="rounded-2xl border border-slate-200 p-6 hover:border-purple-400 transition">
-          <h4 className="text-lg font-semibold text-slate-900">
-            Full App Usage Plan
-          </h4>
-          <p className="mt-2 text-sm text-slate-600">
-            Provide complete app access to students for self-learning and practice.
-          </p>
-          <button className="mt-4 px-5 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 transition">
-            Contact for Details
-          </button>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 p-6 hover:border-purple-400 transition">
-          <h4 className="text-lg font-semibold text-slate-900">
-            Teaching + App Plan
-          </h4>
-          <p className="mt-2 text-sm text-slate-600">
-            Complete solution with expert teachers and full platform support.
-          </p>
-          <button className="mt-4 px-5 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 transition">
-            Contact for Details
-          </button>
-        </div>
-
+    {/* Pricing note */}
+    <div className="mt-8 flex items-start gap-4 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-xl shadow-sm">
+        🛡️
       </div>
 
+      <div>
+        <p className="text-sm font-bold text-slate-800">
+          Clear pricing. Meaningful learning.
+        </p>
+
+        <p className="mt-1 text-xs leading-6 text-slate-500">
+          Annual savings are calculated against 12 monthly payments.
+          Subscription duration and applicable terms will be shared during enrolment.
+        </p>
+      </div>
     </div>
 
-    {/* Footer */}
-    <p className="mt-12 text-center text-sm text-slate-600">
-      All student plans include offline access. Cancel anytime. School plans include customization options.
+
+    {/* Schools */}
+    <div className="mt-20 overflow-hidden rounded-[28px] border border-purple-100 bg-[#FAF8FF]">
+
+      <div className="grid lg:grid-cols-[0.8fr_1.2fr]">
+
+        <div className="flex flex-col justify-center p-7 sm:p-10">
+
+          <span className="inline-flex w-fit items-center gap-2 rounded-full bg-purple-100 px-3 py-1.5 text-xs font-bold text-purple-700">
+            🎓 FOR INSTITUTIONS
+          </span>
+
+          <h3 className="mt-5 text-2xl font-extrabold text-slate-900 sm:text-3xl">
+            Bring Better Learning to Your School.
+          </h3>
+
+          <p className="mt-4 text-sm leading-7 text-slate-500">
+            Support teachers, engage students and bring structured
+            digital learning into your institution.
+          </p>
+
+        </div>
+
+        <div className="space-y-3 p-5 sm:p-8">
+
+          <div className="rounded-2xl border border-purple-100 bg-white p-5">
+            <div className="flex items-start gap-4">
+
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-xl">
+                📚
+              </div>
+
+              <div>
+                <h4 className="font-bold text-slate-900">
+                  Digital Learning Platform
+                </h4>
+
+                <p className="mt-1 text-sm leading-6 text-slate-500">
+                  Learning resources, practice, revision and student progress tracking.
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-purple-100 bg-white p-5">
+            <div className="flex items-start gap-4">
+
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-purple-50 text-xl">
+                👩‍🏫
+              </div>
+
+              <div>
+                <h4 className="font-bold text-slate-900">
+                  Teaching + App Solution
+                </h4>
+
+                <p className="mt-1 text-sm leading-6 text-slate-500">
+                  Teaching support, digital learning, assessments and academic management.
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+          <a
+            href="mailto:info@innovativeacademy.org.in"
+            className="flex items-center justify-between rounded-xl bg-purple-600 px-5 py-4 text-sm font-bold text-white transition hover:bg-purple-700"
+          >
+            Discuss a School Partnership
+            <span>→</span>
+          </a>
+
+        </div>
+      </div>
+    </div>
+
+    <p className="mt-10 text-center text-xs leading-6 text-slate-400">
+      * Prices shown are proposed introductory prices. Confirm final subscription
+      duration, inclusions and terms before enrolment.
     </p>
 
   </div>
 </section>
+
 {/* Contact Section */}
 <section  id="contact"  className="bg-[#faf8ff] py-16 lg:py-20"
 >
@@ -1446,7 +1726,7 @@ Our founder has 20+ years of experience in the field of education and technology
           </div>
 
           <p className="text-sm font-semibold text-slate-700">
-            team@innovativeacademy.org.in
+            shayanalimujawar13@gmail.com
           </p>
 
           <p className="mt-2 text-sm font-semibold text-slate-700">
@@ -1471,7 +1751,7 @@ Our founder has 20+ years of experience in the field of education and technology
           </p>
 
           <p className="mt-2 text-sm font-semibold text-slate-700">
-            +91 93350 92358
+            +91 94038 55466
           </p>
 
           <p className="mt-3 text-sm text-slate-500">
@@ -1540,15 +1820,15 @@ Our founder has 20+ years of experience in the field of education and technology
                   <span className="font-semibold text-white">Email:</span><br />
                   innovative.enlightenment@gmail.com
                   <br />
-                  team@innovativeacademy.org.in
+                  shayanalimujawar13@gmail.com
                   <br />
                   support@innovativeacademy.org.in
                 </p>
                 <p>
                   <span className="font-semibold text-white">Phone:</span><br />
-                  +91 (94215-67466)
+                  +91 94215 67466
                   <br />
-                  +91-(93350-92358)
+                  +91 94038 55466
                 </p>
               </div>
             </div>

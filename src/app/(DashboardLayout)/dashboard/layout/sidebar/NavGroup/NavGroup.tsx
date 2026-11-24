@@ -1,35 +1,71 @@
-import PropTypes from 'prop-types';
-// mui imports
-import { ListSubheader, styled, Theme } from '@mui/material';
+"use client";
 
-type NavGroup = {
+import React from "react";
+
+import {
+  Box,
+  Divider,
+  ListSubheader,
+  Tooltip,
+} from "@mui/material";
+
+type NavGroupType = {
   navlabel?: boolean;
   subheader?: string;
 };
 
 interface ItemType {
-  item: NavGroup;
+  item: NavGroupType;
+  collapsed?: boolean;
 }
 
-const NavGroup = ({ item }: ItemType) => {
-  const ListSubheaderStyle = styled((props: Theme | any) => <ListSubheader disableSticky {...props} />)(
-    ({ theme }) => ({
-      ...theme.typography.overline,
-      fontWeight: '700',
-      marginTop: theme.spacing(3),
-      marginBottom: theme.spacing(0),
-      color: theme.palette.text.primary,
-      lineHeight: '26px',
-      padding: '3px 12px',
-    }),
-  );
-  return (
-    <ListSubheaderStyle>{item.subheader}</ListSubheaderStyle>
-  );
-};
+const NavGroup = ({
+  item,
+  collapsed = false,
+}: ItemType) => {
+  if (collapsed) {
+    return (
+      <Tooltip
+        title={item.subheader || ""}
+        placement="right"
+        arrow
+      >
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            py: 1.4,
+            px: 0.5,
+          }}
+        >
+          <Divider sx={{ width: "100%" }} />
+        </Box>
+      </Tooltip>
+    );
+  }
 
-NavGroup.propTypes = {
-  item: PropTypes.object,
+  return (
+    <ListSubheader
+      disableSticky
+      sx={{
+        position: "relative",
+        bgcolor: "transparent",
+        color: "text.disabled",
+
+        fontSize: "0.67rem",
+        fontWeight: 800,
+        letterSpacing: "1.15px",
+        lineHeight: "28px",
+        textTransform: "uppercase",
+
+        px: 1.3,
+        mt: 2,
+        mb: 0.5,
+      }}
+    >
+      {item.subheader}
+    </ListSubheader>
+  );
 };
 
 export default NavGroup;

@@ -17,99 +17,148 @@ export async function POST(req: Request) {
 
     if (!user) {
       return NextResponse.json(
-        { success: false, error: "Unauthorized" },
+        {
+          success: false,
+          error: "Unauthorized",
+        },
         { status: 401 }
       );
     }
 
     if (!["teacher", "admin"].includes(user.role)) {
       return NextResponse.json(
-        { success: false, error: "Only teachers and admins can start classes" },
+        {
+          success: false,
+          error: "Only teachers and admins can start classes",
+        },
         { status: 403 }
       );
     }
 
-    const body = await req.json();
+    let body: any;
+
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Invalid request body",
+        },
+        { status: 400 }
+      );
+    }
 
     const title = String(body.title || "").trim();
-    const subject = String(body.subject || "").trim();
-    const description = String(body.description || "").trim();
+
+    if (!title) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Class title is required",
+        },
+        { status: 400 }
+      );
+    }
+
+    if (title.length > 150) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Class title cannot exceed 150 characters",
+        },
+        { status: 400 }
+      );
+    }
 
     const rawParticipantIds = Array.isArray(body.participantIds)
       ? body.participantIds
       : [];
 
-    if (!title || !subject) {
-      return NextResponse.json(
-        { success: false, error: "Title and subject are required" },
-        { status: 400 }
-      );
-    }
-
     if (
       rawParticipantIds.some(
         (id: unknown) =>
-          typeof id !== "string" || !mongoose.Types.ObjectId.isValid(id)
+          typeof id !== "string" ||
+          !mongoose.Types.ObjectId.isValid(id)
       )
     ) {
       return NextResponse.json(
-        { success: false, error: "One or more participant IDs are invalid" },
+        {
+          success: false,
+          error: "One or more participant IDs are invalid",
+        },
         { status: 400 }
       );
     }
 
-    const participantIds: string[] = Array.from(
-      new Set<string>(
-        rawParticipantIds.map((id: string) => String(id))
-      )
+    const participantIds = Array.from(
+      new Set<string>(rawParticipantIds)
     );
 
-    // Only actual student accounts may be selected.
-    if (participantIds.length > 0) {
-      const validStudents = await UserSchema.find({
-        _id: { $in: participantIds },
-        role: "student",
-      }).select("_id");
+    if (participantIds.length === 0) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Select at least one student before starting the class",
+        },
+        { status: 400 }
+      );
+    }
 
-      if (validStudents.length !== participantIds.length) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: "Some selected accounts are not valid student accounts",
-          },
-          { status: 400 }
-        );
-      }
+    const validStudents = await UserSchema.find({
+      _id: { $in: participantIds },
+      role: "student",
+    }).select("_id");
+
+    if (validStudents.length !== participantIds.length) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Some selected accounts are not valid student accounts",
+        },
+        { status: 400 }
+      );
     }
 
     const session = await LiveSession.create({
       title,
-      subject,
-      description,
+
       roomName: `ia-${new mongoose.Types.ObjectId().toString()}`,
+
       status: "live",
+
       startedBy: user._id,
       participantIds,
+
       startedAt: new Date(),
     });
 
-    return NextResponse.json({
-      success: true,
-      session: {
-        _id: session._id,
-        title: session.title,
-        subject: session.subject,
-        description: session.description,
-        roomName: session.roomName,
-        participantIds: session.participantIds,
-        startedAt: session.startedAt,
+    return NextResponse.json(
+      {
+        success: true,
+        message: "Live class started successfully",
+
+        session: {
+          _id: session._id,
+          title: session.title,
+          roomName: session.roomName,
+          status: session.status,
+          startedBy: session.startedBy,
+          participantIds: session.participantIds,
+          startedAt: session.startedAt,
+          createdAt: session.createdAt,
+        },
       },
-    });
+      { status: 201 }
+    );
   } catch (error) {
     console.error("Start live class error:", error);
 
     return NextResponse.json(
-      { success: false, error: "Unable to start live class" },
+      {
+        success: false,
+        error: "Unable to start live class",
+      },
       { status: 500 }
     );
   }

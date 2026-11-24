@@ -1,7 +1,7 @@
 // src/app/api/Get_Question-Paper/route.ts
 import { NextRequest, NextResponse } from "next/server";
 export const dynamic = "force-dynamic";  import { connectDB } from "@/lib/mongoose";
-import QuestionBankSchema from "@/model/QuestionBankSchema";
+import QuestionBankV2 from "@/model/QuestionBankV2";
 import { QuestionPaper } from "@/model/QuestionPaper";
 import mongoose from "mongoose";
 
@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     // Ensure correct type for test to access questionIds
     const questionIds = (test as { questionIds?: string[] }).questionIds || [];
 
-    const questions = await QuestionBankSchema.find({
+    const questions = await QuestionBankV2.find({
       _id: { $in: questionIds.map((qid: string) => new mongoose.Types.ObjectId(qid)) },
     }).lean();
 

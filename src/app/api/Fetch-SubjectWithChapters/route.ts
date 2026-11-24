@@ -1,5 +1,5 @@
 import { connectDB } from '@/lib/mongoose';
-import QuestionBank from '@/model/QuestionBankSchema';
+import QuestionBankV2 from '@/model/QuestionBankV2';
 import { NextRequest, NextResponse } from 'next/server';
 import { unstable_noStore as noStore } from 'next/cache';
 import UserSchema from '@/model/UserSchema';
@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const chapters = await QuestionBank.distinct("chapter", {
+    const chapters = await QuestionBankV2.distinct("chapter", {
       course,
       level,
       subject,

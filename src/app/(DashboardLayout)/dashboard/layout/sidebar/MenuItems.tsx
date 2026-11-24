@@ -58,9 +58,9 @@ const AdminMenuitems = [
   },
   {
     id: uniqueId(),
-    title: "Upcoming Exams",
+    title: "Start Exams",
     icon: IconCalendarEvent,
-    href: "/dashboard/student/exam",
+    href: "/dashboard/student/start-exam",
   },
   {
     id: uniqueId(),
@@ -90,6 +90,12 @@ const AdminMenuitems = [
     title: "Student Performance",
     icon: IconChartBar,
     href: "/dashboard/admin/student-performance",
+  },
+  {
+    id: uniqueId(),
+    title: "Exam Performance",
+    icon: IconChartBar,
+    href: "/dashboard/admin/exam-performance",
   },
   {
     id: uniqueId(),
@@ -125,6 +131,12 @@ const AdminMenuitems = [
     title: "Set Exams",
     icon: IconFileText,
     href: "/dashboard/admin/set-exam",
+  },
+  {
+    id: uniqueId(),
+    title: "Manage Lectures",
+    icon: IconPlayerPlay,
+    href: "/dashboard/admin/daily-lectures",
   },
   {
     id: uniqueId(),
@@ -177,9 +189,9 @@ const StudentMenuitems = [
   },
   {
     id: uniqueId(),
-    title: "Upcoming Exams",
+    title: "Start Exams",
     icon: IconCalendarEvent,
-    href: "/dashboard/student/exam",
+    href: "/dashboard/student/start-exam",
   },
   {
     id: uniqueId(),
@@ -219,7 +231,12 @@ const TeacherMenuitems = [
     icon: IconChartBar,
     href: "/dashboard/admin/student-performance",
   },
-
+{
+    id: uniqueId(),
+    title: "Exam Performance",
+    icon: IconChartBar,
+    href: "/dashboard/admin/exam-performance",
+  },
   {
     navlabel: true,
     subheader: "ACADEMIC SETUP",
@@ -259,6 +276,12 @@ const TeacherMenuitems = [
     title: "Set Exams",
     icon: IconFileText,
     href: "/dashboard/admin/set-exam",
+  },
+    {
+    id: uniqueId(),
+    title: "Manage Lectures",
+    icon: IconPlayerPlay,
+    href: "/dashboard/admin/daily-lectures",
   },
   {
     id: uniqueId(),

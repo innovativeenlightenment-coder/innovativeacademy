@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { connectDB } from '@/lib/mongoose';
-import QuestionBankSchema from '@/model/QuestionBankSchema';
+import QuestionBankV2 from '@/model/QuestionBankV2';
 
 import { unstable_noStore as noStore } from 'next/cache';
 
@@ -35,7 +35,7 @@ export async function POST(req: Request) {
         }
 
         // Fetch data from the Question schema with filters and limit
-        const questions = await QuestionBankSchema.aggregate([
+        const questions = await QuestionBankV2.aggregate([
             {
                 $match: matchCriteria,
             },
