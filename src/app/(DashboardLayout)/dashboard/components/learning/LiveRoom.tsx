@@ -59,6 +59,7 @@ export default function LiveRoom({
   const [isRecording, setIsRecording] = useState(false);
   const [isStartingRecording, setIsStartingRecording] = useState(false);
   const [recordingError, setRecordingError] = useState("");
+  const [recordingMessage, setRecordingMessage] = useState("");
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isMutingAll, setIsMutingAll] = useState(false);
   const [muteMessage, setMuteMessage] = useState("");
@@ -75,6 +76,9 @@ const focusTimeoutsRef = useRef<number[]>([]);
   const recorderRef = useRef<MediaRecorder | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<Blob[]>([]);
+  const fileWriterRef = useRef<any>(null);
+  const writeQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const recordingWriteErrorRef = useRef<string | null>(null);
 
   const stopPromiseRef = useRef<Promise<void> | null>(null);
   const stopResolveRef = useRef<(() => void) | null>(null);
@@ -143,7 +147,7 @@ const focusTimeoutsRef = useRef<number[]>([]);
   }, [sessionId]);
 
   // --------------------------------------------------
-  // RECORDING FILE DOWNLOAD
+  // RECORDING FILE DOWNLOAD (FALLBACK FOR BROWSERS WITHOUT FILE PICKER)
   // --------------------------------------------------
 
   const saveRecording = useCallback((blob: Blob) => {
@@ -152,6 +156,8 @@ const focusTimeoutsRef = useRef<number[]>([]);
       return;
     }
 
+    const isMp4 = blob.type.toLowerCase().includes("mp4");
+    const extension = isMp4 ? "mp4" : "webm";
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
 
@@ -160,7 +166,7 @@ const focusTimeoutsRef = useRef<number[]>([]);
       .replace(/[:.]/g, "-");
 
     link.href = url;
-    link.download = `Innovative-Academy-${date}.webm`;
+    link.download = `Innovative-Academy-${date}.${extension}`;
 
     document.body.appendChild(link);
     link.click();
@@ -169,6 +175,8 @@ const focusTimeoutsRef = useRef<number[]>([]);
     window.setTimeout(() => {
       URL.revokeObjectURL(url);
     }, 60_000);
+
+    setRecordingMessage("Download requested. Check your browser downloads.");
   }, []);
 
   // --------------------------------------------------
@@ -224,6 +232,8 @@ const focusTimeoutsRef = useRef<number[]>([]);
 
   // --------------------------------------------------
   // START TEACHER CAMERA + MICROPHONE RECORDING
+  // Saves chunks directly to a user-selected file when supported.
+  // Prefers MP4 when the browser can encode it; otherwise uses WebM.
   // --------------------------------------------------
 
   const startRecording = useCallback(async () => {
@@ -236,6 +246,7 @@ const focusTimeoutsRef = useRef<number[]>([]);
     }
 
     setRecordingError("");
+    setRecordingMessage("");
     setIsStartingRecording(true);
 
     if (
@@ -249,12 +260,69 @@ const focusTimeoutsRef = useRef<number[]>([]);
       return;
     }
 
+    let selectedWriter: any = null;
+
     try {
+      // Check format support before asking the user where to save.
+      // MP4 is preferred for wider compatibility with common video players.
+      const mimeCandidates = [
+        "video/mp4;codecs=avc1.42E01E,mp4a.40.2",
+        "video/mp4;codecs=avc1,mp4a.40.2",
+        "video/mp4",
+        "video/webm;codecs=vp9,opus",
+        "video/webm;codecs=vp8,opus",
+        "video/webm",
+      ];
+
+      const supportedMimeType = mimeCandidates.find((type) =>
+        MediaRecorder.isTypeSupported(type)
+      );
+
+      if (!supportedMimeType) {
+        throw new Error(
+          "This browser does not support a compatible MP4 or WebM recording format."
+        );
+      }
+
+      const isMp4 = supportedMimeType.toLowerCase().includes("mp4");
+      const extension = isMp4 ? "mp4" : "webm";
+      const mimeType = isMp4 ? "video/mp4" : "video/webm";
+
+      const date = new Date()
+        .toISOString()
+        .replace(/[:.]/g, "-");
+      const suggestedName = `Innovative-Academy-${date}.${extension}`;
+
+      // The picker must be opened directly from the REC button gesture.
+      // On supported Chromium browsers this writes to disk progressively,
+      // avoiding a multi-gigabyte Blob being assembled at STOP.
+      const showSaveFilePicker = (window as any).showSaveFilePicker;
+
+      if (typeof showSaveFilePicker === "function") {
+        const fileHandle = await showSaveFilePicker({
+          suggestedName,
+          types: [
+            {
+              description: isMp4 ? "MP4 video" : "WebM video",
+              accept: {
+                [mimeType]: [`.${extension}`],
+              },
+            },
+          ],
+        });
+
+        selectedWriter = await fileHandle.createWritable();
+        fileWriterRef.current = selectedWriter;
+        writeQueueRef.current = Promise.resolve();
+        recordingWriteErrorRef.current = null;
+      }
+
+      // Existing teacher camera + microphone capture remains unchanged.
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-          frameRate: { ideal: 30 },
+          facingMode: { ideal: "environment" },
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
         },
         audio: {
           echoCancellation: true,
@@ -283,18 +351,6 @@ const focusTimeoutsRef = useRef<number[]>([]);
         );
       }
 
-      const supportedMimeType = [
-        "video/webm;codecs=vp9,opus",
-        "video/webm;codecs=vp8,opus",
-        "video/webm",
-      ].find((type) => MediaRecorder.isTypeSupported(type));
-
-      if (!supportedMimeType) {
-        throw new Error(
-          "Your browser does not support WebM recording."
-        );
-      }
-
       const recorder = new MediaRecorder(stream, {
         mimeType: supportedMimeType,
         videoBitsPerSecond: 4_000_000,
@@ -304,7 +360,31 @@ const focusTimeoutsRef = useRef<number[]>([]);
       chunksRef.current = [];
 
       recorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
+        if (!event.data || event.data.size === 0) return;
+
+        const writer = fileWriterRef.current;
+
+        if (writer) {
+          // Serialize writes so chunks are appended in their original order.
+          const chunk = event.data;
+
+          writeQueueRef.current = writeQueueRef.current
+            .then(async () => {
+              if (recordingWriteErrorRef.current) return;
+              await writer.write(chunk);
+            })
+            .catch((err) => {
+              console.error("Recording file write failed:", err);
+              recordingWriteErrorRef.current =
+                err instanceof Error
+                  ? err.message
+                  : "Unable to write recording data to the selected file.";
+              setRecordingError(
+                `Recording save error: ${recordingWriteErrorRef.current}`
+              );
+            });
+        } else {
+          // Compatibility fallback. Long recordings may use substantial RAM.
           chunksRef.current.push(event.data);
         }
       };
@@ -312,43 +392,85 @@ const focusTimeoutsRef = useRef<number[]>([]);
       recorder.onerror = (event) => {
         console.error("Recording error:", event);
         setRecordingError(
-          "A recording error occurred. Stop and restart recording if necessary."
+          "A recording error occurred. Stop and check the saved file."
         );
       };
 
       recorder.onstop = () => {
-        try {
-          const blob = new Blob(chunksRef.current, {
-            type: recorder.mimeType || "video/webm",
-          });
+        void (async () => {
+          try {
+            const writer = fileWriterRef.current;
 
-          saveRecording(blob);
-        } catch (err) {
-          console.error("Unable to save recording:", err);
-          setRecordingError("Unable to save the recording.");
-        } finally {
-          chunksRef.current = [];
-          releaseStream();
+            if (writer) {
+              // Wait for all final dataavailable writes before closing.
+              await writeQueueRef.current;
 
-          stopPromiseRef.current = null;
+              if (recordingWriteErrorRef.current) {
+                throw new Error(recordingWriteErrorRef.current);
+              }
 
-          const resolve = stopResolveRef.current;
-          stopResolveRef.current = null;
-          resolve?.();
-        }
+              await writer.close();
+              fileWriterRef.current = null;
+              setRecordingError("");
+              setRecordingMessage(
+                `Recording saved successfully as ${extension.toUpperCase()}.`
+              );
+            } else {
+              const blob = new Blob(chunksRef.current, {
+                type: recorder.mimeType || mimeType,
+              });
+              saveRecording(blob);
+            }
+          } catch (err) {
+            console.error("Unable to finalize recording:", err);
+
+            const writer = fileWriterRef.current;
+            try {
+              await writer?.abort();
+            } catch (abortError) {
+              console.error("Unable to abort recording file:", abortError);
+            }
+
+            fileWriterRef.current = null;
+            setRecordingError(
+              err instanceof Error
+                ? `Unable to save recording: ${err.message}`
+                : "Unable to save the recording."
+            );
+          } finally {
+            chunksRef.current = [];
+            releaseStream();
+
+            stopPromiseRef.current = null;
+
+            const resolve = stopResolveRef.current;
+            stopResolveRef.current = null;
+            resolve?.();
+          }
+        })();
       };
 
       recorderRef.current = recorder;
-
       recorder.start(1000);
       setIsRecording(true);
       setIsStartingRecording(false);
     } catch (err) {
       console.error("Unable to start recording:", err);
 
+      try {
+        await selectedWriter?.abort();
+      } catch (abortError) {
+        console.error("Unable to abort selected recording file:", abortError);
+      }
+
+      fileWriterRef.current = null;
+      recordingWriteErrorRef.current = null;
+
       setRecordingError(
         err instanceof Error
-          ? err.message
+          ? err.name === "AbortError"
+            ? "Save cancelled. Recording was not started."
+            : err.message
           : "Unable to access camera and microphone."
       );
 
@@ -784,6 +906,11 @@ const clearFocusTimeouts = useCallback(() => {
           {recordingError && (
             <div className="w-full max-w-[260px] rounded-lg bg-red-950 px-3 py-2 text-xs text-red-200">
               {recordingError}
+            </div>
+          )}
+          {recordingMessage && (
+            <div className="w-full max-w-[260px] rounded-lg bg-emerald-950 px-3 py-2 text-xs text-emerald-200">
+              {recordingMessage}
             </div>
           )}
 
